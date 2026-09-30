@@ -1,0 +1,345 @@
+/* SKÁKACÍ HRADY – app.js (bez build stepu) */
+(() => {
+  const H = window.HRADY || [];
+  const byId = Object.fromEntries(H.map((h) => [h.id, h]));
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const num = (n) => String(n).replace(".", ",");
+  const kc = (n) => Math.round(n).toLocaleString("cs-CZ") + " Kč";
+  const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const PAGE = document.body.dataset.page;
+
+  const TYP = { hrad: "Skákací hrad", combo: "Hrad se skluzavkou", skluzavka: "Skluzavka", draha: "Překážková dráha", hra: "Interaktivní hra" };
+  const TH = {
+    klasika: ["Klasika", "var(--sky)"], postavicky: ["Postavičky", "var(--red)"], princezny: ["Princezny", "var(--purple)"],
+    zvirata: ["Zvířata a džungle", "var(--green)"], more: ["Moře a piráti", "var(--sky-2)"], pohadky: ["Pohádky", "var(--gold)"],
+    sport: ["Sport a hry", "var(--gold-2)"], auta: ["Auta a hasiči", "var(--red)"],
+  };
+  const FAN = { 0: ["Bez fukaru", 0], 950: ["Fukar 950 W", 7000], 1500: ["Fukar 1500 W", 10000] };
+  const MAIL = "agenturamarco@seznam.cz";
+  const season = () => { const m = new Date().getMonth(); return m >= 9 || m <= 1; };
+  const img = (h, sm = true) => `/assets/hrady/${String(h.id).padStart(3, "0")}${sm ? "-sm" : ""}.webp`;
+  const size = (h) => `${num(h.d)} × ${num(h.w)} m`;
+  const I = {
+    plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
+    ok: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+    arrow: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
+  };
+
+  /* ---------- košík (poptávka) ---------- */
+  const KEY = "shp-cart";
+  const cart = {
+    get() { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch { return []; } },
+    set(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch {} badge(); },
+    has(id) { return cart.get().some((i) => i.id === id); },
+    add(id, fan = 0) { const c = cart.get().filter((i) => i.id !== id); c.push({ id, fan }); cart.set(c); },
+    fan(id, fan) { cart.set(cart.get().map((i) => (i.id === id ? { ...i, fan } : i))); },
+    rm(id) { cart.set(cart.get().filter((i) => i.id !== id)); },
+  };
+  function badge(bump) {
+    const n = cart.get().length;
+    $$("[data-cart-count]").forEach((b) => (b.textContent = n || ""));
+    if (bump) { const c = $(".nav__cart"); c?.classList.remove("bump"); void c?.offsetWidth; c?.classList.add("bump"); }
+  }
+
+  /* ---------- karta ---------- */
+  const card = (h, lazy = true) => `<article class="card${cart.has(h.id) ? " in-cart" : ""}" data-cur="Detail">
+  <div class="card__img"><img src="${img(h)}" alt="${h.n} – ${TYP[h.t].toLowerCase()} č. ${h.id}" width="${h.iw}" height="${h.ih}" ${lazy ? 'loading="lazy"' : ""} decoding="async">
+  <span class="card__no">č. ${h.id}</span>${season() ? '<span class="card__sale">−10 až 15 %</span>' : ""}</div>
+  <div class="card__body"><h3><a class="card__lnk" href="/hrad.html?id=${h.id}">${h.n}</a></h3>
+  <p class="card__meta">${TYP[h.t]} · ${size(h)} · výška ${num(h.h)} m</p>
+  <div class="card__foot"><span class="card__price">${kc(h.p)}</span>
+  <button class="card__add${cart.has(h.id) ? " done" : ""}" type="button" data-add="${h.id}" aria-label="Přidat ${h.n} do poptávky">${cart.has(h.id) ? I.ok : I.plus}</button></div></div></article>`;
+
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-add]");
+    if (!b) return;
+    e.preventDefault();
+    const id = +b.dataset.add;
+    if (cart.has(id)) { location.href = "/kosik.html"; return; }
+    cart.add(id, byId[id]?.fi ? 0 : 0);
+    b.classList.add("done"); b.innerHTML = I.ok; b.setAttribute("aria-label", "Přidáno – otevřít poptávku");
+    badge(true);
+  });
+
+  /* ---------- kreslený hrad (SVG) ---------- */
+  function castle(opts = {}) {
+    const tower = (cls, x, y, w, h, cone, ruffle = true) => {
+      const cx = x + w / 2, top = y + 6;
+      return `<g class="c-tw ${cls}">
+      <rect class="o f-sky" x="${x}" y="${y}" width="${w}" height="${h}" rx="${w / 2.2}"/>
+      <rect class="o f-gold" x="${x - 3}" y="${y + h * 0.36}" width="${w + 6}" height="16" rx="8"/>
+      <rect class="o f-gold" x="${x - 3}" y="${y + h * 0.64}" width="${w + 6}" height="16" rx="8"/>
+      <path class="hl" d="M${x + 12} ${y + 30} v${h * 0.22}"/>
+      ${ruffle ? `<rect class="o f-gold" x="${x - 8}" y="${y - 8}" width="${w + 16}" height="20" rx="10"/>` : ""}
+      <path class="o ${cone}" d="M${x - 10} ${top} Q${cx} ${top - 14} ${x + w + 10} ${top} L${cx + 4} ${y - w * 1.15} Q${cx} ${y - w * 1.24} ${cx - 4} ${y - w * 1.15} Z"/>
+      <circle class="o f-gold" cx="${cx}" cy="${y - w * 1.22}" r="7"/></g>`;
+    };
+    return `<svg class="castle${opts.idle ? " castle--idle" : ""}" viewBox="-20 -40 460 420" aria-hidden="true" focusable="false">
+    <ellipse class="c-sh f-ink" cx="210" cy="352" rx="178" ry="14" opacity=".14"/>
+    ${opts.fan ? `<g class="c-fan"><path class="o" d="M-4 330 C 20 300, 30 318, 58 306" fill="none" stroke-width="10"/><path d="M-4 330 C 20 300, 30 318, 58 306" fill="none" stroke="var(--sky-2)" stroke-width="5" stroke-linecap="round"/>
+      <rect class="o f-red" x="-26" y="316" width="46" height="36" rx="10"/><circle class="o f-card" cx="-3" cy="334" r="10"/><path class="c-blade o" d="M-3 326 v16 M-11 334 h16" fill="none"/></g>` : ""}
+    <g class="c-body">
+      ${tower("tb1", 92, 92, 40, 170, "f-pur", false)}
+      ${tower("tb2", 288, 92, 40, 170, "f-red", false)}
+      <g class="c-wall"><rect class="o f-sky2" x="100" y="120" width="220" height="150" rx="20"/>
+        <path class="o" d="M150 134v124M200 134v124M250 134v124M290 134v124" fill="none" stroke-width="3"/></g>
+      <rect class="o f-gold2" x="104" y="236" width="212" height="44" rx="16"/>
+      <path class="o" d="M130 244v30M170 244v30M210 244v30M250 244v30M290 244v30" fill="none" stroke-width="3"/>
+      <rect class="o f-sky" x="50" y="270" width="320" height="58" rx="24"/>
+      <path class="hl" d="M78 286h110"/>
+      <g class="c-beam"><rect class="o f-gold" x="72" y="104" width="276" height="44" rx="22"/>
+        <path class="hl" d="M96 116h60"/>
+        <text x="210" y="134" text-anchor="middle" font-size="21" class="f-ink" letter-spacing=".5">SKÁKACÍ HRADY</text></g>
+      ${tower("tf1", 40, 110, 62, 214, "f-red")}
+      ${tower("tf2", 318, 110, 62, 214, "f-pur")}
+      <g class="c-flagw"><path class="o" d="M349 30 V-36" fill="none"/><path class="c-flag o f-red" d="M349 -36 q24 -6 40 4 q-16 10 -40 14 z"/></g>
+      <rect class="o f-gold" x="98" y="296" width="224" height="42" rx="21"/>
+      <path class="hl" d="M120 308h80"/>
+    </g></svg>`;
+  }
+
+  /* ---------- sdílené ---------- */
+  function reveal() {
+    const els = $$(".rv");
+    if (RM || !("IntersectionObserver" in window)) { els.forEach((e) => e.classList.add("in")); return; }
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { rootMargin: "0px 0px -8% 0px" });
+    els.forEach((e) => io.observe(e));
+  }
+  function cursor() {
+    if (!matchMedia("(hover:hover) and (pointer:fine)").matches || RM) return;
+    const c = document.createElement("div"); c.className = "cur"; c.setAttribute("aria-hidden", "true"); document.body.append(c);
+    let x = innerWidth / 2, y = innerHeight / 2, cx = x, cy = y;
+    addEventListener("pointermove", (e) => { x = e.clientX; y = e.clientY; const t = e.target.closest("[data-cur]"); c.classList.toggle("big", !!t); c.textContent = t ? t.dataset.cur : ""; }, { passive: true });
+    (function loop() { cx += (x - cx) * 0.22; cy += (y - cy) * 0.22; c.style.transform = `translate(${cx}px,${cy}px)`; requestAnimationFrame(loop); })();
+  }
+  function navState() {
+    const n = $("#nav"); if (!n) return;
+    const f = () => n.classList.toggle("is-scrolled", scrollY > 12); f(); addEventListener("scroll", f, { passive: true });
+  }
+  function seasonal() { $$("[data-season]").forEach((e) => (e.hidden = !season())); }
+
+  /* ---------- ÚVOD ---------- */
+  const FEATURED = [34, 17, 111, 8, 54, 105, 81, 57, 64, 90, 70, 21];
+  function home() {
+    $$("[data-castle]").forEach((el) => (el.innerHTML = castle({ idle: el.dataset.castle === "idle", fan: el.dataset.castle === "story" })));
+    const track = $("#rail-track");
+    if (track) track.innerHTML = FEATURED.filter((i) => byId[i]).map((i) => card(byId[i])).join("") +
+      `<div class="rail__end"><div><p>Dalších ${H.length - FEATURED.length} modelů v katalogu</p><a class="btn" href="/katalog.html">Celý katalog ${I.arrow}</a></div></div>`;
+    const th = $("#themes");
+    if (th) th.innerHTML = Object.entries(TH).map(([k, [n, c]]) => {
+      const cnt = H.filter((h) => h.th === k).length;
+      return cnt ? `<a class="theme" href="/katalog.html?th=${k}" style="--c:${c}"><i>${cnt}</i>${n}</a>` : "";
+    }).join("");
+    const cnt = $("[data-count]"); if (cnt) cnt.textContent = H.length;
+    const minP = $("[data-min-price]"); if (minP) minP.textContent = kc(Math.min(...H.map((h) => h.p)));
+
+    const g = window.gsap, ST = window.ScrollTrigger;
+    const steps = $$(".story__steps li");
+    if (!g || !ST || RM) { steps.forEach((s) => s.classList.add("on")); $("#rail")?.classList.add("rail--native"); return; }
+    g.registerPlugin(ST);
+    if (window.Lenis) { const l = new Lenis({ lerp: 0.12 }); l.on("scroll", ST.update); g.ticker.add((t) => l.raf(t * 1000)); g.ticker.lagSmoothing(0); }
+
+    /* hero intro: slova vyskočí, hrad dopadne */
+    const hc = $(".hero__art .castle");
+    g.timeline({ defaults: { ease: "back.out(1.8)" } })
+      .from(".hero h1 .ln>span", { yPercent: 110, rotate: 6, duration: 0.8, stagger: 0.09 })
+      .from(".hero__lede, .hero__cta, .hero__facts li", { y: 24, opacity: 0, duration: 0.6, stagger: 0.05 }, "-=.45")
+      .from(hc, { y: -180, scaleY: 1.2, duration: 1.1, ease: "bounce.out", transformOrigin: "50% 100%" }, 0.15);
+    g.to(".cloud", { yPercent: (i) => -40 - i * 25, ease: "none", scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: true } });
+
+    /* příběh: hrad se nafukuje se scrollem */
+    const mm = g.matchMedia();
+    const sc = $(".story .castle");
+    if (sc) {
+      const q = (s) => sc.querySelector(s);
+      const body = q(".c-body"), tws = [q(".tb1"), q(".tb2"), q(".tf1"), q(".tf2")], beam = q(".c-beam"), flag = q(".c-flagw"), blade = q(".c-blade");
+      const gauge = $(".story__gauge i");
+      g.set(body, { scaleX: 1.22, scaleY: 0.14 });
+      g.set(tws, { scaleY: 0.12, rotation: (i) => [-18, 16, -34, 30][i] });
+      g.set(beam, { y: 110, rotation: -6, transformOrigin: "50% 50%" });
+      g.set(flag, { scale: 0, transformOrigin: "0% 100%" });
+      const tl = g.timeline({ defaults: { ease: "none" } })
+        .to(blade, { rotation: 1440, transformOrigin: "50% 50%", duration: 1 }, 0)
+        .to(body, { scaleX: 1.08, scaleY: 0.5, duration: 0.3 }, 0)
+        .to(tws.slice(0, 2), { scaleY: 1, rotation: 0, duration: 0.3, stagger: 0.06 }, 0.18)
+        .to(body, { scaleX: 1, scaleY: 1, duration: 0.3 }, 0.34)
+        .to(tws.slice(2), { scaleY: 1, rotation: 0, duration: 0.28, stagger: 0.06, ease: "back.out(2)" }, 0.4)
+        .to(beam, { y: 0, rotation: 0, duration: 0.2, ease: "back.out(2.4)" }, 0.66)
+        .to(flag, { scale: 1, duration: 0.12, ease: "back.out(3)" }, 0.84)
+        .to(body, { scaleY: 1.05, scaleX: 0.97, duration: 0.05 }, 0.9).to(body, { scaleY: 1, scaleX: 1, duration: 0.05 }, 0.95);
+      mm.add("(min-width: 861px)", () => {
+        ST.create({ trigger: ".story__pin", start: "top top", end: "+=240%", pin: true, scrub: 0.6, animation: tl,
+          onUpdate: (s) => { const i = Math.min(steps.length - 1, Math.floor(s.progress * steps.length)); steps.forEach((li, k) => li.classList.toggle("on", k <= i)); if (gauge) gauge.textContent = Math.round(s.progress * 100) + " %"; } });
+      });
+      mm.add("(max-width: 860px)", () => {
+        steps.forEach((s) => s.classList.add("on"));
+        ST.create({ trigger: sc, start: "top 85%", end: "bottom 35%", scrub: 0.6, animation: tl, onUpdate: (s) => gauge && (gauge.textContent = Math.round(s.progress * 100) + " %") });
+      });
+    }
+
+    /* carousel: horizontální jízda + prohnutí podle rychlosti */
+    const rail = $("#rail");
+    mm.add("(min-width: 900px)", () => {
+      const dist = () => track.scrollWidth - rail.clientWidth + 8;
+      const skew = g.quickTo(".rail__track .card", "skewX", { duration: 0.5, ease: "power3" });
+      const tw = g.to(track, { x: () => -dist(), ease: "none",
+        scrollTrigger: { trigger: "#nejzadanejsi", start: "top top", end: () => "+=" + dist(), pin: true, scrub: 0.5, invalidateOnRefresh: true,
+          onUpdate: (s) => skew(g.utils.clamp(-9, 9, s.getVelocity() / -260)) } });
+      return () => tw.kill();
+    });
+    mm.add("(max-width: 899px)", () => { rail.classList.add("rail--native"); return () => rail.classList.remove("rail--native"); });
+
+    /* témata a cenovka */
+    ST.batch(".theme", { onEnter: (b) => g.from(b, { scale: 0.4, rotation: () => g.utils.random(-14, 14), opacity: 0, stagger: 0.06, ease: "back.out(2.2)", duration: 0.7 }), once: true });
+    g.from(".tag", { rotation: 8, y: 60, opacity: 0, ease: "back.out(1.6)", duration: 0.9, scrollTrigger: { trigger: ".tag", start: "top 80%" } });
+    g.from(".foot__word span", { yPercent: 60, rotation: (i) => (i ? 4 : -4), opacity: 0, stagger: 0.12, ease: "back.out(2)", duration: 0.8, scrollTrigger: { trigger: ".foot", start: "top 85%" } });
+    addEventListener("load", () => ST.refresh());
+  }
+
+  /* ---------- KATALOG ---------- */
+  const AREA = { s: ["do 16 m²", (a) => a <= 16], m: ["16–30 m²", (a) => a > 16 && a <= 30], l: ["nad 30 m²", (a) => a > 30] };
+  const SORT = { doporucene: "Doporučené", "cena-asc": "Cena ↑", "cena-desc": "Cena ↓", "velikost-desc": "Největší", cislo: "Podle čísla" };
+  function katalog() {
+    const P = new URLSearchParams(location.search);
+    const S = { typ: new Set((P.get("typ") || "").split(",").filter(Boolean)), th: new Set((P.get("th") || "").split(",").filter(Boolean)),
+      plocha: new Set((P.get("plocha") || "").split(",").filter(Boolean)), max: +P.get("max") || 0, q: P.get("q") || "", sort: P.get("sort") || "doporucene" };
+    const maxP = Math.max(...H.map((h) => h.p)), minP = Math.min(...H.map((h) => h.p));
+    const chips = (name, obj, count) => Object.entries(obj).map(([k, v]) => {
+      const label = Array.isArray(v) ? v[0] : v, n = count(k);
+      return n ? `<label class="chip"><input type="checkbox" name="${name}" value="${k}" ${S[name].has(k) ? "checked" : ""}><span>${label} · ${n}</span></label>` : "";
+    }).join("");
+    $("#filters-form").innerHTML = `
+      <label class="field">Hledat<input class="input" type="search" name="q" value="${S.q.replace(/"/g, "")}" placeholder="název nebo číslo" autocomplete="off"></label>
+      <fieldset><legend>Typ</legend><div class="chips">${chips("typ", TYP, (k) => H.filter((h) => h.t === k).length)}</div></fieldset>
+      <fieldset><legend>Téma</legend><div class="chips">${chips("th", Object.fromEntries(Object.entries(TH).map(([k, v]) => [k, v[0]])), (k) => H.filter((h) => h.th === k).length)}</div></fieldset>
+      <fieldset><legend>Plocha</legend><div class="chips">${chips("plocha", AREA, (k) => H.filter((h) => AREA[k][1](h.a)).length)}</div></fieldset>
+      <label class="field">Cena do <output id="maxo">${kc(S.max || maxP)}</output><input type="range" name="max" min="${minP}" max="${maxP}" step="1000" value="${S.max || maxP}"></label>
+      <button class="btn btn--ghost btn--sm" type="reset">Zrušit filtry</button>`;
+    $("#sort").innerHTML = Object.entries(SORT).map(([k, v]) => `<option value="${k}" ${k === S.sort ? "selected" : ""}>${v}</option>`).join("");
+
+    const grid = $("#grid"), count = $("#count");
+    function run() {
+      const q = S.q.trim().toLowerCase();
+      let L = H.filter((h) => (!S.typ.size || S.typ.has(h.t)) && (!S.th.size || S.th.has(h.th)) &&
+        (!S.plocha.size || [...S.plocha].some((k) => AREA[k][1](h.a))) && (!S.max || h.p <= S.max) &&
+        (!q || h.n.toLowerCase().includes(q) || String(h.id) === q.replace(/\D/g, "")));
+      const srt = { "cena-asc": (a, b) => a.p - b.p, "cena-desc": (a, b) => b.p - a.p, "velikost-desc": (a, b) => b.a - a.a, cislo: (a, b) => a.id - b.id,
+        doporucene: (a, b) => (FEATURED.includes(b.id) - FEATURED.includes(a.id)) || a.id - b.id };
+      L.sort(srt[S.sort] || srt.doporucene);
+      count.textContent = `${L.length} ${L.length === 1 ? "model" : L.length < 5 && L.length ? "modely" : "modelů"}`;
+      grid.innerHTML = L.length ? L.map((h, i) => card(h, i > 5)).join("") : `<div class="empty"><p class="hand">Nic nesedí…</p><p>Zkuste povolit filtry, nebo nám napište – hrad vyrobíme i podle vašeho nápadu.</p></div>`;
+      const U = new URLSearchParams();
+      ["typ", "th", "plocha"].forEach((k) => S[k].size && U.set(k, [...S[k]].join(",")));
+      if (S.max && S.max < maxP) U.set("max", S.max); if (S.q) U.set("q", S.q); if (S.sort !== "doporucene") U.set("sort", S.sort);
+      history.replaceState(null, "", location.pathname + (U.toString() ? "?" + U : ""));
+    }
+    const form = $("#filters-form");
+    form.addEventListener("input", (e) => {
+      const t = e.target;
+      if (t.type === "checkbox") t.checked ? S[t.name].add(t.value) : S[t.name].delete(t.value);
+      if (t.name === "max") { S.max = +t.value; $("#maxo").textContent = kc(S.max); }
+      if (t.name === "q") S.q = t.value;
+      run();
+    });
+    form.addEventListener("reset", () => setTimeout(() => { S.typ.clear(); S.th.clear(); S.plocha.clear(); S.max = 0; S.q = ""; $("#maxo").textContent = kc(maxP); run(); }));
+    $("#sort").addEventListener("change", (e) => { S.sort = e.target.value; run(); });
+    const fl = $(".filters"), scrim = $(".scrim");
+    const tog = (on) => { fl.classList.toggle("open", on); scrim.classList.toggle("on", on); };
+    $(".filters__toggle")?.addEventListener("click", () => tog(true));
+    scrim?.addEventListener("click", () => tog(false));
+    $("#filters-close")?.addEventListener("click", () => tog(false));
+    run();
+  }
+
+  /* ---------- DETAIL ---------- */
+  function detail() {
+    const h = byId[+new URLSearchParams(location.search).get("id")];
+    const root = $("#pd");
+    if (!h) { root.innerHTML = `<div class="empty"><p class="hand">Tenhle hrad jsme nenašli.</p><a class="btn" href="/katalog.html">Zpět do katalogu</a></div>`; return; }
+    document.title = `${h.n} (č. ${h.id}) – ${TYP[h.t]} na prodej | Skákací hrady`;
+    $('meta[name="description"]')?.setAttribute("content", `${h.n}: ${TYP[h.t].toLowerCase()} ${size(h)}, ${h.m}. Cena ${kc(h.p)}, výroba na míru.`);
+    $("#crumb").textContent = `${h.n} (č. ${h.id})`;
+    const inCart = cart.get().find((i) => i.id === h.id);
+    let fan = inCart ? inCart.fan : 0;
+    const est = h.he ? '<span class="est">odhad</span>' : "";
+    const fans = h.fi ? `<p class="pill pill--y">Fukar je v ceně</p>` : `<div class="fans" role="radiogroup" aria-label="Fukar">${[0, 950, 1500].map((f) =>
+      `<label class="fan"><input type="radio" name="fan" value="${f}" ${f === fan ? "checked" : ""}><span>${FAN[f][0]}${f === h.fan ? "<em>doporučený</em>" : ""}</span><b>${f ? "+ " + kc(FAN[f][1]) : "—"}</b></label>`).join("")}</div>`;
+    root.innerHTML = `
+    <div><button class="pd__img" type="button" data-cur="Zvětšit" aria-label="Zvětšit fotku"><img src="${img(h, false)}" alt="${h.n} – ${TYP[h.t].toLowerCase()}" width="1200" height="900"></button></div>
+    <div>
+      <div class="pd__tags"><span class="pill pill--y">č. ${h.id}</span><a class="pill" href="/katalog.html?typ=${h.t}">${TYP[h.t]}</a><a class="pill" href="/katalog.html?th=${h.th}">${TH[h.th][0]}</a></div>
+      <h1>${h.n}</h1>
+      ${h.note ? `<p><strong>${h.note}</strong></p>` : ""}
+      <div class="price"><b>${kc(h.p)}</b><small>konečná cena, bez dopravy · nejsme plátci DPH</small></div>
+      <p class="season" data-season hidden>Mimo sezónu cca ${kc(Math.round(h.p * 0.85 / 100) * 100)} – ${kc(Math.round(h.p * 0.9 / 100) * 100)} (sleva 10–15 %)</p>
+      <h2 class="sr">Fukar</h2>${fans}
+      <div class="pd__actions"><button class="btn" type="button" id="add">${inCart ? "Upravit v poptávce" : "Přidat do poptávky"} ${I.plus}</button>
+      <button class="btn btn--ghost" type="button" disabled title="Připravujeme">Koupit online – brzy</button></div>
+      <table class="specs"><caption class="sr">Parametry</caption><tbody>
+        <tr><th>Rozměr (d × š)</th><td>${size(h)}</td></tr>
+        <tr><th>Výška</th><td>${num(h.h)} m${est}</td></tr>
+        <tr><th>Plocha</th><td>${num(h.a)} m²</td></tr>
+        ${h.t === "hra" ? "" : `<tr><th>Kapacita</th><td>až ${h.c} dětí najednou<span class="est">odhad</span></td></tr>`}
+        <tr><th>Věk</th><td>${h.age[1] > 90 ? h.age[0] + "+ let" : h.age[0] + "–" + h.age[1] + " let"}<span class="est">odhad</span></td></tr>
+        <tr><th>Materiál</th><td>${h.m}, ohnivzdorný, vodovzdorný, netoxický</td></tr>
+        <tr><th>Certifikace</th><td>CE &amp; SGS, EN 14960:2013, EN 15649:2013</td></tr>
+        <tr><th>Výroba</th><td>cca 8 týdnů, některé modely skladem</td></tr>
+      </tbody></table>
+      <div class="pd__box"><h3>V balení</h3><ul class="checks"><li>Hrad a přepravní obal</li><li>Opravná sada podle dohody</li><li>Záruka 1 rok, opravy podle příčiny poškození</li></ul>
+      <p>Rozměr, barvy i nápisy upravíme. Jednoduché logo je v ceně.</p></div>
+    </div>`;
+    root.addEventListener("change", (e) => { if (e.target.name === "fan") { fan = +e.target.value; if (cart.has(h.id)) cart.fan(h.id, fan); } });
+    $("#add").addEventListener("click", (e) => { cart.add(h.id, fan); badge(true); e.currentTarget.innerHTML = `Přidáno ${I.ok}`; setTimeout(() => (location.href = "/kosik.html"), 450); });
+    const lb = $(".lb");
+    $(".pd__img").addEventListener("click", () => { lb.querySelector("img").src = img(h, false); lb.querySelector("img").alt = h.n; lb.classList.add("on"); lb.querySelector("button").focus(); });
+    lb.addEventListener("click", (e) => { if (e.target === lb || e.target.closest("button")) lb.classList.remove("on"); });
+    addEventListener("keydown", (e) => e.key === "Escape" && lb.classList.remove("on"));
+    const rel = H.filter((x) => x.th === h.th && x.id !== h.id).sort((a, b) => Math.abs(a.p - h.p) - Math.abs(b.p - h.p)).slice(0, 4);
+    $("#related").innerHTML = rel.map((x) => card(x)).join("");
+    seasonal();
+  }
+
+  /* ---------- POPTÁVKA ---------- */
+  function kosik() {
+    const list = $("#items"), sum = $("#sum");
+    function render() {
+      const C = cart.get().filter((i) => byId[i.id]);
+      if (!C.length) { list.innerHTML = `<div class="empty"><p class="hand">Zatím prázdno.</p><p>Vyberte hrad v katalogu, nebo rovnou napište, co hledáte.</p><a class="btn" href="/katalog.html">Do katalogu ${I.arrow}</a></div>`; sum.hidden = true; return; }
+      sum.hidden = false;
+      list.innerHTML = C.map(({ id, fan }) => { const h = byId[id]; return `<div class="ci">
+        <img src="${img(h)}" alt="" width="120" height="90" loading="lazy">
+        <div><h3><a href="/hrad.html?id=${id}">${h.n}</a></h3><p class="card__meta">č. ${id} · ${size(h)} · ${kc(h.p)}</p>
+        ${h.fi ? '<p class="pill pill--y">Fukar v ceně</p>' : `<select class="select" data-fan="${id}" aria-label="Fukar k ${h.n}">${[0, 950, 1500].map((f) => `<option value="${f}" ${f === fan ? "selected" : ""}>${FAN[f][0]}${f ? " (+" + kc(FAN[f][1]) + ")" : ""}${f === h.fan ? " – doporučený" : ""}</option>`).join("")}</select>`}</div>
+        <div class="ci__side"><b class="card__price">${kc(h.p + (h.fi ? 0 : FAN[fan][1]))}</b><button class="ci__rm" type="button" data-rm="${id}">Odebrat</button></div></div>`; }).join("");
+      const hr = C.reduce((s, i) => s + byId[i.id].p, 0), fa = C.reduce((s, i) => s + (byId[i.id].fi ? 0 : FAN[i.fan][1]), 0);
+      $("#s-hrady").textContent = kc(hr); $("#s-fans").textContent = kc(fa); $("#s-total").textContent = kc(hr + fa);
+      $("#s-season").hidden = !season(); $("#s-season b").textContent = `${kc(Math.round((hr * 0.85) / 100) * 100)} – ${kc(Math.round((hr * 0.9) / 100) * 100)}`;
+    }
+    list.addEventListener("change", (e) => { const s = e.target.closest("[data-fan]"); if (s) { cart.fan(+s.dataset.fan, +s.value); render(); } });
+    list.addEventListener("click", (e) => { const b = e.target.closest("[data-rm]"); if (b) { cart.rm(+b.dataset.rm); render(); } });
+    render();
+
+    const f = $("#form"), hint = $("#form-hint");
+    f.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const d = Object.fromEntries(new FormData(f));
+      if (!d.jmeno || !(d.email || d.telefon)) { hint.textContent = "Vyplňte jméno a e-mail nebo telefon."; return; }
+      d.kosik = cart.get().filter((i) => byId[i.id]).map(({ id, fan }) => ({ id, nazev: byId[id].n, fukar: byId[id].fi ? "v ceně" : FAN[fan][0], cena: byId[id].p + (byId[id].fi ? 0 : FAN[fan][1]) }));
+      const btn = f.querySelector("button[type=submit]"); btn.disabled = true; hint.textContent = "Odesílám…";
+      try {
+        const r = await fetch("/api/poptavka", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(d) });
+        if (r.ok) { f.innerHTML = `<p class="ok">Díky, poptávka odešla. Ozveme se nejpozději další pracovní den.</p>`; cart.set([]); render(); return; }
+        throw new Error(r.status);
+      } catch {
+        const body = [`Jméno: ${d.jmeno}`, `E-mail: ${d.email}`, `Telefon: ${d.telefon}`, `Město/obec: ${d.mesto}`, "", ...d.kosik.map((i) => `č. ${i.id} ${i.nazev} – ${i.fukar} – ${kc(i.cena)}`), "", d.zprava].join("\n");
+        location.href = `mailto:${MAIL}?subject=${encodeURIComponent("Poptávka – skákací hrady")}&body=${encodeURIComponent(body)}`;
+        hint.textContent = "Otevřel se váš e-mail s připravenou poptávkou – stačí ji odeslat."; btn.disabled = false;
+      }
+    });
+  }
+
+  badge(); navState(); seasonal(); cursor();
+  ({ home, katalog, detail, kosik })[PAGE]?.();
+  reveal();
+})();
