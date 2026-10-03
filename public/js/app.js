@@ -131,6 +131,7 @@
       const cnt = H.filter((h) => h.th === k).length;
       return cnt ? `<a class="theme" href="/katalog.html?th=${k}" style="--c:${c}"><i>${cnt}</i>${n}</a>` : "";
     }).join("");
+    setTimeout(() => { if (!window.__3d) $$(".hero__art, .story__art").forEach((e) => e.classList.add("no3d")); }, 6000);
     const cnt = $("[data-count]"); if (cnt) cnt.textContent = H.length;
     const minP = $("[data-min-price]"); if (minP) minP.textContent = kc(Math.min(...H.map((h) => h.p)));
 
@@ -141,11 +142,9 @@
     if (window.Lenis) { const l = new Lenis({ lerp: 0.12 }); l.on("scroll", ST.update); g.ticker.add((t) => l.raf(t * 1000)); g.ticker.lagSmoothing(0); }
 
     /* hero intro: slova vyskočí, hrad dopadne */
-    const hc = $(".hero__art .castle");
-    g.timeline({ defaults: { ease: "back.out(1.8)" } })
-      .from(".hero h1 .ln>span", { yPercent: 110, rotate: 6, duration: 0.8, stagger: 0.09 })
-      .from(".hero__lede, .hero__cta, .hero__facts li", { y: 24, opacity: 0, duration: 0.6, stagger: 0.05 }, "-=.45")
-      .from(hc, { y: -180, scaleY: 1.2, duration: 1.1, ease: "bounce.out", transformOrigin: "50% 100%" }, 0.15);
+    g.timeline()
+      .from(".hero__logo .hl1, .hero__logo .hl2", { y: -160, scaleY: 1.35, scaleX: 0.8, opacity: 0, transformOrigin: "50% 100%", duration: 1.3, ease: "elastic.out(1, 0.4)", stagger: 0.16 })
+      .from(".hero__lede, .hero__cta, .hero__facts li", { y: 24, opacity: 0, duration: 0.6, stagger: 0.05, ease: "back.out(1.8)" }, "-=.8");
     g.to(".cloud", { yPercent: (i) => -40 - i * 25, ease: "none", scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: true } });
 
     /* příběh: hrad se nafukuje se scrollem */

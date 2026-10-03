@@ -338,3 +338,20 @@ input[type=range]{width:100%;accent-color:var(--purple)}
 .pd__thumbs button img{width:100%;height:100%;object-fit:cover}
 .pd__thumbs button[aria-pressed="true"]{outline:3px solid var(--gold);outline-offset:2px;box-shadow:3px 3px 0 var(--ink)}
 .pd__3dbtn{margin-top:14px}
+/* 2D hrad jen jako záloha – žádné probliknutí před 3D */
+.hero__art [data-castle],.story__art [data-castle]{opacity:0}
+.no3d [data-castle]{opacity:1}
+.is3d [data-castle]{opacity:0}
+/* logo jako hlavní nadpis */
+.hero__logo{width:min(100%,620px);margin:0 0 4px;line-height:0}
+.hero__logo svg{width:100%;height:auto;overflow:visible}
+.hero__logo text{font-family:var(--f-d);font-weight:800;paint-order:stroke;stroke:var(--ink);stroke-linejoin:round}
+.hero__logo .ex{fill:var(--ink);stroke-width:10} .hero__logo .t1{fill:var(--sky);stroke-width:9} .hero__logo .t2{fill:var(--gold);stroke-width:9}
+.hero__logo .gl{fill:none;stroke:var(--card);stroke-width:3.5;stroke-linecap:round;opacity:.7}
+.hero__logo g{transform-box:fill-box}
+/* páska – celá viditelná, o 30 % větší */
+.tape{margin:-12px -6vw 0;padding:0;transform:rotate(-2deg);overflow:hidden;border-block:var(--line) solid var(--ink);background:var(--gold)}
+.tape__row{border:0;background:none;transform:none;animation:tape2 30s linear infinite}
+.tape__row span{font-size:clamp(1.45rem,2.9vw,1.95rem);padding:20px 30px 15px}
+.tape__row span::after{margin-left:58px}
+@keyframes tape2{to{transform:translateX(-50%)}}
