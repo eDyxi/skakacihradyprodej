@@ -18,7 +18,7 @@
   const FAN = { 0: ["Bez fukaru", 0], 950: ["Fukar 950 W", 7000], 1500: ["Fukar 1500 W", 10000] };
   const MAIL = "agenturamarco@seznam.cz";
   const season = () => { const m = new Date().getMonth(); return m >= 9 || m <= 1; };
-  const img = (h, sm = true) => `/assets/hrady/${String(h.id).padStart(3, "0")}${sm ? "-sm" : ""}.webp`;
+  const img = (h, sm = true, orig = false) => `/assets/hrady/${String(h.id).padStart(3, "0")}${h.ph && !orig ? "-studio" : ""}${sm ? "-sm" : ""}.webp`;
   const size = (h) => `${num(h.d)} × ${num(h.w)} m`;
   const I = {
     plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
@@ -44,8 +44,8 @@
 
   /* ---------- karta ---------- */
   const card = (h, lazy = true) => `<article class="card${cart.has(h.id) ? " in-cart" : ""}" data-cur="Detail">
-  <div class="card__img"><img src="${img(h)}" alt="${h.n} – ${TYP[h.t].toLowerCase()} č. ${h.id}" width="${h.iw}" height="${h.ih}" ${lazy ? 'loading="lazy"' : ""} decoding="async">
-  <span class="card__no">č. ${h.id}</span>${season() ? '<span class="card__sale">−10 až 15 %</span>' : ""}</div>
+  <div class="card__img"><img src="${img(h)}" alt="${h.n} – ${TYP[h.t].toLowerCase()} č. ${h.id}" width="${h.ph ? 600 : h.iw}" height="${h.ph ? 600 : h.ih}" ${lazy ? 'loading="lazy"' : ""} decoding="async">
+  <span class="card__no">č. ${h.id}</span>${h.m3d ? '<span class="card__3d">3D</span>' : ""}${season() ? '<span class="card__sale">−10 až 15 %</span>' : ""}</div>
   <div class="card__body"><h3><a class="card__lnk" href="/hrad.html?id=${h.id}">${h.n}</a></h3>
   <p class="card__meta">${TYP[h.t]} · ${size(h)} · výška ${num(h.h)} m</p>
   <div class="card__foot"><span class="card__price">${kc(h.p)}</span>
@@ -266,7 +266,9 @@
     const fans = h.fi ? `<p class="pill pill--y">Fukar je v ceně</p>` : `<div class="fans" role="radiogroup" aria-label="Fukar">${[0, 950, 1500].map((f) =>
       `<label class="fan"><input type="radio" name="fan" value="${f}" ${f === fan ? "checked" : ""}><span>${FAN[f][0]}${f === h.fan ? "<em>doporučený</em>" : ""}</span><b>${f ? "+ " + kc(FAN[f][1]) : "—"}</b></label>`).join("")}</div>`;
     root.innerHTML = `
-    <div><button class="pd__img" type="button" data-cur="Zvětšit" aria-label="Zvětšit fotku"><img src="${img(h, false)}" alt="${h.n} – ${TYP[h.t].toLowerCase()}" width="1200" height="900"></button></div>
+    <div><div class="pd__stage"><button class="pd__img" type="button" data-cur="Zvětšit" aria-label="Zvětšit fotku"><img id="pd-main" src="${img(h, false)}" alt="${h.n} – ${TYP[h.t].toLowerCase()}" width="1200" height="900"></button></div>
+    ${h.ph ? `<div class="pd__thumbs">${[img(h, false), img(h, false, true)].map((src, i) => `<button type="button" data-src="${src}" aria-pressed="${!i}" aria-label="${i ? "Původní fotka" : "Studiová fotka"}"><img src="${src.replace(".webp", "-sm.webp")}" alt="" width="84" height="84" loading="lazy"></button>`).join("")}</div>` : ""}
+    ${h.m3d ? `<button class="btn btn--sky pd__3dbtn" id="v3d-btn" type="button" aria-pressed="false">Prohlédnout ve 3D ↻</button>` : ""}</div>
     <div>
       <div class="pd__tags"><span class="pill pill--y">č. ${h.id}</span><a class="pill" href="/katalog.html?typ=${h.t}">${TYP[h.t]}</a><a class="pill" href="/katalog.html?th=${h.th}">${TH[h.th][0]}</a></div>
       <h1>${h.n}</h1>
@@ -292,7 +294,17 @@
     root.addEventListener("change", (e) => { if (e.target.name === "fan") { fan = +e.target.value; if (cart.has(h.id)) cart.fan(h.id, fan); } });
     $("#add").addEventListener("click", (e) => { cart.add(h.id, fan); badge(true); e.currentTarget.innerHTML = `Přidáno ${I.ok}`; setTimeout(() => (location.href = "/kosik.html"), 450); });
     const lb = $(".lb");
-    $(".pd__img").addEventListener("click", () => { lb.querySelector("img").src = img(h, false); lb.querySelector("img").alt = h.n; lb.classList.add("on"); lb.querySelector("button").focus(); });
+    $$(".pd__thumbs button").forEach((b) => b.addEventListener("click", () => { $("#pd-main").src = b.dataset.src; $$(".pd__thumbs button").forEach((x) => x.setAttribute("aria-pressed", x === b)); }));
+    let v3d = null;
+    $("#v3d-btn")?.addEventListener("click", async (e) => {
+      const btn = e.currentTarget, stage = $(".pd__stage");
+      if (v3d) { v3d.destroy(); v3d = null; $(".pd__3d")?.remove(); $(".pd__img").hidden = false; btn.textContent = "Prohlédnout ve 3D ↻"; btn.setAttribute("aria-pressed", "false"); return; }
+      const box = document.createElement("div"); box.className = "pd__3d"; box.innerHTML = '<p class="pd__hint hand">táhni a otoč</p>';
+      $(".pd__img").hidden = true; stage.append(box); btn.textContent = "Zpět na fotku"; btn.setAttribute("aria-pressed", "true");
+      try { const m = await import("/js/viewer3d.js"); v3d = await m.mount3d(box, `/assets/3d/${String(h.id).padStart(3, "0")}.glb`); }
+      catch { box.innerHTML = '<p class="hand" style="padding:24px">3D se nepodařilo načíst.</p>'; }
+    });
+    $(".pd__img").addEventListener("click", () => { lb.querySelector("img").src = $("#pd-main").src; lb.querySelector("img").alt = h.n; lb.classList.add("on"); lb.querySelector("button").focus(); });
     lb.addEventListener("click", (e) => { if (e.target === lb || e.target.closest("button")) lb.classList.remove("on"); });
     addEventListener("keydown", (e) => e.key === "Escape" && lb.classList.remove("on"));
     const rel = H.filter((x) => x.th === h.th && x.id !== h.id).sort((a, b) => Math.abs(a.p - h.p) - Math.abs(b.p - h.p)).slice(0, 4);
