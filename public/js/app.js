@@ -168,7 +168,7 @@
         .to(flag, { scale: 1, duration: 0.12, ease: "back.out(3)" }, 0.84)
         .to(body, { scaleY: 1.05, scaleX: 0.97, duration: 0.05 }, 0.9).to(body, { scaleY: 1, scaleX: 1, duration: 0.05 }, 0.95);
       mm.add("(min-width: 861px)", () => {
-        ST.create({ trigger: ".story__pin", start: "top top", end: "+=240%", pin: true, scrub: 0.6, animation: tl,
+        ST.create({ trigger: ".story__pin", start: "top top", end: "+=320%", pin: true, scrub: 0.6, animation: tl,
           onUpdate: (s) => { dispatchEvent(new CustomEvent("story", { detail: s.progress })); const i = Math.min(steps.length - 1, Math.floor(s.progress * steps.length)); steps.forEach((li, k) => li.classList.toggle("on", k <= i)); if (gauge) gauge.textContent = Math.round(s.progress * 100) + " %"; } });
       });
       mm.add("(max-width: 860px)", () => {

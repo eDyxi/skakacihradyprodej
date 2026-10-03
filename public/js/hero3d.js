@@ -143,14 +143,24 @@ const INFLATE = /* glsl */ `
 vec4 wp = modelMatrix * vec4(transformed, 1.0);
 float hy = wp.y - uY0;
 float h = clamp(hy / uH, 0.0, 1.0);
+vec2 xz = wp.xz;
+vec2 dir = xz / (length(xz) + 1e-4);
 float t = clamp(uInf * 1.5 - h * 0.5, 0.0, 1.0);
 float u = t - 1.0;
 float e = 1.0 + 2.7 * u * u * u + 1.7 * u * u;
-float fl = 1.0 - t;
+float fl = 1.0 - clamp(e, 0.0, 1.0);
+xz += dir * fl * hy * 0.6;
 float wr = sin(wp.x * 9.0 + uTime * 0.8) * sin(wp.z * 8.0 - uTime * 0.6);
-hy = hy * mix(0.035, 1.0, e) + wr * 0.04 * uH * fl * h;
-wp.xz *= 1.0 + 0.24 * fl * h;
-wp.x += sin(uTime * 7.0 + hy * 4.0) * uWob * h;
+hy = hy * mix(0.07, 1.0, e) + wr * 0.03 * uH * fl + fl * h * 0.03 * uH;
+float xn = clamp(wp.x / uW, -1.0, 1.0);
+float side = smoothstep(0.28, 0.36, abs(xn));
+float a = clamp((uArr - (1.0 - step(0.0, xn)) * 0.25) / 0.75, 0.0, 1.0);
+float ua = a - 1.0;
+float ea = 1.0 + 2.4 * ua * ua * ua + 1.4 * ua * ua;
+xz.x += sign(xn) * side * (1.0 - ea) * uW * 2.6;
+xz.y += side * (1.0 - ea) * uW * 0.4 * sin(a * 3.1416);
+xz.x += sin(uTime * 7.0 + hy * 4.0) * uWob * h;
+wp.xz = xz;
 wp.y = uY0 + max(hy, 0.0);
 vec4 mvPosition = viewMatrix * wp;
 gl_Position = projectionMatrix * mvPosition;`;
@@ -160,14 +170,14 @@ async function story() {
   if (!host) return;
   const S = stage(host);
   const { g, size } = normalize((await loader.loadAsync(MODELS.story)).scene);
-  const U = { uInf: { value: 0 }, uTime: { value: 0 }, uH: { value: size.y }, uWob: { value: 0 }, uY0: { value: 0 } };
+  const U = { uInf: { value: 0 }, uArr: { value: 0 }, uTime: { value: 0 }, uH: { value: size.y }, uW: { value: size.x / 2 }, uWob: { value: 0 }, uY0: { value: 0 } };
   g.traverse((m) => {
     if (!m.isMesh) return;
     m.frustumCulled = false;
     m.material = m.material.clone();
     m.material.onBeforeCompile = (sh) => {
       Object.assign(sh.uniforms, U);
-      sh.vertexShader = "uniform float uInf, uTime, uH, uWob, uY0;\n" + sh.vertexShader.replace("#include <project_vertex>", INFLATE);
+      sh.vertexShader = "uniform float uInf, uArr, uTime, uH, uW, uWob, uY0;\n" + sh.vertexShader.replace("#include <project_vertex>", INFLATE);
     };
     m.material.customProgramCacheKey = () => "inflate";
   });
@@ -180,13 +190,14 @@ async function story() {
   addEventListener("story", (e) => { target = e.detail; S.kick(); });
   S.onTick((t, dt) => {
     aim(S.cam, size, 1.2, 0.1);
-    p += (target - p) * 0.14;
-    const drop = clamp(p / 0.14);
+    p += (target - p) * (1 - Math.exp(-dt * 5));
+    const drop = clamp(p / 0.1);
     const y = (1 - outBounce(drop)) * size.y * 2.4;
     pivot.position.y = y;
     U.uY0.value = y;
     if (drop >= 1 && !landed) { landed = true; j.hit(3); } else if (drop < 0.9) landed = false;
-    const inf = clamp((p - 0.12) / 0.72);
+    U.uArr.value = clamp((p - 0.04) / 0.36);
+    const inf = clamp((p - 0.36) / 0.56);
     U.uInf.value = inf;
     if (inf > 0.97 && !full) { full = true; j.hit(4.5); } else if (inf < 0.8) full = false;
     U.uWob.value = Math.abs(j.s) * size.y * 0.25;
