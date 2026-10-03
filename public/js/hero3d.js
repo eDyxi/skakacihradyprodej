@@ -4,7 +4,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
 
 /* Modely z Meshy: doplnit cestu, null = 2D kreslený hrad */
-const MODELS = { hero: null, story: null };
+const MODELS = { hero: "/assets/3d/017.glb", story: "/assets/3d/034.glb" };
 const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const DPR = Math.min(devicePixelRatio || 1, innerWidth < 700 ? 1.5 : 2);
 const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
