@@ -3,6 +3,8 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
 
+/* Modely z Meshy: doplnit cestu, null = 2D kreslený hrad */
+const MODELS = { hero: null, story: null };
 const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const DPR = Math.min(devicePixelRatio || 1, innerWidth < 700 ? 1.5 : 2);
 const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
@@ -140,8 +142,9 @@ function explode(g, grid = [4, 3, 2]) {
 async function hero() {
   const host = document.querySelector(".hero__art");
   if (!host) return;
+  if (!MODELS.hero) return;
   const S = stage(host);
-  const gltf = await loader.loadAsync("/assets/3d/hrad-3.glb");
+  const gltf = await loader.loadAsync(MODELS.hero);
   const { g, size } = normalize(gltf.scene);
   const pivot = new THREE.Group();
   pivot.add(g, shadow(size));
@@ -170,8 +173,9 @@ async function hero() {
 async function story() {
   const host = document.querySelector(".story__art");
   if (!host) return;
+  if (!MODELS.story) return;
   const S = stage(host);
-  const gltf = await loader.loadAsync("/assets/3d/hrad-2.glb");
+  const gltf = await loader.loadAsync(MODELS.story);
   const { g, size } = normalize(gltf.scene);
   const { group, parts } = explode(g, [3, 2, 2]);
   const pivot = new THREE.Group();
