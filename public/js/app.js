@@ -170,11 +170,11 @@
         .to(body, { scaleY: 1.05, scaleX: 0.97, duration: 0.05 }, 0.9).to(body, { scaleY: 1, scaleX: 1, duration: 0.05 }, 0.95);
       mm.add("(min-width: 861px)", () => {
         ST.create({ trigger: ".story__pin", start: "top top", end: "+=240%", pin: true, scrub: 0.6, animation: tl,
-          onUpdate: (s) => { const i = Math.min(steps.length - 1, Math.floor(s.progress * steps.length)); steps.forEach((li, k) => li.classList.toggle("on", k <= i)); if (gauge) gauge.textContent = Math.round(s.progress * 100) + " %"; } });
+          onUpdate: (s) => { dispatchEvent(new CustomEvent("story", { detail: s.progress })); const i = Math.min(steps.length - 1, Math.floor(s.progress * steps.length)); steps.forEach((li, k) => li.classList.toggle("on", k <= i)); if (gauge) gauge.textContent = Math.round(s.progress * 100) + " %"; } });
       });
       mm.add("(max-width: 860px)", () => {
         steps.forEach((s) => s.classList.add("on"));
-        ST.create({ trigger: sc, start: "top 85%", end: "bottom 35%", scrub: 0.6, animation: tl, onUpdate: (s) => gauge && (gauge.textContent = Math.round(s.progress * 100) + " %") });
+        ST.create({ trigger: sc, start: "top 85%", end: "bottom 35%", scrub: 0.6, animation: tl, onUpdate: (s) => { dispatchEvent(new CustomEvent("story", { detail: s.progress })); if (gauge) gauge.textContent = Math.round(s.progress * 100) + " %"; } });
       });
     }
 
