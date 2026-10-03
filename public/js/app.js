@@ -117,6 +117,51 @@
     const n = $("#nav"); if (!n) return;
     const f = () => n.classList.toggle("is-scrolled", scrollY > 12); f(); addEventListener("scroll", f, { passive: true });
   }
+  /* gumová tečková mřížka reagující na kurzor (klik = vlna) */
+  function dotsBg() {
+    if (RM || !matchMedia("(hover:hover) and (pointer:fine)").matches) return;
+    const c = document.createElement("canvas"); c.className = "dots"; c.setAttribute("aria-hidden", "true"); document.body.prepend(c);
+    document.documentElement.classList.add("has-dots");
+    const x = c.getContext("2d"), GAP = 26, R = 150, cs = getComputedStyle(document.documentElement);
+    const C = { base: cs.getPropertyValue("--sky").trim(), hot: cs.getPropertyValue("--gold").trim(), ink: cs.getPropertyValue("--ink").trim() };
+    let W = 0, H = 0, D = [], mx = -999, my = -999, raf = 0, active = 0, waves = [];
+    function build() {
+      const dpr = Math.min(devicePixelRatio || 1, 2); W = innerWidth; H = innerHeight;
+      c.width = W * dpr; c.height = H * dpr; x.setTransform(dpr, 0, 0, dpr, 0, 0); D = [];
+      for (let yy = GAP / 2; yy < H + GAP; yy += GAP) for (let xx = GAP / 2; xx < W + GAP; xx += GAP) D.push({ ox: xx, oy: yy, x: xx, y: yy, vx: 0, vy: 0, h: 0 });
+      draw();
+    }
+    function draw() {
+      x.clearRect(0, 0, W, H);
+      for (const d of D) {
+        x.globalAlpha = 0.26 + d.h * 0.74; x.fillStyle = d.h > 0.35 ? C.hot : C.base;
+        x.beginPath(); x.arc(d.x, d.y, 1.3 + d.h * 3.4, 0, 6.2832); x.fill();
+        if (d.h > 0.35) { x.lineWidth = 1.4; x.strokeStyle = C.ink; x.stroke(); }
+      }
+      x.globalAlpha = 1;
+    }
+    function step() {
+      raf = 0; let moving = false; const off = (scrollY * 0.12) % GAP;
+      for (const d of D) {
+        const oy = d.oy - off; let tx = d.ox, ty = oy, heat = 0;
+        const dx = d.x - mx, dy = d.y - my, dist = Math.hypot(dx, dy);
+        if (dist < R) { const f = 1 - dist / R, push = f * f * 28; tx += (dx / (dist || 1)) * push; ty += (dy / (dist || 1)) * push; heat = f; }
+        for (const w of waves) { const wx = d.ox - w.x, wy = oy - w.y, wd = Math.hypot(wx, wy), band = Math.abs(wd - w.r); if (band < 40) { const f = (1 - band / 40) * w.a; tx += (wx / (wd || 1)) * f * 22; ty += (wy / (wd || 1)) * f * 22; heat = Math.max(heat, f); } }
+        d.vx = (d.vx + (tx - d.x) * 0.14) * 0.8; d.vy = (d.vy + (ty - d.y) * 0.14) * 0.8; d.x += d.vx; d.y += d.vy; d.h += (heat - d.h) * 0.2;
+        if (Math.abs(d.vx) + Math.abs(d.vy) > 0.02 || d.h > 0.01) moving = true;
+      }
+      waves = waves.filter((w) => ((w.r += 9), (w.a *= 0.965), w.a > 0.03));
+      draw();
+      if (moving || waves.length || active-- > 0) raf = requestAnimationFrame(step);
+    }
+    const kick = () => { active = 20; if (!raf) raf = requestAnimationFrame(step); };
+    addEventListener("pointermove", (e) => { mx = e.clientX; my = e.clientY; kick(); }, { passive: true });
+    addEventListener("pointerdown", (e) => { waves.push({ x: e.clientX, y: e.clientY, r: 0, a: 1 }); kick(); }, { passive: true });
+    addEventListener("scroll", kick, { passive: true });
+    addEventListener("resize", () => { build(); kick(); });
+    document.addEventListener("mouseleave", () => { mx = my = -999; kick(); });
+    build();
+  }
   function seasonal() { $$("[data-season]").forEach((e) => (e.hidden = !season())); }
 
   /* ---------- ÚVOD ---------- */
@@ -168,8 +213,11 @@
         .to(flag, { scale: 1, duration: 0.12, ease: "back.out(3)" }, 0.84)
         .to(body, { scaleY: 1.05, scaleX: 0.97, duration: 0.05 }, 0.9).to(body, { scaleY: 1, scaleX: 1, duration: 0.05 }, 0.95);
       mm.add("(min-width: 861px)", () => {
+        const card = $(".story__card");
+        const qs = g.quickTo(card, "scale", { duration: 0.9, ease: "power3" }), qy = g.quickTo(card, "yPercent", { duration: 0.9, ease: "power3" }), qk = g.quickTo(card, "--k", { duration: 0.9, ease: "power3" });
+        const depth = (p) => { const k = p < 0.12 ? p / 0.12 : p > 0.86 ? (1 - p) / 0.14 : 1, e = k * k * (3 - 2 * k); qs(1 - 0.12 * e); qy(-2.5 * e); qk(e); };
         ST.create({ trigger: ".story__pin", start: "top top", end: "+=320%", pin: true, scrub: 0.6, animation: tl,
-          onUpdate: (s) => { dispatchEvent(new CustomEvent("story", { detail: s.progress })); const i = Math.min(steps.length - 1, Math.floor(s.progress * steps.length)); steps.forEach((li, k) => li.classList.toggle("on", k <= i)); if (gauge) gauge.textContent = Math.round(s.progress * 100) + " %"; } });
+          onUpdate: (s) => { depth(s.progress); dispatchEvent(new CustomEvent("story", { detail: s.progress })); const i = Math.min(steps.length - 1, Math.floor(s.progress * steps.length)); steps.forEach((li, k) => li.classList.toggle("on", k <= i)); if (gauge) gauge.textContent = Math.round(s.progress * 100) + " %"; } });
       });
       mm.add("(max-width: 860px)", () => {
         steps.forEach((s) => s.classList.add("on"));
@@ -350,7 +398,7 @@
     });
   }
 
-  badge(); navState(); seasonal(); cursor();
+  badge(); navState(); seasonal(); cursor(); dotsBg();
   ({ home, katalog, detail, kosik })[PAGE]?.();
   reveal();
 })();

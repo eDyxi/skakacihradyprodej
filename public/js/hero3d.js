@@ -96,7 +96,8 @@ async function hero() {
   const G = size.y * 14, j = jelly();
   let phase = RM ? "idle" : "fall", clock = 0, hy = 0, hv = 0, nextHop = 0, yaw = -0.35, drag = null, spin = 0;
   const startY = -(host.getBoundingClientRect().bottom + 120);
-  const FALL = 0.62;
+  const FALL = 0.95;
+  S.r.compile(S.scene, S.cam);
   if (!RM) { host.style.transform = `translateY(${startY}px)`; S.force = true; }
 
   const cv = host.querySelector(".c3d");
@@ -109,19 +110,19 @@ async function hero() {
   cv.addEventListener("dblclick", () => { if (phase === "idle") { hv = size.y * 2.4; phase = "air"; } });
 
   S.onTick((t, dt) => {
-    aim(S.cam, size, 1.02, 0.18);
+    aim(S.cam, size, 0.92, 0.12);
     clock += dt;
     const s = clock;
     if (phase === "fall") {
       const k = clamp(s / FALL);
       host.style.transform = `translateY(${(startY * (1 - k * k)).toFixed(1)}px)`;
-      j.s = 0.14 * k; /* protažení v letu */
-      if (k >= 1) { host.style.transform = ""; S.force = false; phase = "air"; j.hit(5.2); hv = size.y * 2.1; }
+      j.s = 0.08 * k * k; /* protažení v letu */
+      if (k >= 1) { host.style.transform = ""; S.force = false; phase = "air"; j.hit(3.6); hv = size.y * 1.5; }
     } else if (phase === "air") {
       hv -= G * dt; hy += hv * dt;
       if (hy <= 0 && hv < 0) {
         const imp = Math.min(4.2, (-hv / size.y) * 1.6);
-        hy = 0; j.hit(imp); hv = -hv * 0.42;
+        hy = 0; j.hit(imp * 0.8); hv = -hv * 0.4;
         if (hv < size.y * 0.45) { hv = 0; phase = "idle"; nextHop = s + 2.6; }
       }
     } else if (!RM && s > nextHop && drag === null) { hv = size.y * 0.95; phase = "air"; nextHop = s + 3.2; }
@@ -141,70 +142,64 @@ async function hero() {
 /* ---------- PŘÍBĚH: přiletí sbalený a opravdu se nafoukne ---------- */
 const INFLATE = /* glsl */ `
 vec4 wp = modelMatrix * vec4(transformed, 1.0);
-float hy = wp.y - uY0;
+float hy = wp.y;
 float h = clamp(hy / uH, 0.0, 1.0);
-vec2 xz = wp.xz;
-vec2 dir = xz / (length(xz) + 1e-4);
-float t = clamp(uInf * 1.5 - h * 0.5, 0.0, 1.0);
+vH = h;
+float t = clamp(uInf * 1.45 - h * 0.45, 0.0, 1.0);
 float u = t - 1.0;
-float e = 1.0 + 2.7 * u * u * u + 1.7 * u * u;
+float e = 1.0 + 2.4 * u * u * u + 1.4 * u * u;
 float fl = 1.0 - clamp(e, 0.0, 1.0);
-xz += dir * fl * hy * 0.6;
-float wr = sin(wp.x * 9.0 + uTime * 0.8) * sin(wp.z * 8.0 - uTime * 0.6);
-hy = hy * mix(0.07, 1.0, e) + wr * 0.03 * uH * fl + fl * h * 0.03 * uH;
-float xn = clamp(wp.x / uW, -1.0, 1.0);
-float side = smoothstep(0.28, 0.36, abs(xn));
-float a = clamp((uArr - (1.0 - step(0.0, xn)) * 0.25) / 0.75, 0.0, 1.0);
-float ua = a - 1.0;
-float ea = 1.0 + 2.4 * ua * ua * ua + 1.4 * ua * ua;
-xz.x += sign(xn) * side * (1.0 - ea) * uW * 2.6;
-xz.y += side * (1.0 - ea) * uW * 0.4 * sin(a * 3.1416);
+vec2 xz = wp.xz;
+xz *= 1.0 + 0.16 * fl + 0.025 * sin(uTime * 5.0) * fl;
+float wr = sin(wp.x * 9.0 + uTime * 0.7) * sin(wp.z * 8.0 - uTime * 0.5);
+hy = hy * mix(0.05, 1.0, e) + wr * 0.012 * uH * fl;
 xz.x += sin(uTime * 7.0 + hy * 4.0) * uWob * h;
 wp.xz = xz;
-wp.y = uY0 + max(hy, 0.0);
+wp.y = max(hy, 0.0);
 vec4 mvPosition = viewMatrix * wp;
 gl_Position = projectionMatrix * mvPosition;`;
+/* barvy se „nalijí“ zespodu nahoru, do té doby je placka červená */
+const TINT = /* glsl */ `
+#include <map_fragment>
+float rv = 1.0 - smoothstep(uCol - 0.12, uCol, vH);
+diffuseColor.rgb = mix(vec3(0.62, 0.035, 0.03), diffuseColor.rgb, rv);`;
 
 async function story() {
   const host = document.querySelector(".story__art");
   if (!host) return;
   const S = stage(host);
   const { g, size } = normalize((await loader.loadAsync(MODELS.story)).scene);
-  const U = { uInf: { value: 0 }, uArr: { value: 0 }, uTime: { value: 0 }, uH: { value: size.y }, uW: { value: size.x / 2 }, uWob: { value: 0 }, uY0: { value: 0 } };
+  const U = { uInf: { value: 0 }, uCol: { value: 0 }, uTime: { value: 0 }, uH: { value: size.y }, uWob: { value: 0 } };
   g.traverse((m) => {
     if (!m.isMesh) return;
     m.frustumCulled = false;
     m.material = m.material.clone();
     m.material.onBeforeCompile = (sh) => {
       Object.assign(sh.uniforms, U);
-      sh.vertexShader = "uniform float uInf, uArr, uTime, uH, uW, uWob, uY0;\n" + sh.vertexShader.replace("#include <project_vertex>", INFLATE);
+      sh.vertexShader = "uniform float uInf, uTime, uH, uWob;\nvarying float vH;\n" + sh.vertexShader.replace("#include <project_vertex>", INFLATE);
+      sh.fragmentShader = "uniform float uCol;\nvarying float vH;\n" + sh.fragmentShader.replace("#include <map_fragment>", TINT);
     };
-    m.material.customProgramCacheKey = () => "inflate";
+    m.material.customProgramCacheKey = () => "inflate2";
   });
   const pivot = new THREE.Group(), sh = shadow(size);
   pivot.add(g, sh);
   S.scene.add(pivot);
   host.classList.add("is3d");
-  const j = jelly(200, 6.5);
-  let target = RM ? 1 : 0, p = target, landed = false, full = false;
+  const j = jelly(170, 5.5);
+  let target = RM ? 1 : 0, p = target, full = false;
   addEventListener("story", (e) => { target = e.detail; S.kick(); });
   S.onTick((t, dt) => {
-    aim(S.cam, size, 1.2, 0.1);
-    p += (target - p) * (1 - Math.exp(-dt * 5));
-    const drop = clamp(p / 0.1);
-    const y = (1 - outBounce(drop)) * size.y * 2.4;
-    pivot.position.y = y;
-    U.uY0.value = y;
-    if (drop >= 1 && !landed) { landed = true; j.hit(3); } else if (drop < 0.9) landed = false;
-    U.uArr.value = clamp((p - 0.04) / 0.36);
-    const inf = clamp((p - 0.36) / 0.56);
+    aim(S.cam, size, 1.4, 0.05);
+    p += (target - p) * (1 - Math.exp(-dt * 4));
+    const inf = clamp((p - 0.06) / 0.8);
     U.uInf.value = inf;
-    if (inf > 0.97 && !full) { full = true; j.hit(4.5); } else if (inf < 0.8) full = false;
-    U.uWob.value = Math.abs(j.s) * size.y * 0.25;
+    U.uCol.value = clamp((inf - 0.12) / 0.4) * 1.15;
+    if (inf > 0.97 && !full) { full = true; j.hit(4); } else if (inf < 0.85) full = false;
+    U.uWob.value = Math.abs(j.s) * size.y * 0.22;
     U.uTime.value = t / 1000;
-    squash(g, j.step(dt) * 0.8);
-    sh.material.opacity = clamp(1 - y / size.y);
-    pivot.rotation.y = RM ? -0.3 : -0.3 + Math.sin(t / 2500) * 0.25;
+    squash(g, j.step(dt) * 0.7);
+    sh.material.opacity = 0.5 + inf * 0.5;
+    pivot.rotation.y = RM ? -0.3 : -0.3 + Math.sin(t / 2800) * 0.2;
   });
   S.kick();
 }
