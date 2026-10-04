@@ -49,7 +49,7 @@
   <div class="card__body"><h3><a class="card__lnk" href="/hrad.html?id=${h.id}">${h.n}</a></h3>
   <p class="card__meta">${TYP[h.t]} · ${size(h)} · výška ${num(h.h)} m</p>
   <div class="card__foot"><span class="card__price">${kc(h.p)}</span>
-  <button class="card__add${cart.has(h.id) ? " done" : ""}" type="button" data-add="${h.id}" aria-label="Přidat ${h.n} do poptávky">${cart.has(h.id) ? I.ok : I.plus}</button></div></div></article>`;
+  <button class="card__add${cart.has(h.id) ? " done" : ""}" type="button" data-add="${h.id}" aria-label="${cart.has(h.id) ? "V poptávce – otevřít" : "Přidat " + h.n + " do poptávky"}">${cart.has(h.id) ? I.ok + "<span>V poptávce</span>" : I.plus + "<span>Do poptávky</span>"}</button></div></div></article>`;
 
   document.addEventListener("click", (e) => {
     const b = e.target.closest("[data-add]");
@@ -58,7 +58,7 @@
     const id = +b.dataset.add;
     if (cart.has(id)) { location.href = "/kosik.html"; return; }
     cart.add(id, byId[id]?.fi ? 0 : 0);
-    b.classList.add("done"); b.innerHTML = I.ok; b.setAttribute("aria-label", "Přidáno – otevřít poptávku");
+    b.classList.add("done"); b.innerHTML = I.ok + "<span>V poptávce</span>"; b.setAttribute("aria-label", "V poptávce – otevřít");
     badge(true);
   });
 
@@ -117,16 +117,18 @@
     const n = $("#nav"); if (!n) return;
     const f = () => n.classList.toggle("is-scrolled", scrollY > 12); f(); addEventListener("scroll", f, { passive: true });
   }
-  /* gumová tečková mřížka reagující na kurzor (klik = vlna) */
-  function dotsBg() {
-    if (RM || !matchMedia("(hover:hover) and (pointer:fine)").matches) return;
-    const c = document.createElement("canvas"); c.className = "dots"; c.setAttribute("aria-hidden", "true"); document.body.prepend(c);
-    document.documentElement.classList.add("has-dots");
+  /* gumová tečková mřížka reagující na kurzor (klik = vlna); host = lokálně v sekci */
+  const FINE = matchMedia("(hover:hover) and (pointer:fine)").matches;
+  function dotsBg(host) {
+    if (RM || !FINE) return;
+    const c = document.createElement("canvas"); c.className = host ? "dots dots--local" : "dots"; c.setAttribute("aria-hidden", "true");
+    host ? host.prepend(c) : (document.body.prepend(c), document.documentElement.classList.add("has-dots"));
     const x = c.getContext("2d"), GAP = 26, R = 150, cs = getComputedStyle(document.documentElement);
     const C = { base: cs.getPropertyValue("--sky").trim(), hot: cs.getPropertyValue("--gold").trim(), ink: cs.getPropertyValue("--ink").trim() };
     let W = 0, H = 0, D = [], mx = -999, my = -999, raf = 0, active = 0, waves = [];
+    const rect = () => (host ? host.getBoundingClientRect() : { left: 0, top: 0, width: W });
     function build() {
-      const dpr = Math.min(devicePixelRatio || 1, 2); W = innerWidth; H = innerHeight;
+      const dpr = Math.min(devicePixelRatio || 1, 2); W = host ? host.offsetWidth : innerWidth; H = host ? host.offsetHeight : innerHeight;
       c.width = W * dpr; c.height = H * dpr; x.setTransform(dpr, 0, 0, dpr, 0, 0); D = [];
       for (let yy = GAP / 2; yy < H + GAP; yy += GAP) for (let xx = GAP / 2; xx < W + GAP; xx += GAP) D.push({ ox: xx, oy: yy, x: xx, y: yy, vx: 0, vy: 0, h: 0 });
       draw();
@@ -141,7 +143,7 @@
       x.globalAlpha = 1;
     }
     function step() {
-      raf = 0; let moving = false; const off = (scrollY * 0.12) % GAP;
+      raf = 0; let moving = false; const off = host ? 0 : (scrollY * 0.12) % GAP;
       for (const d of D) {
         const oy = d.oy - off; let tx = d.ox, ty = oy, heat = 0;
         const dx = d.x - mx, dy = d.y - my, dist = Math.hypot(dx, dy);
@@ -155,13 +157,100 @@
       if (moving || waves.length || active-- > 0) raf = requestAnimationFrame(step);
     }
     const kick = () => { active = 20; if (!raf) raf = requestAnimationFrame(step); };
-    addEventListener("pointermove", (e) => { mx = e.clientX; my = e.clientY; kick(); }, { passive: true });
-    addEventListener("pointerdown", (e) => { waves.push({ x: e.clientX, y: e.clientY, r: 0, a: 1 }); kick(); }, { passive: true });
-    addEventListener("scroll", kick, { passive: true });
-    addEventListener("resize", () => { build(); kick(); });
+    const pos = (e) => { const r = rect(), k = host && r.width ? W / r.width : 1; return [(e.clientX - r.left) * k, (e.clientY - r.top) * k]; };
+    addEventListener("pointermove", (e) => { [mx, my] = pos(e); kick(); }, { passive: true });
+    addEventListener("pointerdown", (e) => { const [px, py] = pos(e); if (px >= 0 && py >= 0 && px <= W && py <= H) { waves.push({ x: px, y: py, r: 0, a: 1 }); kick(); } }, { passive: true });
+    if (!host) addEventListener("scroll", kick, { passive: true });
+    host ? new ResizeObserver(() => { build(); kick(); }).observe(host) : addEventListener("resize", () => { build(); kick(); });
     document.addEventListener("mouseleave", () => { mx = my = -999; kick(); });
     build();
   }
+
+  /* gumové struny se žlutou září – tmavá sekce Nejžádanější */
+  function strings(sec) {
+    if (!sec || RM || !FINE) return;
+    const c = document.createElement("canvas"); c.className = "strings"; c.setAttribute("aria-hidden", "true"); sec.prepend(c);
+    const x = c.getContext("2d"), cs = getComputedStyle(document.documentElement);
+    const GOLD = cs.getPropertyValue("--gold").trim(), SKY = cs.getPropertyValue("--sky-2").trim();
+    let W = 0, H = 0, L = [], mx = -999, my = -999, pmx = -999, pmy = -999, gx = 78, gy = 18, vis = false, raf = 0;
+    const SEG = 26;
+    function build() {
+      const dpr = Math.min(devicePixelRatio || 1, 2); W = sec.offsetWidth; H = sec.offsetHeight;
+      c.width = W * dpr; c.height = H * dpr; x.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const n = Math.max(10, Math.round(H / 46)); L = [];
+      for (let i = 0; i < n; i++) { const y0 = (H / (n + 1)) * (i + 1), P = []; for (let px = -SEG; px <= W + SEG; px += SEG) P.push({ x: px, y: 0, v: 0 }); L.push({ y0, P, glow: 0 }); }
+    }
+    function step(t) {
+      raf = 0; if (!vis) return;
+      const r = sec.getBoundingClientRect(), lx = mx - r.left, ly = my - r.top, plx = pmx - r.left, ply = pmy - r.top;
+      x.clearRect(0, 0, W, H);
+      for (const [k, s] of L.entries()) {
+        const P = s.P; let near = 0;
+        for (let i = 1; i < P.length - 1; i++) {
+          const p = P[i];
+          let f = (P[i - 1].y + P[i + 1].y - 2 * p.y) * 0.32 - p.y * 0.012;
+          const dx = p.x - lx, dy = s.y0 + p.y - ly, d = Math.hypot(dx, dy);
+          if (d < 120) { f += (dy / (d || 1)) * (1 - d / 120) * 3.2; near = Math.max(near, 1 - d / 120); }
+          /* „brnknutí“ při přejetí přes strunu */
+          if ((ply - s.y0) * (ly - s.y0) < 0 && Math.abs(p.x - lx) < 30) p.v += (ly - ply) * 0.35;
+          p.v = (p.v + f) * 0.955; 
+        }
+        for (const p of P) p.y += p.v;
+        s.glow += (near - s.glow) * 0.15;
+        const wob = Math.sin(t / 900 + k * 0.7) * 5;
+        x.beginPath();
+        P.forEach((p, i) => { const yy = s.y0 + p.y + Math.sin(p.x / 140 + t / 1100 + k) * wob * 0.6; i ? x.lineTo(p.x, yy) : x.moveTo(p.x, yy); });
+        const gr = x.createLinearGradient(0, 0, W, 0);
+        gr.addColorStop(0, SKY); gr.addColorStop(0.5, GOLD); gr.addColorStop(1, SKY);
+        x.strokeStyle = gr; x.globalAlpha = 0.22 + s.glow * 0.7; x.lineWidth = 1.6 + s.glow * 2.6; x.stroke();
+      }
+      x.globalAlpha = 1; pmx = mx; pmy = my;
+      if (lx > 0 && ly > 0) { gx += ((lx / W) * 100 - gx) * 0.06; gy += ((ly / H) * 100 - gy) * 0.06; sec.style.setProperty("--gx", gx.toFixed(1) + "%"); sec.style.setProperty("--gy", gy.toFixed(1) + "%"); }
+      raf = requestAnimationFrame(step);
+    }
+    addEventListener("pointermove", (e) => { mx = e.clientX; my = e.clientY; }, { passive: true });
+    new IntersectionObserver(([e]) => { vis = e.isIntersecting; if (vis && !raf) raf = requestAnimationFrame(step); }).observe(sec);
+    new ResizeObserver(build).observe(sec);
+    build();
+  }
+
+  /* témata: jeden hrad uprostřed, po kliknutí gumově vystřelí ostatní */
+  const THEME_PIC = { klasika: 17, postavicky: 54, princezny: 90, zvirata: 9, more: 57, pohadky: 102, sport: 61, auta: 34 };
+  function burst() {
+    const b = $("#burst"); if (!b) return;
+    const ul = $("#burst-items"), core = $(".burst__core", b);
+    const T = Object.entries(TH).filter(([k]) => H.some((h) => h.th === k));
+    ul.innerHTML = T.map(([k, [n, c]], i) => `<li><a class="bub" href="/katalog.html?th=${k}" style="--c:${c};--d:${(i * 0.055).toFixed(3)}s" tabindex="-1"><img src="${img(byId[THEME_PIC[k]])}" alt="" width="140" height="140" loading="lazy"><b>${n}</b><i>${H.filter((h) => h.th === k).length}</i></a></li>`).join("");
+    const place = () => {
+      const w = b.offsetWidth, hh = b.offsetHeight, rx = Math.min(w * 0.4, 430), ry = Math.min(hh * 0.36, 240);
+      $$(".bub", ul).forEach((a, i) => { const ang = -Math.PI / 2 + (i / T.length) * Math.PI * 2; a.style.setProperty("--x", (Math.cos(ang) * rx).toFixed(0) + "px"); a.style.setProperty("--y", (Math.sin(ang) * ry).toFixed(0) + "px"); });
+    };
+    place(); new ResizeObserver(place).observe(b);
+    core.addEventListener("click", () => {
+      const open = !b.classList.contains("open");
+      b.classList.remove("closing");
+      if (open) { b.classList.add("open"); } else { b.classList.remove("open"); b.classList.add("closing"); setTimeout(() => b.classList.remove("closing"), 340); }
+      core.setAttribute("aria-expanded", open); core.querySelector("b").textContent = open ? "Zavřít" : "Vyber svět";
+      $$(".bub", ul).forEach((a) => (a.tabIndex = open ? 0 : -1));
+    });
+  }
+
+  /* účtenka: tisk podle průběhu 0–1 */
+  function receipt() {
+    const rc = $(".rc"); if (!rc) return null;
+    const lines = $$(".rc__lines li", rc), pr = $(".printer"), sec = $(".receipt");
+    let last = -1, tmo = 0;
+    return (p) => {
+      const feed = Math.min(1, p / 0.82);
+      rc.style.setProperty("--p", feed.toFixed(4));
+      sec.style.setProperty("--feed", (p * 2400).toFixed(0) + "px");
+      lines.forEach((li, i) => li.classList.toggle("on", feed > 0.12 + (i / lines.length) * 0.82));
+      rc.classList.toggle("stamped", p > 0.9);
+      if (Math.abs(p - last) > 0.002 && p < 0.86) { pr.classList.add("printing"); clearTimeout(tmo); tmo = setTimeout(() => pr.classList.remove("printing"), 180); }
+      last = p;
+    };
+  }
+
   function seasonal() { $$("[data-season]").forEach((e) => (e.hidden = !season())); }
 
   /* ---------- ÚVOD ---------- */
@@ -171,18 +260,15 @@
     const track = $("#rail-track");
     if (track) track.innerHTML = FEATURED.filter((i) => byId[i]).map((i) => card(byId[i])).join("") +
       `<div class="rail__end"><div><p>Dalších ${H.length - FEATURED.length} modelů v katalogu</p><a class="btn" href="/katalog.html">Celý katalog ${I.arrow}</a></div></div>`;
-    const th = $("#themes");
-    if (th) th.innerHTML = Object.entries(TH).map(([k, [n, c]]) => {
-      const cnt = H.filter((h) => h.th === k).length;
-      return cnt ? `<a class="theme" href="/katalog.html?th=${k}" style="--c:${c}"><i>${cnt}</i>${n}</a>` : "";
-    }).join("");
+    burst(); strings($("#nejzadanejsi")); dotsBg($(".story__card")); dotsBg($(".receipt__card"));
+    const printAt = receipt();
     setTimeout(() => { if (!window.__3d) $$(".hero__art, .story__art").forEach((e) => e.classList.add("no3d")); }, 6000);
     const cnt = $("[data-count]"); if (cnt) cnt.textContent = H.length;
     const minP = $("[data-min-price]"); if (minP) minP.textContent = kc(Math.min(...H.map((h) => h.p)));
 
     const g = window.gsap, ST = window.ScrollTrigger;
     const steps = $$(".story__steps li");
-    if (!g || !ST || RM) { steps.forEach((s) => s.classList.add("on")); $("#rail")?.classList.add("rail--native"); return; }
+    if (!g || !ST || RM) { steps.forEach((s) => s.classList.add("on")); $("#rail")?.classList.add("rail--native"); printAt?.(1); return; }
     g.registerPlugin(ST);
     if (window.Lenis) { const l = new Lenis({ lerp: 0.12 }); l.on("scroll", ST.update); g.ticker.add((t) => l.raf(t * 1000)); g.ticker.lagSmoothing(0); }
 
@@ -238,8 +324,18 @@
     mm.add("(max-width: 899px)", () => { rail.classList.add("rail--native"); return () => rail.classList.remove("rail--native"); });
 
     /* témata a cenovka */
-    ST.batch(".theme", { onEnter: (b) => g.from(b, { scale: 0.4, rotation: () => g.utils.random(-14, 14), opacity: 0, stagger: 0.06, ease: "back.out(2.2)", duration: 0.7 }), once: true });
-    g.from(".tag", { rotation: 8, y: 60, opacity: 0, ease: "back.out(1.6)", duration: 0.9, scrollTrigger: { trigger: ".tag", start: "top 80%" } });
+    /* účtenka: zamknout scroll a tisknout; karta se oddálí jako u nafukování */
+    if (printAt) {
+      mm.add("(min-width: 861px)", () => {
+        const card = $(".receipt__card");
+        const qx = g.quickTo(card, "scaleX", { duration: 0.9, ease: "power3" }), qy2 = g.quickTo(card, "scaleY", { duration: 0.9, ease: "power3" }), qk = g.quickTo(card, "--k", { duration: 0.9, ease: "power3" });
+        ST.create({ trigger: ".receipt__pin", start: "top top", end: "+=200%", pin: true, scrub: 0.4,
+          onUpdate: (s) => { const p = s.progress, k = p < 0.1 ? p / 0.1 : p > 0.9 ? (1 - p) / 0.1 : 1, e = k * k * (3 - 2 * k); qx(1 - 0.1 * e); qy2(1 - 0.1 * e); qk(e); printAt(p); } });
+      });
+      mm.add("(max-width: 860px)", () => {
+        ST.create({ trigger: ".printer", start: "top 75%", once: true, onEnter: () => { const o = { p: 0 }; g.to(o, { p: 1, duration: 2.6, ease: "none", onUpdate: () => printAt(o.p) }); } });
+      });
+    }
     g.from(".foot__word span", { yPercent: 60, rotation: (i) => (i ? 4 : -4), opacity: 0, stagger: 0.12, ease: "back.out(2)", duration: 0.8, scrollTrigger: { trigger: ".foot", start: "top 85%" } });
     addEventListener("load", () => ST.refresh());
   }

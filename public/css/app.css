@@ -380,3 +380,77 @@ input[type=range]{width:100%;accent-color:var(--purple)}
 /* interaktivní gumová tečková mřížka */
 .has-dots body{background-image:none}
 .dots{position:fixed;inset:0;z-index:-1;width:100%;height:100%;pointer-events:none}
+
+/* ===== karty: výrazné objednání ===== */
+.card__foot{flex-wrap:wrap;gap:8px 10px;margin:auto -18px -18px;padding:12px 14px 12px 18px;background:var(--gold);border-top:var(--line) solid var(--ink)}
+.card__price{font-size:1.25rem;color:var(--ink)}
+.card__add{width:auto;height:auto;min-height:44px;padding:0 14px 0 10px;gap:6px;display:inline-flex;align-items:center;border-radius:99px;background:var(--navy);color:var(--card);font:800 .95rem/1 var(--f-d);box-shadow:3px 3px 0 var(--ink);transition:transform .35s var(--bounce),background .2s,box-shadow .2s}
+.card__add svg{width:18px;height:18px}
+.card__add:hover{transform:scale(1.07) rotate(-2deg);background:var(--purple);box-shadow:5px 5px 0 var(--ink)}
+.card__add:active{transform:scale(.94,1.06)}
+.card__add.done{background:var(--green);color:var(--ink)}
+.card:hover .card__foot{background:var(--gold-2)}
+
+/* ===== Nejžádanější: gradient + gumové struny ===== */
+#nejzadanejsi{position:relative;overflow:hidden;--gx:78%;--gy:18%;background:radial-gradient(55% 75% at var(--gx) var(--gy),color-mix(in srgb,var(--gold) 55%,transparent),transparent 62%),radial-gradient(40% 60% at 8% 92%,color-mix(in srgb,var(--purple) 70%,transparent),transparent 70%),linear-gradient(165deg,var(--navy),#241a52)}
+#nejzadanejsi>.wrap{position:relative;z-index:1}
+.strings{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+
+/* ===== témata: výbuch z jednoho hradu ===== */
+.burst{position:relative;height:clamp(520px,62vw,680px);display:grid;place-items:center}
+.burst__core{position:relative;z-index:3;display:grid;justify-items:center;gap:6px;width:clamp(170px,20vw,220px);aspect-ratio:1;padding:12px;border:var(--line) solid var(--ink);border-radius:50%;background:var(--gold);box-shadow:var(--sh);cursor:pointer;animation:breathe 2.4s var(--ease) infinite;transition:transform .5s var(--bounce)}
+.burst__core img{width:72%;height:auto;border-radius:50%;border:var(--line) solid var(--ink);background:var(--card)}
+.burst__core b{font:800 1.15rem/1 var(--f-d)}
+.burst__core:hover{transform:scale(1.06,.95)}
+.burst.open .burst__core{animation:none;transform:scale(.86) rotate(-6deg);background:var(--card)}
+@keyframes breathe{0%,100%{transform:scale(1)}45%{transform:scale(1.05,.96)}60%{transform:scale(.97,1.04)}}
+.burst__hint{position:absolute;left:50%;top:calc(50% + clamp(100px,11vw,128px));transform:translateX(-50%) rotate(-4deg);margin:0;transition:opacity .3s}
+.burst.open .burst__hint{opacity:0}
+.burst__items{list-style:none;margin:0;padding:0;position:absolute;inset:0;pointer-events:none}
+.burst__items li{position:absolute;left:50%;top:50%;width:0;height:0}
+.bub{--s:clamp(104px,12vw,140px);position:absolute;left:calc(var(--s) / -2);top:calc(var(--s) / -2);width:var(--s);display:grid;justify-items:center;gap:6px;text-decoration:none;transform:translate(0,0) scale(0);opacity:0;pointer-events:none}
+.bub img{width:var(--s);height:var(--s);object-fit:cover;border-radius:50%;border:var(--line) solid var(--ink);box-shadow:var(--sh-sm);background:var(--card);transition:transform .45s var(--bounce)}
+.bub b{font:800 .98rem/1.1 var(--f-d);background:var(--card);border:2px solid var(--ink);border-radius:99px;padding:6px 10px 4px;text-align:center;white-space:nowrap}
+.bub i{position:absolute;top:-6px;right:-2px;display:grid;place-items:center;min-width:34px;height:34px;padding:0 6px;border-radius:99px;background:var(--c);border:2px solid var(--ink);font:800 .9rem/1 var(--f-d);font-style:normal}
+.bub:hover img{transform:scale(1.1,.92) rotate(-4deg)}
+.burst.open .burst__items{pointer-events:auto}
+.burst.open .bub{pointer-events:auto;animation:pop .95s var(--d,0s) both}
+.burst.closing .bub{animation:unpop .32s both}
+@keyframes pop{0%{transform:translate(0,0) scale(.2,.2);opacity:0}45%{opacity:1}60%{transform:translate(calc(var(--x)*1.12),calc(var(--y)*1.12)) scale(1.12,.86)}78%{transform:translate(calc(var(--x)*.96),calc(var(--y)*.96)) scale(.94,1.07)}90%{transform:translate(calc(var(--x)*1.01),calc(var(--y)*1.01)) scale(1.02,.98)}100%{transform:translate(var(--x),var(--y)) scale(1);opacity:1}}
+@keyframes unpop{from{transform:translate(var(--x),var(--y)) scale(1);opacity:1}to{transform:translate(0,0) scale(.2);opacity:0}}
+
+/* ===== hloubka (sdílená) + lokální tečky ===== */
+.depth{--k:0;position:relative;width:100%;min-height:100svh;display:grid;align-items:center;background:var(--paper);transform-origin:50% 45%;border-radius:calc(var(--k) * 40px);box-shadow:0 calc(var(--k) * 30px) calc(var(--k) * 60px) color-mix(in srgb,var(--ink) 45%,transparent);outline:calc(var(--k) * 3px) solid var(--ink);overflow:hidden}
+.story__card{background-image:none}
+.depth>.wrap,.story__card>.wrap{position:relative;z-index:1}
+.dots--local{position:absolute;inset:0;z-index:0;width:100%;height:100%;pointer-events:none}
+
+/* ===== účtenka z tiskárny ===== */
+.receipt{--feed:0px;background:linear-gradient(160deg,var(--gold),var(--gold-2));background-image:repeating-linear-gradient(0deg,transparent 0 22px,color-mix(in srgb,var(--ink) 18%,transparent) 22px 24px),linear-gradient(160deg,var(--gold),var(--gold-2));background-position:0 var(--feed),0 0}
+.receipt__pin{min-height:100svh;display:grid;place-items:center;overflow:hidden}
+.receipt .deal{align-items:center;padding:calc(var(--nav-h) + 12px) 0 40px}
+.printer{position:relative;width:min(100%,380px);justify-self:center}
+.printer__body{position:relative;z-index:2;height:86px;border:var(--line) solid var(--ink);border-radius:26px 26px 14px 14px;background:var(--navy);box-shadow:var(--sh);display:flex;align-items:center;justify-content:center;color:var(--sky-2);font:800 .8rem/1 var(--f-d);letter-spacing:.12em}
+.printer__body::after{content:"";position:absolute;left:24px;right:24px;bottom:12px;height:8px;border-radius:99px;background:var(--ink)}
+.printer__led{position:absolute;right:18px;top:14px;width:12px;height:12px;border-radius:50%;background:var(--green);border:2px solid var(--ink)}
+.printer.printing .printer__led{background:var(--gold);animation:blink .2s steps(2) infinite}
+.printer.printing .printer__body{animation:buzz .12s linear infinite}
+@keyframes blink{50%{opacity:.3}}
+@keyframes buzz{25%{transform:translate(.6px,-.6px)}75%{transform:translate(-.6px,.6px)}}
+.printer__slot{position:relative;z-index:1;margin:-20px 24px 0;overflow:hidden;padding-bottom:14px}
+.rc{--p:0;position:relative;background:var(--card);border-inline:2px solid var(--ink);padding:30px 18px 26px;font:600 .88rem/1.35 ui-monospace,"SF Mono",Menlo,Consolas,monospace;color:var(--ink);transform:translateY(calc((1 - var(--p)) * -100%));clip-path:polygon(0 0,100% 0,100% calc(100% - 10px),95% 100%,90% calc(100% - 10px),85% 100%,80% calc(100% - 10px),75% 100%,70% calc(100% - 10px),65% 100%,60% calc(100% - 10px),55% 100%,50% calc(100% - 10px),45% 100%,40% calc(100% - 10px),35% 100%,30% calc(100% - 10px),25% 100%,20% calc(100% - 10px),15% 100%,10% calc(100% - 10px),5% 100%,0 calc(100% - 10px))}
+.rc__head{margin:0 0 14px;text-align:center;font:800 1.15rem/1.1 var(--f-d);letter-spacing:.06em}
+.rc__head small{display:block;font:600 .78rem/1.4 ui-monospace,Menlo,monospace;color:var(--ink-2);letter-spacing:0}
+.rc__lines{list-style:none;margin:0;padding:12px 0 0;border-top:2px dashed var(--ink-2);display:grid;gap:7px}
+.rc__lines li{display:flex;align-items:baseline;gap:6px;clip-path:inset(0 100% 0 0);transition:clip-path .28s steps(14)}
+.rc__lines li.on{clip-path:inset(0 0 0 0)}
+.rc__lines li span{flex:none}
+.rc__lines li::after{content:"";order:1;flex:1;border-bottom:2px dotted color-mix(in srgb,var(--ink) 45%,transparent);transform:translateY(-4px)}
+.rc__lines li b{order:2;flex:none;font-weight:800}
+.rc__sep{margin-top:6px;padding-top:10px;border-top:2px dashed var(--ink-2)}
+.rc__total{margin-top:4px;padding-top:10px;border-top:3px double var(--ink);font-size:1rem}
+.rc__bar{height:38px;margin:16px 8px 6px;background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 4px,var(--ink) 4px 7px,transparent 7px 9px,var(--ink) 9px 10px,transparent 10px 13px)}
+.rc__thanks{margin:0;text-align:center;font:700 1.3rem/1 var(--f-h);color:var(--purple)}
+.rc__stamp{position:absolute;right:8px;top:64px;margin:0;padding:8px 12px 6px;border:3px solid var(--red);border-radius:12px;color:var(--red);font:800 1.15rem/1 var(--f-d);letter-spacing:.06em;transform:rotate(-14deg) scale(2.4);opacity:0;transition:transform .45s var(--bounce),opacity .2s}
+.rc.stamped .rc__stamp{opacity:.9;transform:rotate(-14deg) scale(1)}
+@media (max-width:860px){.receipt__pin,.receipt .depth{min-height:auto}.receipt .deal{padding:72px 0}}

@@ -3,7 +3,7 @@
 <meta property="og:title" content="Skákací hrady na prodej – výroba na míru | Agentura Marco"><meta property="og:description" content="Prodej skákacích hradů, skluzavek a nafukovacích atrakcí. 116 modelů, PVC 0,55 mm, EN 14960, úpravy na míru a logo v ceně."><meta property="og:image" content="/assets/hrady/034.webp">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M8 58V26l8-14 8 14v8h16v-8l8-14 8 14v32z' fill='%2338B6FF' stroke='%231E2A44' stroke-width='4' stroke-linejoin='round'/%3E%3Crect x='20' y='40' width='24' height='18' rx='6' fill='%23FFD23F' stroke='%231E2A44' stroke-width='4'/%3E%3C/svg%3E"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Caveat:wght@700&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/css/app.css?v=20261003g"></head><body data-page="home"><a class="sr" href="#main">Přeskočit na obsah</a>
+<link rel="stylesheet" href="/css/app.css?v=20261003h"></head><body data-page="home"><a class="sr" href="#main">Přeskočit na obsah</a>
 <header class="nav" id="nav"><div class="wrap nav__in"><a class="logo" href="/"><svg viewBox="0 -4 300 118" role="img" aria-label="Skákací hrady"><g text-anchor="middle">
 <text class="ex" x="152" y="52" font-size="54">SKÁKACÍ</text><text class="t1" x="148" y="48" font-size="54">SKÁKACÍ</text>
 <text class="ex" x="152" y="108" font-size="62">HRADY</text><text class="t2" x="148" y="104" font-size="62">HRADY</text></g></svg></a>
@@ -46,23 +46,36 @@
 </div></section>
 
 <section class="sec"><div class="wrap">
- <div class="sec__head"><span class="eyebrow">Podle témat</span><h2>Postavičky, princezny, džungle…</h2><p>Vyberte svět, ve kterém budou děti skákat. Počet říká, kolik modelů v tématu máme.</p></div>
- <div class="themes" id="themes"></div>
+ <div class="sec__head"><span class="eyebrow">Podle témat</span><h2>Postavičky, princezny, džungle…</h2><p>Klikněte na hrad a vyberte svět, ve kterém budou děti skákat. Číslo říká, kolik modelů v tématu máme.</p></div>
+ <div class="burst" id="burst"><ul class="burst__items" id="burst-items"></ul>
+  <button class="burst__core" type="button" aria-expanded="false" aria-controls="burst-items"><img src="/assets/hrady/017-studio-sm.webp" alt="" width="600" height="600"><b>Vyber svět</b></button>
+  <p class="burst__hint hand" aria-hidden="true">klikni ↓</p></div>
 </div></section>
 
-<section class="sec" id="v-cene"><div class="wrap deal">
+<section class="receipt" id="v-cene"><div class="receipt__pin"><div class="depth receipt__card"><div class="wrap deal">
  <div><span class="eyebrow">Na rovinu</span><h2>Co je v ceně a co ne</h2>
-  <p class="sec__lede" style="margin-top:16px;max-width:52ch;color:var(--ink-2)">Ceny v katalogu jsou konečné, bez dopravy. Nejsme plátci DPH, takže žádné překvapení na faktuře.</p>
+  <p style="margin-top:16px;max-width:52ch;color:var(--ink-2)">Ceny v katalogu jsou konečné, bez dopravy. Nejsme plátci DPH, takže žádné překvapení na faktuře.</p>
   <div class="certs"><span>CE &amp; SGS 1000D</span><span>EN 14960:2013</span><span>EN 15649:2013</span><span>Ohnivzdorné</span><span>Vodovzdorné</span><span>Netoxické</span></div></div>
- <div class="tag"><h3>Cenovka</h3><ul>
-  <li><span class="ico ico--y" aria-hidden="true">✓</span><span>Hrad + přepravní obal</span><b>v ceně</b></li>
-  <li><span class="ico ico--y" aria-hidden="true">✓</span><span>Jednoduché logo nebo nápis</span><b>v ceně</b></li>
-  <li><span class="ico ico--p" aria-hidden="true">+</span><span>Fukar 950 W (malé a střední hrady)</span><b>7 000 Kč</b></li>
-  <li><span class="ico ico--p" aria-hidden="true">+</span><span>Fukar 1500 W (velké atrakce)</span><b>10 000 Kč</b></li>
-  <li><span class="ico ico--n" aria-hidden="true">~</span><span>Opravná sada</span><b>dle dohody</b></li>
-  <li><span class="ico ico--n" aria-hidden="true">–</span><span>Kolíky do země</span><b>nejsou součástí</b></li>
-  <li><span class="ico ico--y" aria-hidden="true">✓</span><span>Záruka, opravy podle příčiny</span><b>1 rok</b></li></ul></div>
-</div></section>
+ <div class="printer" aria-label="Účtenka – co je v ceně">
+  <div class="printer__body" aria-hidden="true"><i class="printer__led"></i><span>SKÁKACÍ HRADY · POKLADNA 1</span></div>
+  <div class="printer__slot"><div class="rc">
+   <p class="rc__head">SKÁKACÍ HRADY<small>Agentura Marco · Ostrava</small></p>
+   <ul class="rc__lines">
+    <li><span>Hrad + přepravní obal</span><b>V CENĚ</b></li>
+    <li><span>Logo nebo nápis</span><b>V CENĚ</b></li>
+    <li><span>Fukar 950 W</span><b>7 000 Kč</b></li>
+    <li><span>Fukar 1500 W</span><b>10 000 Kč</b></li>
+    <li><span>Opravná sada</span><b>DLE DOHODY</b></li>
+    <li><span>Kolíky do země</span><b>NEJSOU</b></li>
+    <li><span>Záruka</span><b>1 ROK</b></li>
+    <li class="rc__sep"><span>DPH (nejsme plátci)</span><b>0 Kč</b></li>
+    <li><span>Doprava</span><b>DLE MÍSTA</b></li>
+    <li class="rc__total"><span>SKRYTÉ POPLATKY</span><b>0 Kč</b></li>
+   </ul>
+   <p class="rc__bar" aria-hidden="true"></p><p class="rc__thanks">Děkujeme, skákejte!</p>
+   <p class="rc__stamp" aria-hidden="true">NA ROVINU ✓</p>
+  </div></div></div>
+</div></div></div></section>
 
 <section class="sec" id="na-miru"><div class="wrap custom">
  <div class="custom__pics rv" aria-hidden="true"><img src="/assets/hrady/011-sm.webp" alt="" width="600" height="450" loading="lazy"><img src="/assets/hrady/034-sm.webp" alt="" width="600" height="450" loading="lazy"><img src="/assets/hrady/105-sm.webp" alt="" width="600" height="450" loading="lazy"></div>
@@ -93,4 +106,4 @@
 <span><a href="tel:+420736214975">+420 736 214 975</a> · <a href="mailto:agenturamarco@seznam.cz">agenturamarco@seznam.cz</a></span>
 <span>Ceny jsou konečné, bez dopravy. Nejsme plátci DPH.</span></div></div></footer><script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js" defer></script><script src="/js/data.js?v=20261003g" defer></script><script src="/js/app.js?v=20261003g" defer></script><script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script><script type="module" src="/js/hero3d.js?v=20261003g"></script></body></html>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js" defer></script><script src="/js/data.js?v=20261003h" defer></script><script src="/js/app.js?v=20261003h" defer></script><script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script><script type="module" src="/js/hero3d.js?v=20261003h"></script></body></html>
