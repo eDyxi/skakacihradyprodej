@@ -206,7 +206,7 @@ async function story() {
 
 
 /* ---------- NA MÍRU: hrad se nejdřív nakreslí (obrys + skica), pak se vybarví ---------- */
-const CUSTOM_MODEL = "/assets/3d/017.glb";
+const CUSTOM_MODEL = "/assets/3d/navrh.glb";
 const NOISE = `
 float hash3(vec3 p){ p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
 float vnoise(vec3 x){ vec3 i = floor(x), f = fract(x); f = f * f * (3.0 - 2.0 * f);
