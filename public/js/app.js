@@ -235,18 +235,17 @@
   /* čáry mezi sekcemi + páska: přesně doprostřed mezery (měří se obsah, ne prázdné boxy) */
   function spacers() {
     const pairs = [
-      [() => $(".hero__grid"), () => $(".story .eyebrow"), $(".tape"), "tape"],
-      [() => $(".burst__hint"), () => $(".receipt .eyebrow"), $(".receipt"), "line", () => $("#temata")],
-      [() => $(".printer"), () => $("#na-miru .eyebrow"), $("#na-miru"), "line", () => $(".receipt__pin")],
-      [() => $("#na-miru .custom"), () => $("#faq .eyebrow"), $("#faq"), "line", () => $("#na-miru")],
+      { a: ".burst__hint", b: ".receipt .eyebrow", abox: "#temata", bbox: ".receipt__pin", x: ".receipt__pin", mode: "top" },
+      { a: ".printer", b: "#na-miru .eyebrow", abox: ".receipt__pin", bbox: "#na-miru", x: "#na-miru", mode: "top" },
+      { a: "#na-miru .custom", b: "#faq .eyebrow", abox: "#na-miru", bbox: "#faq", x: "#na-miru", mode: "bottom", extra: 8 },
     ];
-    const run = () => pairs.forEach(([aEnd, bStart, el, kind, aBox]) => {
-      const A = aEnd(), B = bStart(); if (!A || !B || !el || el.hidden) return;
-      if (kind === "tape") { el.style.translate = "0 0"; const t = el.getBoundingClientRect(), up = t.top - A.getBoundingClientRect().bottom, dn = B.getBoundingClientRect().top - t.bottom; el.style.translate = `0 ${Math.round((dn - up) / 2)}px`; return; }
-      let w = el.previousElementSibling; if (!w || !w.classList.contains("dvw")) { w = document.createElement("div"); w.className = "dvw"; w.setAttribute("aria-hidden", "true"); w.innerHTML = '<span class="dv"></span>'; el.before(w); }
-      const box = aBox().getBoundingClientRect(), above = box.bottom - A.getBoundingClientRect().bottom, below = B.getBoundingClientRect().top - w.getBoundingClientRect().top;
-      w.firstChild.style.top = Math.round((below - above) / 2) + (el.id === "faq" ? 8 : 0) + "px";
-    });
+    const tape = () => { const el = $(".tape"), A = $(".hero__grid"), B = $(".story .eyebrow"); if (!el || el.hidden || !A || !B) return; el.style.translate = "0 0"; const t = el.getBoundingClientRect(), up = t.top - A.getBoundingClientRect().bottom, dn = B.getBoundingClientRect().top - t.bottom; el.style.translate = `0 ${Math.round((dn - up) / 2)}px`; };
+    const run = () => { tape(); pairs.forEach((p, k) => {
+      const A = $(p.a), B = $(p.b), Ab = $(p.abox), Bb = $(p.bbox), X = $(p.x); if (!A || !B || !Ab || !Bb || !X) return;
+      let dv = X.querySelector(`:scope > .dv[data-k="${k}"]`); if (!dv) { dv = document.createElement("span"); dv.className = "dv"; dv.dataset.k = k; dv.setAttribute("aria-hidden", "true"); X.append(dv); }
+      const above = Ab.getBoundingClientRect().bottom - A.getBoundingClientRect().bottom, below = B.getBoundingClientRect().top - Bb.getBoundingClientRect().top, off = Math.round((below - above) / 2) + (p.extra || 0);
+      dv.style.top = (p.mode === "bottom" ? X.offsetHeight + off : off) + "px";
+    }); };
     run(); addEventListener("resize", run); addEventListener("load", run); window.ScrollTrigger?.addEventListener("refresh", run);
   }
 
@@ -337,27 +336,25 @@
       const setCY = () => { const r = sec.getBoundingClientRect(), a = txt[0].getBoundingClientRect(), b = txt[txt.length - 1].getBoundingClientRect(); cyN = Math.round((a.top + b.bottom) / 2 - r.top); sec.style.setProperty("--cy", cyN + "px"); dispatchEvent(new Event("burst-place")); };
       setCY();
       const lockY = () => Math.round(sec.getBoundingClientRect().top + scrollY - innerHeight * 0.336);
-      const tin = g.timeline({ paused: true })
+      const M = g.timeline({ paused: true })
         .to(txt, { opacity: 0, y: -16, duration: 0.1, ease: "power1.in" }, 0)
         .fromTo(core, { y: "52vh", x: 0, rotation: 0 }, { keyframes: { y: ["52vh", "37vh", "23vh", "11vh", "3vh", "-1vh", "0vh"], x: [0, -42, 30, -20, 10, -3, 0], rotation: [0, -10, 7, -5, 3, -1, 0], easeEach: "sine.inOut" }, duration: 0.82 }, 0)
         .to(pill, { y: -38, duration: 0.2, ease: "power2.out" }, 0.55)
         .fromTo(hint, { opacity: 0 }, { opacity: 1, duration: 0.08 }, 0.86)
-        .to({}, { duration: 0.06 });
-      const tout = g.timeline({ paused: true })
-        .to(core, { keyframes: { y: ["0vh", "-18vh", "-40vh", "-65vh", "-95vh"], x: [0, 28, -22, 18, -10], rotation: [0, 7, -6, 5, -3], easeEach: "sine.inOut" }, duration: 1, ease: "power1.in" })
-        .to(hint, { opacity: 0, duration: 0.15 }, 0)
-        .fromTo(pill, { y: -38 }, { y: 0, duration: 0.25, immediateRender: false }, 0.3)
-        .fromTo(txt, { opacity: 0, y: -16 }, { opacity: 1, y: 0, duration: 0.3, stagger: 0.05, immediateRender: false }, 0.38)
-        .to(core, { opacity: 0, duration: 0.2 }, 0.8);
-      tin.progress(0);
+        .to(core, { keyframes: { y: ["0vh", "-18vh", "-40vh", "-65vh", "-95vh"], x: [0, 28, -22, 18, -10], rotation: [0, 7, -6, 5, -3], easeEach: "sine.inOut" }, duration: 1, ease: "power1.in" }, 1)
+        .to(hint, { opacity: 0, duration: 0.15 }, 1)
+        .to(pill, { y: 0, duration: 0.25 }, 1.5)
+        .to(txt, { opacity: 1, y: 0, duration: 0.3, stagger: 0.05 }, 1.6)
+        .to(core, { opacity: 0, duration: 0.2 }, 1.8);
+      M.time(0);
+      const apply = () => { if (!open) g.to(M, { time: Math.min(prog, 1) + (prog >= 1 ? pOut : 0), duration: 0.5, ease: "power2.out", overwrite: true }); };
       const L = () => window.__lenis;
       const stopPage = () => { L() ? L().stop() : (document.documentElement.style.overflow = "hidden"); };
       const startPage = () => { L() ? L().start() : (document.documentElement.style.overflow = ""); };
       const lock = () => { locked = true; const y = lockY(); L() ? L().scrollTo(y, { immediate: true, force: true }) : scrollTo(0, y); stopPage(); };
       const unlock = () => { locked = false; startPage(); };
       const drive = (dy) => {
-        prog = Math.min(1, Math.max(0, prog + dy / 850));
-        g.to(tin, { progress: prog, duration: 0.55, ease: "power2.out", overwrite: true });
+        prog = Math.min(1, Math.max(0, prog + dy / 850)); apply();
         if ((prog >= 1 && dy > 0) || (prog <= 0 && dy < 0)) unlock();
       };
       const onWheel = (e) => { if (!locked) return; e.preventDefault(); drive(e.deltaY * (e.deltaMode === 1 ? 32 : 1)); };
@@ -373,10 +370,10 @@
         last = y;
       };
       addEventListener("scroll", onScroll, { passive: true });
-      const s2 = ST.create({ trigger: sec, start: () => lockY(), end: () => lockY() + innerHeight * 0.55, onUpdate: (s) => { pOut = s.progress; if (!open) g.to(tout, { progress: pOut, duration: 0.5, ease: "power2.out", overwrite: true }); }, onRefreshInit: setCY });
-      const onOpen = () => { open = true; if (locked) unlock(); }, onClose = () => { open = false; g.to(tout, { progress: pOut, duration: 0.5, overwrite: true }); };
+      const s2 = ST.create({ trigger: sec, start: () => lockY(), end: () => lockY() + innerHeight * 0.55, onUpdate: (s) => { pOut = s.progress; apply(); }, onRefreshInit: setCY });
+      const onOpen = () => { open = true; if (locked) unlock(); }, onClose = () => { open = false; apply(); };
       addEventListener("burst-open", onOpen); addEventListener("burst-close", onClose);
-      return () => { if (locked) unlock(); s2.kill(); tin.kill(); tout.kill(); removeEventListener("wheel", onWheel); removeEventListener("keydown", onKey); removeEventListener("scroll", onScroll); sec.classList.remove("themes-anim"); sec.style.removeProperty("--cy"); removeEventListener("burst-open", onOpen); removeEventListener("burst-close", onClose); g.set([core, hint, pill, ...txt], { clearProps: "all" }); };
+      return () => { if (locked) unlock(); s2.kill(); M.kill(); removeEventListener("wheel", onWheel); removeEventListener("keydown", onKey); removeEventListener("scroll", onScroll); sec.classList.remove("themes-anim"); sec.style.removeProperty("--cy"); removeEventListener("burst-open", onOpen); removeEventListener("burst-close", onClose); g.set([core, hint, pill, ...txt], { clearProps: "all" }); };
     });
 
     /* účtenka: zamknout scroll a tisknout; karta se oddálí jako u nafukování */

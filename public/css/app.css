@@ -779,3 +779,11 @@ body::after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;bac
   box-shadow:0 0 0 calc(var(--k,0) * 14px) color-mix(in srgb,var(--bd,transparent) calc(var(--k,0) * 100%),transparent),0 calc(var(--k,0) * 18px) calc(var(--k,0) * 30px) color-mix(in srgb,var(--ink) calc(var(--k,0) * var(--k,0) * var(--k,0) * 35%),transparent)}
 .story__pin::before,.receipt__pin::before{opacity:calc(min(1,var(--k,0) * 2.2))}
 @keyframes fly{0%{translate:-11vw 0}50%{translate:50vw var(--ym)}100%{translate:104vw var(--y1)}}
+
+/* ===== 5. 10. G: čáry pevně se sekcemi, bez černých obrysů, stejně velké sekce, větší Témata ===== */
+.dvw{display:none}
+.receipt__pin{overflow:visible}
+.dv{position:absolute;left:50%;width:79%;translate:-50% 0;height:3px;border-radius:3px;background:linear-gradient(90deg,transparent,var(--ink) 22%,var(--ink) 78%,transparent);pointer-events:none;z-index:6}
+.story__card,.depth{outline:0;box-shadow:0 0 0 calc(var(--k,0) * 14px) color-mix(in srgb,var(--bd,transparent) calc(var(--k,0) * 100%),transparent)}
+.receipt__pin,.receipt .depth{min-height:92svh}
+.themes-anim{height:max(500px,70svh)}
