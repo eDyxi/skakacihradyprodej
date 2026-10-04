@@ -182,8 +182,8 @@
     ul.innerHTML = T.map(([k, [n, c]], i) => `<li><a class="bub" href="/katalog.html?th=${k}" style="--c:${c};--d:${(i * 0.055).toFixed(3)}s;--f:${(-i * 0.4).toFixed(1)}s" tabindex="-1"><span class="bal"><span class="bal__body"><img src="${img(byId[THEME_PIC[k]])}" alt="" width="122" height="139" loading="lazy"></span><i>${H.filter((h) => h.th === k).length}</i><span class="bal__knot"></span><svg class="bal__str" viewBox="0 0 20 34" aria-hidden="true"><path d="M10 0 C 5 9, 15 20, 10 34" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><animate attributeName="d" dur="${(2.2 + (i % 3) * 0.35).toFixed(2)}s" begin="-${(i * 0.3).toFixed(1)}s" repeatCount="indefinite" values="M10 0 C 5 9, 15 20, 10 34;M10 0 C 15 10, 5 22, 13 34;M10 0 C 6 8, 16 21, 8 34;M10 0 C 5 9, 15 20, 10 34"/></path></svg><b>${n}</b></span></a></li>`).join("");
     const place = () => {
       const ring = !!b.closest(".themes-anim"), w = b.offsetWidth, hh = b.offsetHeight, cy = parseFloat(getComputedStyle(b).getPropertyValue("--cy")) || hh / 2;
-      const rx = Math.min(w * (ring ? 0.38 : 0.42), ring ? 430 : 460), ry = ring ? Math.max(130, Math.min(hh * 0.36, cy - 120)) : Math.min(hh * 0.33, 250);
-      $$(".bub", ul).forEach((a, i) => { const ang = ring ? ((-90 + 22.5 + i * 45) * Math.PI) / 180 : -Math.PI / 2 + (i / T.length) * Math.PI * 2; a.style.setProperty("--x", (Math.cos(ang) * rx).toFixed(0) + "px"); a.style.setProperty("--y", (Math.sin(ang) * ry).toFixed(0) + "px"); });
+      const rx = ring ? Math.min(w * 0.44, 660) : Math.min(w * 0.42, 460), ry = ring ? Math.min(innerHeight * 0.27, 250) : Math.min(hh * 0.33, 250);
+      $$(".bub", ul).forEach((a, i) => { const ang = ring ? ((-12 + i * (204 / (T.length - 1))) * Math.PI) / 180 : -Math.PI / 2 + (i / T.length) * Math.PI * 2; a.style.setProperty("--x", (Math.cos(ang) * rx).toFixed(0) + "px"); a.style.setProperty("--y", (Math.sin(ang) * ry).toFixed(0) + "px"); });
     };
     place(); new ResizeObserver(place).observe(b); addEventListener("burst-place", place);
     core.addEventListener("click", () => {
