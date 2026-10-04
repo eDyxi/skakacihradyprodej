@@ -292,43 +292,54 @@
     mm.add("(max-width: 899px)", () => { rail.classList.add("rail--native"); return () => rail.classList.remove("rail--native"); });
 
     /* témata a cenovka */
-    /* témata (desktop): text přijede pod žlutým pruhem; jakmile se zespodu ukáže balónek, scroll se zamkne
-       (balónek bude přesně uprostřed), text hned zmizí, balónek doletí na jeho místo; pak uletí.
-       Po prvním otevření balónků se zamčení zruší. */
+    /* témata (desktop): skutečné zamčení CELÉ stránky (nic se nehýbe, ani žlutý pruh nahoře).
+       Kolečko/trackpad během zámku pohání balónek; po doletu se stránka odemkne. Nahoru stejně pozpátku. */
     mm.add("(min-width: 861px)", () => {
       const sec = $("#temata"), core = $(".burst__core"), hint = $(".burst__hint"); if (!sec || !core) return;
       sec.classList.add("themes-anim");
       g.set(core, { xPercent: -50, yPercent: -50 });
       const txt = $$("#temata .sec__head h2, #temata .sec__head p");
-      let cyN = 200, open = false, unpinned = false, pIn = 0, pOut = 0;
+      let cyN = 200, open = false, locked = false, prog = 0, pOut = 0, last = scrollY;
       const setCY = () => { const r = sec.getBoundingClientRect(), a = txt[0].getBoundingClientRect(), b = txt[txt.length - 1].getBoundingClientRect(); cyN = Math.round((a.top + b.bottom) / 2 - r.top); sec.style.setProperty("--cy", cyN + "px"); dispatchEvent(new Event("burst-place")); };
       setCY();
-      const X = () => Math.round(innerHeight * 0.336);
-      const lockY = () => sec.getBoundingClientRect().top + scrollY - X();
+      const lockY = () => Math.round(sec.getBoundingClientRect().top + scrollY - innerHeight * 0.336);
       const tin = g.timeline({ paused: true })
         .to(txt, { opacity: 0, y: -16, duration: 0.1, ease: "power1.in" }, 0)
-        .fromTo(core, { y: "52vh", x: 0, rotation: 0 }, { keyframes: { y: ["52vh", "37vh", "23vh", "11vh", "3vh", "-1vh", "0vh"], x: [0, -42, 30, -20, 10, -3, 0], rotation: [0, -10, 7, -5, 3, -1, 0], easeEach: "sine.inOut" }, duration: 0.68 }, 0)
-        .fromTo(hint, { opacity: 0 }, { opacity: 1, duration: 0.08 }, 0.72)
-        .to({}, { duration: 0.2 });
+        .fromTo(core, { y: "52vh", x: 0, rotation: 0 }, { keyframes: { y: ["52vh", "37vh", "23vh", "11vh", "3vh", "-1vh", "0vh"], x: [0, -42, 30, -20, 10, -3, 0], rotation: [0, -10, 7, -5, 3, -1, 0], easeEach: "sine.inOut" }, duration: 0.82 }, 0)
+        .fromTo(hint, { opacity: 0 }, { opacity: 1, duration: 0.08 }, 0.86)
+        .to({}, { duration: 0.06 });
       const tout = g.timeline({ paused: true })
         .to(core, { keyframes: { y: ["0vh", "-18vh", "-40vh", "-65vh", "-95vh"], x: [0, 28, -22, 18, -10], rotation: [0, 7, -6, 5, -3], easeEach: "sine.inOut" }, duration: 1, ease: "power1.in" })
         .to(hint, { opacity: 0, duration: 0.15 }, 0)
         .to(core, { opacity: 0, duration: 0.2 }, 0.8);
       tin.progress(0);
-      const sync = () => { if (open) return; g.to(tin, { progress: pIn, duration: 0.5, ease: "power2.out", overwrite: true }); g.to(tout, { progress: pOut, duration: 0.5, ease: "power2.out", overwrite: true }); };
-      const s1 = ST.create({ trigger: sec, start: () => "top " + X() + "px", end: "+=75%", pin: true, anticipatePin: 1, onRefreshInit: setCY, onUpdate: (s) => { if (!unpinned) { pIn = s.progress; sync(); } } });
-      const sIn = ST.create({ trigger: sec, start: () => (unpinned ? lockY() - innerHeight * 0.6 : 0), end: () => (unpinned ? lockY() : 1), onUpdate: (s) => { if (unpinned) { pIn = s.progress; sync(); } } });
-      const s2 = ST.create({ trigger: sec, start: () => (unpinned ? lockY() : s1.end), end: () => (unpinned ? lockY() : s1.end) + innerHeight * 0.55, onUpdate: (s) => { pOut = s.progress; sync(); } });
-      const unpin = () => {
-        if (unpinned) return;
-        const y = scrollY, a = s1.start, b = s1.end;
-        unpinned = true; s1.kill(true); ST.refresh();
-        const t = y >= b ? y - (b - a) : y > a ? a : y;
-        if (t !== y) { window.__lenis ? window.__lenis.scrollTo(t, { immediate: true, force: true }) : scrollTo(0, t); }
+      const L = () => window.__lenis;
+      const stopPage = () => { L() ? L().stop() : (document.documentElement.style.overflow = "hidden"); };
+      const startPage = () => { L() ? L().start() : (document.documentElement.style.overflow = ""); };
+      const lock = () => { locked = true; const y = lockY(); L() ? L().scrollTo(y, { immediate: true, force: true }) : scrollTo(0, y); stopPage(); };
+      const unlock = () => { locked = false; startPage(); };
+      const drive = (dy) => {
+        prog = Math.min(1, Math.max(0, prog + dy / 850));
+        g.to(tin, { progress: prog, duration: 0.55, ease: "power2.out", overwrite: true });
+        if ((prog >= 1 && dy > 0) || (prog <= 0 && dy < 0)) unlock();
       };
-      const onOpen = () => { open = true; unpin(); }, onClose = () => { open = false; sync(); };
+      const onWheel = (e) => { if (!locked) return; e.preventDefault(); drive(e.deltaY * (e.deltaMode === 1 ? 32 : 1)); };
+      const onKey = (e) => { if (!locked) return; const k = { ArrowDown: 120, PageDown: 400, " ": 400, ArrowUp: -120, PageUp: -400 }[e.key]; if (k) { e.preventDefault(); drive(k); } };
+      addEventListener("wheel", onWheel, { passive: false }); addEventListener("keydown", onKey);
+      /* hlídání průjezdu bodem zámku */
+      const onScroll = () => {
+        const y = scrollY, ly = lockY();
+        if (!locked && !open) {
+          if (last < ly && y >= ly && prog < 1) lock();
+          else if (last > ly && y <= ly && prog > 0) lock();
+        }
+        last = y;
+      };
+      addEventListener("scroll", onScroll, { passive: true });
+      const s2 = ST.create({ trigger: sec, start: () => lockY(), end: () => lockY() + innerHeight * 0.55, onUpdate: (s) => { pOut = s.progress; if (!open) g.to(tout, { progress: pOut, duration: 0.5, ease: "power2.out", overwrite: true }); }, onRefreshInit: setCY });
+      const onOpen = () => { open = true; if (locked) unlock(); }, onClose = () => { open = false; g.to(tout, { progress: pOut, duration: 0.5, overwrite: true }); };
       addEventListener("burst-open", onOpen); addEventListener("burst-close", onClose);
-      return () => { if (!unpinned) s1.kill(); sIn.kill(); s2.kill(); tin.kill(); tout.kill(); sec.classList.remove("themes-anim"); sec.style.removeProperty("--cy"); removeEventListener("burst-open", onOpen); removeEventListener("burst-close", onClose); g.set([core, hint, ...txt], { clearProps: "all" }); };
+      return () => { if (locked) unlock(); s2.kill(); tin.kill(); tout.kill(); removeEventListener("wheel", onWheel); removeEventListener("keydown", onKey); removeEventListener("scroll", onScroll); sec.classList.remove("themes-anim"); sec.style.removeProperty("--cy"); removeEventListener("burst-open", onOpen); removeEventListener("burst-close", onClose); g.set([core, hint, ...txt], { clearProps: "all" }); };
     });
 
     /* účtenka: zamknout scroll a tisknout; karta se oddálí jako u nafukování */
