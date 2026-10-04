@@ -817,3 +817,26 @@ body::after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;bac
 .custom::before{top:-52px}
 .custom::after{bottom:-52px}
 .dv[data-k]{display:none}
+
+/* ===== 5. 10. J ===== */
+/* Témata: menší, text i balónek víc na střed, „klikni“ pod balónkem */
+.themes-anim{height:max(380px,44svh)}
+.themes-anim .core__ball{width:clamp(120px,12vw,150px)}
+.themes-anim .core__str{height:36px}
+.themes-anim .burst__core{top:calc(var(--cy,38%) - 4px)}
+.themes-anim .burst__hint{left:50%;top:calc(var(--cy,200px) + 116px);transform:translateX(-50%) rotate(-4deg)}
+/* Na rovinu: jen horní čára */
+.rl--b{display:none}
+/* Na míru: bez zbytečného místa, čáry 62 px od obsahu, pevné na sekci; obsah se při zámku oddálí jako ostatní */
+.custom::before,.custom::after{display:none}
+#na-miru.custom-sec{--k:0;display:block;min-height:0;padding:0}
+@media (min-width:861px){#na-miru.custom-sec{margin-top:-130px}}
+.custom__card{position:relative;z-index:1;padding:86px 0;transform-origin:50% 50%;border-radius:calc(var(--k,0) * 40px);box-shadow:0 0 0 calc(var(--k,0) * 14px) color-mix(in srgb,var(--sky) calc(var(--k,0) * 100%),transparent)}
+#na-miru::before,#na-miru::after{content:"";position:absolute;left:50%;width:79vw;translate:-50% 0;height:3px;border-radius:3px;background:linear-gradient(90deg,transparent,var(--ink) 22%,var(--ink) 78%,transparent);pointer-events:none;z-index:6}
+#na-miru::before{top:24px}
+#na-miru::after{bottom:24px}
+.custom__bd{position:absolute;inset:0;z-index:0;pointer-events:none;opacity:calc(min(1,var(--k,0) * 2.2));background:radial-gradient(color-mix(in srgb,var(--card) 45%,transparent) 1.4px,transparent 1.8px) 0 0/26px 26px,var(--sky);
+  -webkit-mask:linear-gradient(#000 0 0) 0 0/100% 100% no-repeat,linear-gradient(#000 0 0) 50% 50%/calc((1 - .1 * var(--k,0)) * 100%) calc((1 - .1 * var(--k,0)) * 100%) no-repeat;-webkit-mask-composite:xor;
+  mask:linear-gradient(#000 0 0) 0 0/100% 100% no-repeat,linear-gradient(#000 0 0) 50% 50%/calc((1 - .1 * var(--k,0)) * 100%) calc((1 - .1 * var(--k,0)) * 100%) no-repeat;mask-composite:exclude}
+/* Otázky: bez zbytečné mezery nahoře */
+#faq{padding-top:28px}

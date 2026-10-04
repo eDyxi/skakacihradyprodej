@@ -387,7 +387,11 @@
     }
     /* na míru: až PO účtence (pořadí pinů = pořadí v DOM) */
     const custP = (s) => { window.__customP = s.progress; dispatchEvent(new CustomEvent("custom", { detail: s.progress })); };
-    mm.add("(min-width: 861px)", () => { ST.create({ trigger: "#na-miru", start: "top top", end: "+=170%", pin: true, scrub: 0.5, onUpdate: custP }); });
+    mm.add("(min-width: 861px)", () => {
+      const cc = $(".custom__card"), cs = $("#na-miru");
+      const qx = g.quickTo(cc, "scaleX", { duration: 0.9, ease: "power3" }), qy = g.quickTo(cc, "scaleY", { duration: 0.9, ease: "power3" }), qk = g.quickTo(cs, "--k", { duration: 0.9, ease: "power3" });
+      ST.create({ trigger: "#na-miru", start: "top 64px", end: "+=170%", pin: true, scrub: 0.5, onUpdate: (s) => { custP(s); const p = s.progress, k = p < 0.1 ? p / 0.1 : p > 0.9 ? (1 - p) / 0.1 : 1, e = k * k * (3 - 2 * k); qx(1 - 0.1 * e); qy(1 - 0.1 * e); qk(e); } });
+    });
     mm.add("(max-width: 860px)", () => { ST.create({ trigger: ".custom__art", start: "top 80%", end: "bottom 30%", scrub: 0.5, onUpdate: custP }); });
     addEventListener("load", () => ST.refresh());
   }
