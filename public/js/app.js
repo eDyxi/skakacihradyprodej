@@ -227,8 +227,8 @@
     const P = '<path d="M22 50a16 16 0 0 1 2-32 22 22 0 0 1 40-6 18 18 0 0 1 32 10 14 14 0 0 1 2 28z"/>';
     const r = (a, b) => a + Math.random() * (b - a);
     hero.insertAdjacentHTML("afterbegin", Array.from({ length: 10 }, (_, i) => {
-      const t = r(24, 46), y0 = r(-2, 90);
-      return `<svg class="cloud cloud--fly" viewBox="0 0 120 60" aria-hidden="true" style="--w:${Math.round(r(48, 130))}px;top:${y0.toFixed(1)}%;--t:${t.toFixed(1)}s;--o:${(i * 2.6 + r(0, 1.5)).toFixed(1)}s;--ym:${Math.round(r(-40, 40))}px;--y1:${Math.round(r(-30, 30))}px;opacity:${r(0.75, 1).toFixed(2)}">${P}</svg>`;
+      const t = r(22, 40), y0 = r(-2, 90), rev = i % 2 ? ";--dir:reverse" : "";
+      return `<svg class="cloud cloud--fly" viewBox="0 0 120 60" aria-hidden="true" style="--w:${Math.round(r(48, 130))}px;top:${y0.toFixed(1)}%;--t:${t.toFixed(1)}s;--o:${(Math.floor(i / 2) * 0.7 + r(0, 0.6)).toFixed(1)}s;--ym:${Math.round(r(-40, 40))}px;--y1:${Math.round(r(-30, 30))}px;opacity:${r(0.75, 1).toFixed(2)}${rev}">${P}</svg>`;
     }).join(""));
   }
 
@@ -243,9 +243,9 @@
     const run = () => pairs.forEach(([aEnd, bStart, el, kind, aBox]) => {
       const A = aEnd(), B = bStart(); if (!A || !B || !el || el.hidden) return;
       if (kind === "tape") { el.style.translate = "0 0"; const t = el.getBoundingClientRect(), up = t.top - A.getBoundingClientRect().bottom, dn = B.getBoundingClientRect().top - t.bottom; el.style.translate = `0 ${Math.round((dn - up) / 2)}px`; return; }
-      let dv = el.querySelector(":scope > .dv"); if (!dv) { dv = document.createElement("span"); dv.className = "dv"; dv.setAttribute("aria-hidden", "true"); el.prepend(dv); }
-      const box = aBox().getBoundingClientRect(), above = box.bottom - A.getBoundingClientRect().bottom, below = B.getBoundingClientRect().top - el.getBoundingClientRect().top;
-      dv.style.top = Math.round((below - above) / 2) + "px";
+      let w = el.previousElementSibling; if (!w || !w.classList.contains("dvw")) { w = document.createElement("div"); w.className = "dvw"; w.setAttribute("aria-hidden", "true"); w.innerHTML = '<span class="dv"></span>'; el.before(w); }
+      const box = aBox().getBoundingClientRect(), above = box.bottom - A.getBoundingClientRect().bottom, below = B.getBoundingClientRect().top - w.getBoundingClientRect().top;
+      w.firstChild.style.top = Math.round((below - above) / 2) + (el.id === "faq" ? 8 : 0) + "px";
     });
     run(); addEventListener("resize", run); addEventListener("load", run); window.ScrollTrigger?.addEventListener("refresh", run);
   }

@@ -762,3 +762,19 @@ body::after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;bac
 .hero__note{left:auto;right:-3%;top:46%;transform:rotate(7deg);text-align:left;max-width:none;line-height:.95}
 /* Jak to probíhá: tmavší kulisa se posouvá se scrollem */
 .story__pin::before{background-position:0 var(--sfeed,0px),0 0}
+
+/* ===== 5. 10. F ===== */
+.cloud--fly{animation-direction:var(--dir,normal)}
+/* čáry jako samostatné prvky v toku stránky */
+.dvw{position:relative;height:0;z-index:6}
+.dvw .dv{position:absolute;left:50%;width:79%;translate:-50% 0;height:3px}
+/* Na rovinu: výš a o kus menší */
+.receipt .deal{padding-top:calc(var(--nav-h) + 6px)}
+.receipt h2{font-size:clamp(2rem,4.4vw,3.2rem)}
+.printer{width:min(100%,340px)}
+.rc{font-size:.82rem;padding:24px 16px 22px}
+.printer__body{height:76px}
+/* plynulý návrat z oddálení: obrys a stín mizí dřív (k³), kulisa slábne postupně – žádné černé probliknutí */
+.story__card,.depth{outline:calc(var(--k,0) * 3px) solid color-mix(in srgb,var(--ink) calc(var(--k,0) * var(--k,0) * var(--k,0) * 100%),transparent);
+  box-shadow:0 0 0 calc(var(--k,0) * 14px) color-mix(in srgb,var(--bd,transparent) calc(var(--k,0) * 100%),transparent),0 calc(var(--k,0) * 18px) calc(var(--k,0) * 30px) color-mix(in srgb,var(--ink) calc(var(--k,0) * var(--k,0) * var(--k,0) * 35%),transparent)}
+.story__pin::before,.receipt__pin::before{opacity:calc(min(1,var(--k,0) * 2.2))}
