@@ -699,3 +699,11 @@ body::after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;bac
 .story__pin::before{background:radial-gradient(color-mix(in srgb,var(--card) 45%,transparent) 1.4px,transparent 1.8px) 0 0/26px 26px,color-mix(in srgb,var(--teal) 45%,#1f7fc4)}
 .receipt__pin::before{background:repeating-linear-gradient(0deg,transparent 0 22px,color-mix(in srgb,var(--ink) 18%,transparent) 22px 24px) 0 var(--feed,0px),linear-gradient(160deg,var(--gold),var(--gold-2))}
 .story__card,.receipt__card{position:relative;z-index:1}
+
+/* ===== témata podle náčrtu: sekce ~70 % výšky, text níž (střed), balónek na jeho místo ===== */
+.themes-anim{height:max(520px,70svh);padding:22px 0 0}
+.themes-anim>.wrap{height:100%}
+.themes-anim .sec__head{height:100%;display:flex;flex-direction:column;align-items:center;max-width:none;padding-bottom:22px}
+.themes-anim .sec__head .eyebrow{margin-bottom:0}
+.themes-anim .sec__head h2{margin-top:auto;max-width:15ch}
+.themes-anim .sec__head p{margin-bottom:auto;max-width:56ch}

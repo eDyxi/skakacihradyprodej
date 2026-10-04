@@ -181,10 +181,11 @@
     const T = Object.entries(TH).filter(([k]) => H.some((h) => h.th === k));
     ul.innerHTML = T.map(([k, [n, c]], i) => `<li><a class="bub" href="/katalog.html?th=${k}" style="--c:${c};--d:${(i * 0.055).toFixed(3)}s;--f:${(-i * 0.4).toFixed(1)}s" tabindex="-1"><span class="bal"><span class="bal__body"><img src="${img(byId[THEME_PIC[k]])}" alt="" width="122" height="139" loading="lazy"></span><i>${H.filter((h) => h.th === k).length}</i><span class="bal__knot"></span><svg class="bal__str" viewBox="0 0 20 34" aria-hidden="true"><path d="M10 0 C 5 9, 15 20, 10 34" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><animate attributeName="d" dur="${(2.2 + (i % 3) * 0.35).toFixed(2)}s" begin="-${(i * 0.3).toFixed(1)}s" repeatCount="indefinite" values="M10 0 C 5 9, 15 20, 10 34;M10 0 C 15 10, 5 22, 13 34;M10 0 C 6 8, 16 21, 8 34;M10 0 C 5 9, 15 20, 10 34"/></path></svg><b>${n}</b></span></a></li>`).join("");
     const place = () => {
-      const fan = !!b.closest(".themes-anim"), w = b.offsetWidth, hh = b.offsetHeight, rx = Math.min(w * 0.42, 460), ry = fan ? Math.min(hh * 0.38, 290) : Math.min(hh * 0.33, 250);
-      $$(".bub", ul).forEach((a, i) => { const ang = fan ? ((-15 + i * (210 / (T.length - 1))) * Math.PI) / 180 : -Math.PI / 2 + (i / T.length) * Math.PI * 2; a.style.setProperty("--x", (Math.cos(ang) * rx).toFixed(0) + "px"); a.style.setProperty("--y", (Math.sin(ang) * ry).toFixed(0) + "px"); });
+      const ring = !!b.closest(".themes-anim"), w = b.offsetWidth, hh = b.offsetHeight, cy = parseFloat(getComputedStyle(b).getPropertyValue("--cy")) || hh / 2;
+      const rx = Math.min(w * (ring ? 0.38 : 0.42), ring ? 430 : 460), ry = ring ? Math.max(130, Math.min(hh * 0.36, cy - 120)) : Math.min(hh * 0.33, 250);
+      $$(".bub", ul).forEach((a, i) => { const ang = ring ? ((-90 + 22.5 + i * 45) * Math.PI) / 180 : -Math.PI / 2 + (i / T.length) * Math.PI * 2; a.style.setProperty("--x", (Math.cos(ang) * rx).toFixed(0) + "px"); a.style.setProperty("--y", (Math.sin(ang) * ry).toFixed(0) + "px"); });
     };
-    place(); new ResizeObserver(place).observe(b);
+    place(); new ResizeObserver(place).observe(b); addEventListener("burst-place", place);
     core.addEventListener("click", () => {
       const open = !b.classList.contains("open");
       b.classList.remove("closing");
@@ -300,13 +301,13 @@
       g.set(core, { xPercent: -50, yPercent: -50 });
       const txt = $$("#temata .sec__head h2, #temata .sec__head p");
       let cyN = 200, open = false, unpinned = false, pIn = 0, pOut = 0;
-      const setCY = () => { const r = sec.getBoundingClientRect(), a = txt[0].getBoundingClientRect(), b = txt[txt.length - 1].getBoundingClientRect(); cyN = Math.round((a.top + b.bottom) / 2 - r.top); sec.style.setProperty("--cy", cyN + "px"); };
+      const setCY = () => { const r = sec.getBoundingClientRect(), a = txt[0].getBoundingClientRect(), b = txt[txt.length - 1].getBoundingClientRect(); cyN = Math.round((a.top + b.bottom) / 2 - r.top); sec.style.setProperty("--cy", cyN + "px"); dispatchEvent(new Event("burst-place")); };
       setCY();
-      const X = () => Math.round(innerHeight / 2 - cyN + 40);
+      const X = () => Math.round(innerHeight * 0.33);
       const lockY = () => sec.getBoundingClientRect().top + scrollY - X();
       const tin = g.timeline({ paused: true })
         .to(txt, { opacity: 0, y: -16, duration: 0.1, ease: "power1.in" }, 0)
-        .fromTo(core, { y: "64vh", x: 0, rotation: 0 }, { keyframes: { y: ["64vh", "44vh", "27vh", "13vh", "4vh", "-1vh", "0vh"], x: [0, -42, 30, -20, 10, -3, 0], rotation: [0, -10, 7, -5, 3, -1, 0], easeEach: "sine.inOut" }, duration: 0.68 }, 0)
+        .fromTo(core, { y: "52vh", x: 0, rotation: 0 }, { keyframes: { y: ["52vh", "37vh", "23vh", "11vh", "3vh", "-1vh", "0vh"], x: [0, -42, 30, -20, 10, -3, 0], rotation: [0, -10, 7, -5, 3, -1, 0], easeEach: "sine.inOut" }, duration: 0.68 }, 0)
         .fromTo(hint, { opacity: 0 }, { opacity: 1, duration: 0.08 }, 0.72)
         .to({}, { duration: 0.2 });
       const tout = g.timeline({ paused: true })
