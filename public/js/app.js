@@ -188,7 +188,7 @@
     core.addEventListener("click", () => {
       const open = !b.classList.contains("open");
       b.classList.remove("closing");
-      if (open) { b.classList.add("open"); } else { b.classList.remove("open"); b.classList.add("closing"); setTimeout(() => b.classList.remove("closing"), 340); }
+      if (open) { b.classList.add("open"); } else { b.classList.remove("open"); b.classList.add("closing"); setTimeout(() => { b.classList.remove("closing"); dispatchEvent(new Event("burst-close")); }, 340); }
       core.setAttribute("aria-expanded", open); $(".core__ball b", core).textContent = open ? "Zavřít" : "Vyber svět";
       $$(".bub", ul).forEach((a) => (a.tabIndex = open ? 0 : -1));
     });
@@ -219,7 +219,7 @@
     const track = $("#rail-track");
     if (track) track.innerHTML = FEATURED.slice(0, 6).filter((i) => byId[i]).map((i) => card(byId[i])).join("") +
       `<div class="rail__end"><div><p>Dalších ${H.length - 6} modelů v katalogu</p><a class="btn" href="/katalog.html">Celý katalog ${I.arrow}</a></div></div>`;
-    burst(); sun($("#nejzadanejsi")); dotsBg($(".story__card")); dotsBg($(".receipt__card"));
+    burst(); sun($("#nejzadanejsi")); 
     const printAt = receipt();
     bindForm(() => { const a = $("[data-ask-cart]"); if (a) a.hidden = true; });
     const ask = $("[data-ask-cart]"), inC = cart.get().filter((i) => byId[i.id]);
@@ -266,8 +266,8 @@
         .to(flag, { scale: 1, duration: 0.12, ease: "back.out(3)" }, 0.84)
         .to(body, { scaleY: 1.05, scaleX: 0.97, duration: 0.05 }, 0.9).to(body, { scaleY: 1, scaleX: 1, duration: 0.05 }, 0.95);
       mm.add("(min-width: 861px)", () => {
-        const card = $(".story__card");
-        const qsx = g.quickTo(card, "scaleX", { duration: 0.9, ease: "power3" }), qsy = g.quickTo(card, "scaleY", { duration: 0.9, ease: "power3" }), qs = (v) => { qsx(v); qsy(v); }, qy = g.quickTo(card, "yPercent", { duration: 0.9, ease: "power3" }), qk = g.quickTo(card, "--k", { duration: 0.9, ease: "power3" });
+        const card = $(".story__card"), secS = $(".story");
+        const qsx = g.quickTo(card, "scaleX", { duration: 0.9, ease: "power3" }), qsy = g.quickTo(card, "scaleY", { duration: 0.9, ease: "power3" }), qs = (v) => { qsx(v); qsy(v); }, qy = g.quickTo(card, "yPercent", { duration: 0.9, ease: "power3" }), qk = g.quickTo(secS, "--k", { duration: 0.9, ease: "power3" });
         const depth = (p) => { const k = p < 0.12 ? p / 0.12 : p > 0.86 ? (1 - p) / 0.14 : 1, e = k * k * (3 - 2 * k); qs(1 - 0.12 * e); qy(-2.5 * e); qk(e); };
         ST.create({ trigger: ".story__pin", start: "top top", end: "+=320%", pin: true, anticipatePin: 1, scrub: 0.6, animation: tl,
           onUpdate: (s) => { depth(s.progress); dispatchEvent(new CustomEvent("story", { detail: s.progress })); const i = Math.min(steps.length - 1, Math.floor(s.progress * steps.length)); steps.forEach((li, k) => li.classList.toggle("on", k <= i)); if (gauge) gauge.textContent = Math.round(s.progress * 100) + " %"; } });
@@ -291,25 +291,35 @@
     mm.add("(max-width: 899px)", () => { rail.classList.add("rail--native"); return () => rail.classList.remove("rail--native"); });
 
     /* témata a cenovka */
-    /* témata: nejdřív text, pak balónek vyletí zdola a text uletí; po odjetí balónek uletí nahoru */
-    mm.add("(min-width: 861px)", () => {
-      const sec = $("#temata"); if (!sec) return;
-      sec.classList.add("themes-anim");
-      const tl = g.timeline()
-        .fromTo(".burst__core", { yPercent: 320, scale: 0.55, opacity: 0 }, { yPercent: 0, scale: 1, opacity: 1, duration: 0.45, ease: "elastic.out(1, 0.5)" }, 0.3)
-        .to("#temata .sec__head", { yPercent: -140, opacity: 0, duration: 0.3, ease: "power2.in" }, 0.36)
-        .fromTo(".burst__hint", { opacity: 0 }, { opacity: 1, duration: 0.1 }, 0.78);
-      ST.create({ trigger: "#temata", start: "top top", end: "+=110%", pin: true, anticipatePin: 1, scrub: 0.5, animation: tl });
-      const out = g.to("#burst", { yPercent: -110, opacity: 0, ease: "power2.in" });
-      ST.create({ trigger: "#temata", start: "bottom 45%", end: "bottom top", scrub: 0.5, animation: out });
-      return () => sec.classList.remove("themes-anim");
-    });
+    /* témata: text hned pod žlutým pruhem; balónek přiletí zdola ve větru, text zmizí (zůstane pilulka).
+       Jednorázově – po „Zavřít“ se vše vrátí a přehraje při dalším příjezdu. */
+    (() => {
+      const sec = $("#temata"), core = $(".burst__core"), hint = $(".burst__hint"); if (!sec || !core) return;
+      const txt = $$("#temata .sec__head h2, #temata .sec__head p");
+      let played = false, tl = null;
+      const reset = () => { tl?.kill(); played = false; g.set(core, { y: "75vh", x: 0, rotation: 0, opacity: 0 }); g.set(hint, { opacity: 0 }); g.to(txt, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }); };
+      const play = () => {
+        if (played) return; played = true;
+        tl = g.timeline()
+          .set(core, { opacity: 1 })
+          .to(core, { keyframes: { y: ["75vh", "52vh", "32vh", "16vh", "5vh", "-2vh", "0vh"], x: [0, -46, 34, -24, 12, -4, 0], rotation: [0, -11, 8, -6, 3, -1, 0], easeEach: "sine.inOut" }, duration: 3.4, ease: "power1.out" })
+          .to(txt, { opacity: 0, y: -24, duration: 0.6, stagger: 0.08, ease: "power2.in" }, 0.35)
+          .to(hint, { opacity: 1, duration: 0.4 }, "-=0.3");
+      };
+      g.set(core, { y: "75vh", opacity: 0 }); g.set(hint, { opacity: 0 });
+      ST.create({ trigger: ".burst", start: "top 78%", end: "bottom 15%", onEnter: play, onEnterBack: play });
+      addEventListener("burst-close", () => {
+        reset();
+        const again = () => { const r = $(".burst").getBoundingClientRect(); if (r.top < innerHeight * 0.78 && r.bottom > innerHeight * 0.15) play(); };
+        setTimeout(() => addEventListener("scroll", again, { once: true, passive: true }), 500);
+      });
+    })();
 
     /* účtenka: zamknout scroll a tisknout; karta se oddálí jako u nafukování */
     if (printAt) {
       mm.add("(min-width: 861px)", () => {
-        const card = $(".receipt__card");
-        const qx = g.quickTo(card, "scaleX", { duration: 0.9, ease: "power3" }), qy2 = g.quickTo(card, "scaleY", { duration: 0.9, ease: "power3" }), qk = g.quickTo(card, "--k", { duration: 0.9, ease: "power3" });
+        const card = $(".receipt__card"), secR = $(".receipt");
+        const qx = g.quickTo(card, "scaleX", { duration: 0.9, ease: "power3" }), qy2 = g.quickTo(card, "scaleY", { duration: 0.9, ease: "power3" }), qk = g.quickTo(secR, "--k", { duration: 0.9, ease: "power3" });
         ST.create({ trigger: ".receipt__pin", start: "top top", end: "+=200%", pin: true, anticipatePin: 1, scrub: 0.4,
           onUpdate: (s) => { const p = s.progress, k = p < 0.1 ? p / 0.1 : p > 0.9 ? (1 - p) / 0.1 : 1, e = k * k * (3 - 2 * k); qx(1 - 0.1 * e); qy2(1 - 0.1 * e); qk(e); printAt(p); } });
       });

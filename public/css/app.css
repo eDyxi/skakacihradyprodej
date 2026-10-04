@@ -634,3 +634,17 @@ html.lenis,html.lenis body{height:auto}
 :root{--paper:#E3F2FF}
 html{background:radial-gradient(55% 45% at 0% 18%,color-mix(in srgb,var(--sky) 26%,transparent),transparent 72%),radial-gradient(50% 40% at 100% 62%,color-mix(in srgb,var(--gold) 20%,transparent),transparent 70%),radial-gradient(45% 40% at 8% 96%,color-mix(in srgb,var(--sky) 18%,transparent),transparent 70%),#DDF0FF;background-attachment:fixed;min-height:100%}
 body{background-color:transparent}
+
+/* ===== tyrkysové pozadí + karty sekcí průhledné, dokud se neoddálí ===== */
+:root{--paper:#D9F6F4;--paper-2:#C4EEEC;--teal:#2EC9C5}
+html{background:radial-gradient(55% 45% at 0% 16%,color-mix(in srgb,var(--teal) 34%,transparent),transparent 72%),radial-gradient(50% 40% at 100% 60%,color-mix(in srgb,var(--gold) 20%,transparent),transparent 70%),radial-gradient(45% 40% at 6% 96%,color-mix(in srgb,var(--sky) 24%,transparent),transparent 70%),#D2F4F2;background-attachment:fixed}
+.story,.receipt{--k:0;position:relative;background:none}
+.story::before,.receipt::before{content:"";position:absolute;inset:0;opacity:var(--k);pointer-events:none}
+.story::before{background:color-mix(in srgb,var(--teal) 70%,var(--sky));background-image:radial-gradient(color-mix(in srgb,var(--card) 55%,transparent) 1.4px,transparent 1.8px);background-size:26px 26px}
+.receipt::before{background:repeating-linear-gradient(0deg,transparent 0 22px,color-mix(in srgb,var(--ink) 18%,transparent) 22px 24px),linear-gradient(160deg,var(--gold),var(--gold-2));background-position:0 var(--feed),0 0}
+.story__card,.depth{background:color-mix(in srgb,var(--paper) calc(var(--k) * 100%),transparent)}
+.story__card{--k:initial}
+.depth{--k:initial}
+.story__pin,.receipt__pin{position:relative}
+/* témata: text v normálním toku hned pod pruhem */
+.themes-sec .sec__head{text-align:left}
