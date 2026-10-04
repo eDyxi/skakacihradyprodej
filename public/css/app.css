@@ -681,3 +681,10 @@ body::before{content:"";position:fixed;inset:-15%;z-index:-2;pointer-events:none
 body{background-image:radial-gradient(color-mix(in srgb,var(--sky) 38%,transparent) 1.2px,transparent 1.6px)}
 /* tyrkysové sklo: jemné odlesky přes celé pozadí */
 body::after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;background:linear-gradient(115deg,rgba(255,255,255,.26) 0%,rgba(255,255,255,0) 26%,rgba(255,255,255,.14) 48%,rgba(255,255,255,0) 62%,rgba(255,255,255,.1) 100%),linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,0) 30%)}
+
+/* ===== 5. 10. B: bez probliknutí, tečky přes karty, kompaktní témata ===== */
+.story__card,.depth{background:transparent}
+.story::before,.receipt::before{display:none}
+.themes-anim{min-height:0;height:calc(var(--cy,200px) + 430px);padding:28px 0 0}
+.themes-anim .sec__head{margin-top:0}
+.themes-anim .burst__hint{top:calc(var(--cy,200px) + clamp(120px,12vw,150px))}

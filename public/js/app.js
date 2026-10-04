@@ -291,29 +291,33 @@
     mm.add("(max-width: 899px)", () => { rail.classList.add("rail--native"); return () => rail.classList.remove("rail--native"); });
 
     /* témata a cenovka */
-    /* témata (desktop): balónek začne letět ještě pod žlutým pruhem, doletí na místo textu a vymění ho;
-       pak krátké zamčení; při dalším scrollu uletí. Po prvním otevření se zamčení zruší (žádný lock). */
+    /* témata (desktop): text přijede pod žlutým pruhem; jakmile se zespodu ukáže balónek, scroll se zamkne
+       (balónek bude přesně uprostřed), text hned zmizí, balónek doletí na jeho místo; pak uletí.
+       Po prvním otevření balónků se zamčení zruší. */
     mm.add("(min-width: 861px)", () => {
-      const sec = $("#temata"), core = $(".burst__core"), hint = $(".burst__hint"), bEl = $("#burst"); if (!sec || !core) return;
+      const sec = $("#temata"), core = $(".burst__core"), hint = $(".burst__hint"); if (!sec || !core) return;
       sec.classList.add("themes-anim");
       g.set(core, { xPercent: -50, yPercent: -50 });
       const txt = $$("#temata .sec__head h2, #temata .sec__head p");
-      const setCY = () => { const r = sec.getBoundingClientRect(), a = txt[0].getBoundingClientRect(), b = txt[txt.length - 1].getBoundingClientRect(); bEl.style.setProperty("--cy", Math.round((a.top + b.bottom) / 2 - r.top) + "px"); };
+      let cyN = 200, open = false, unpinned = false, pIn = 0, pOut = 0;
+      const setCY = () => { const r = sec.getBoundingClientRect(), a = txt[0].getBoundingClientRect(), b = txt[txt.length - 1].getBoundingClientRect(); cyN = Math.round((a.top + b.bottom) / 2 - r.top); sec.style.setProperty("--cy", cyN + "px"); };
       setCY();
+      const X = () => Math.round(innerHeight / 2 - cyN);
+      const lockY = () => sec.getBoundingClientRect().top + scrollY - X();
       const tin = g.timeline({ paused: true })
-        .fromTo(core, { y: "80vh", x: 0, rotation: 0, opacity: 0 }, { keyframes: { y: ["80vh", "58vh", "38vh", "20vh", "7vh", "-1.5vh", "0vh"], x: [0, -46, 34, -24, 12, -4, 0], rotation: [0, -11, 8, -6, 3, -1, 0], opacity: [0, 1, 1, 1, 1, 1, 1], easeEach: "sine.inOut" }, duration: 0.75 }, 0)
-        .to(txt, { opacity: 0, y: -20, duration: 0.3, stagger: 0.05, ease: "power1.in" }, 0.45)
-        .fromTo(hint, { opacity: 0 }, { opacity: 1, duration: 0.08 }, 0.86)
-        .to({}, { duration: 0.06 });
+        .to(txt, { opacity: 0, y: -16, duration: 0.1, ease: "power1.in" }, 0)
+        .fromTo(core, { y: "64vh", x: 0, rotation: 0 }, { keyframes: { y: ["64vh", "44vh", "27vh", "13vh", "4vh", "-1vh", "0vh"], x: [0, -42, 30, -20, 10, -3, 0], rotation: [0, -10, 7, -5, 3, -1, 0], easeEach: "sine.inOut" }, duration: 0.68 }, 0)
+        .fromTo(hint, { opacity: 0 }, { opacity: 1, duration: 0.08 }, 0.72)
+        .to({}, { duration: 0.2 });
       const tout = g.timeline({ paused: true })
         .to(core, { keyframes: { y: ["0vh", "-18vh", "-40vh", "-65vh", "-95vh"], x: [0, 28, -22, 18, -10], rotation: [0, 7, -6, 5, -3], easeEach: "sine.inOut" }, duration: 1, ease: "power1.in" })
         .to(hint, { opacity: 0, duration: 0.15 }, 0)
         .to(core, { opacity: 0, duration: 0.2 }, 0.8);
-      let open = false, unpinned = false, pIn = 0, pOut = 0;
-      const sync = () => { if (open) return; g.to(tin, { progress: pIn, duration: 0.6, ease: "power2.out", overwrite: true }); g.to(tout, { progress: pOut, duration: 0.6, ease: "power2.out", overwrite: true }); };
-      const s1 = ST.create({ trigger: sec, start: "top top", end: "+=80%", pin: true, anticipatePin: 1 });
-      const sIn = ST.create({ trigger: sec, start: "top 62%", end: () => (unpinned ? sec.getBoundingClientRect().top + scrollY - 10 : s1.end - 60), onUpdate: (s) => { pIn = s.progress; sync(); }, onRefresh: setCY });
-      const s2 = ST.create({ trigger: sec, start: "bottom 70%", end: "bottom top", onUpdate: (s) => { pOut = s.progress; sync(); } });
+      tin.progress(0);
+      const sync = () => { if (open) return; g.to(tin, { progress: pIn, duration: 0.5, ease: "power2.out", overwrite: true }); g.to(tout, { progress: pOut, duration: 0.5, ease: "power2.out", overwrite: true }); };
+      const s1 = ST.create({ trigger: sec, start: () => "top " + X() + "px", end: "+=75%", pin: true, anticipatePin: 1, onRefreshInit: setCY, onUpdate: (s) => { if (!unpinned) { pIn = s.progress; sync(); } } });
+      const sIn = ST.create({ trigger: sec, start: () => (unpinned ? lockY() - innerHeight * 0.6 : 0), end: () => (unpinned ? lockY() : 1), onUpdate: (s) => { if (unpinned) { pIn = s.progress; sync(); } } });
+      const s2 = ST.create({ trigger: sec, start: () => (unpinned ? lockY() : s1.end), end: () => (unpinned ? lockY() : s1.end) + innerHeight * 0.55, onUpdate: (s) => { pOut = s.progress; sync(); } });
       const unpin = () => {
         if (unpinned) return;
         const y = scrollY, a = s1.start, b = s1.end;
@@ -323,7 +327,7 @@
       };
       const onOpen = () => { open = true; unpin(); }, onClose = () => { open = false; sync(); };
       addEventListener("burst-open", onOpen); addEventListener("burst-close", onClose);
-      return () => { if (!unpinned) s1.kill(); sIn.kill(); s2.kill(); tin.kill(); tout.kill(); sec.classList.remove("themes-anim"); removeEventListener("burst-open", onOpen); removeEventListener("burst-close", onClose); g.set([core, hint, ...txt], { clearProps: "all" }); };
+      return () => { if (!unpinned) s1.kill(); sIn.kill(); s2.kill(); tin.kill(); tout.kill(); sec.classList.remove("themes-anim"); sec.style.removeProperty("--cy"); removeEventListener("burst-open", onOpen); removeEventListener("burst-close", onClose); g.set([core, hint, ...txt], { clearProps: "all" }); };
     });
 
     /* účtenka: zamknout scroll a tisknout; karta se oddálí jako u nafukování */
