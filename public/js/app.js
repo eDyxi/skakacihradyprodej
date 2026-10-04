@@ -296,6 +296,7 @@
     mm.add("(min-width: 861px)", () => {
       const sec = $("#temata"), core = $(".burst__core"), hint = $(".burst__hint"), bEl = $("#burst"); if (!sec || !core) return;
       sec.classList.add("themes-anim");
+      g.set(core, { xPercent: -50, yPercent: -50 });
       const txt = $$("#temata .sec__head h2, #temata .sec__head p");
       const setCY = () => { const r = sec.getBoundingClientRect(), a = txt[0].getBoundingClientRect(), b = txt[txt.length - 1].getBoundingClientRect(); bEl.style.setProperty("--cy", Math.round((a.top + b.bottom) / 2 - r.top) + "px"); };
       setCY();

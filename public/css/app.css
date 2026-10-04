@@ -670,7 +670,7 @@ body::before{content:"";position:fixed;inset:-15%;z-index:-2;pointer-events:none
 .themes-anim{position:relative}
 .themes-anim>.wrap{position:static}
 .themes-anim .burst{position:absolute;inset:0;height:auto;margin:0}
-.themes-anim .burst__core{position:absolute;left:50%;top:var(--cy,38%);translate:-50% -50%;z-index:3}
+.themes-anim .burst__core{position:absolute;left:50%;top:var(--cy,38%);z-index:3}
 .themes-anim .burst__items li{top:var(--cy,38%)}
 .themes-anim .burst__hint{top:calc(var(--cy,38%) + clamp(130px,13vw,160px))}
 /* karty sekcí: průhledné, dokud se neoddálí; kulisa jen s oddálením (bez repaintu gradientů) */
