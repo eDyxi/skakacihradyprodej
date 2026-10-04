@@ -122,12 +122,12 @@
     if (RM || !FINE) return;
     const c = document.createElement("canvas"); c.className = host ? "dots dots--local" : "dots"; c.setAttribute("aria-hidden", "true");
     host ? host.prepend(c) : (document.body.prepend(c), document.documentElement.classList.add("has-dots"));
-    const x = c.getContext("2d"), GAP = 26, R = 150, cs = getComputedStyle(document.documentElement);
+    const x = c.getContext("2d"), GAP = 26, R = 150, cs = getComputedStyle(document.documentElement); let off = 0;
     const C = { base: cs.getPropertyValue("--sky").trim(), hot: cs.getPropertyValue("--gold").trim(), ink: cs.getPropertyValue("--ink").trim() };
     let W = 0, H = 0, D = [], mx = -999, my = -999, raf = 0, active = 0, waves = [];
     const rect = () => (host ? host.getBoundingClientRect() : { left: 0, top: 0, width: W });
     function build() {
-      const dpr = Math.min(devicePixelRatio || 1, 2); W = host ? host.offsetWidth : innerWidth; H = host ? host.offsetHeight : innerHeight;
+      const dpr = Math.min(devicePixelRatio || 1, 2); W = host ? host.offsetWidth : innerWidth; H = host ? host.offsetHeight : innerHeight + GAP;
       c.width = W * dpr; c.height = H * dpr; x.setTransform(dpr, 0, 0, dpr, 0, 0); D = [];
       for (let yy = GAP / 2; yy < H + GAP; yy += GAP) for (let xx = GAP / 2; xx < W + GAP; xx += GAP) D.push({ ox: xx, oy: yy, x: xx, y: yy, vx: 0, vy: 0, h: 0 });
       draw();
@@ -135,16 +135,16 @@
     function draw() {
       x.clearRect(0, 0, W, H);
       for (const d of D) {
-        x.globalAlpha = 0.26 + d.h * 0.74; x.fillStyle = d.h > 0.35 ? C.hot : C.base;
+        x.globalAlpha = 0.42 + d.h * 0.58; x.fillStyle = d.h > 0.35 ? C.hot : C.base;
         x.beginPath(); x.arc(d.x, d.y, 1.3 + d.h * 3.4, 0, 6.2832); x.fill();
         if (d.h > 0.35) { x.lineWidth = 1.4; x.strokeStyle = C.ink; x.stroke(); }
       }
       x.globalAlpha = 1;
     }
     function step() {
-      raf = 0; let moving = false; const off = host ? 0 : (scrollY * 0.12) % GAP;
+      raf = 0; let moving = false;
       for (const d of D) {
-        const oy = d.oy - off; let tx = d.ox, ty = oy, heat = 0;
+        const oy = d.oy; let tx = d.ox, ty = oy, heat = 0;
         const dx = d.x - mx, dy = d.y - my, dist = Math.hypot(dx, dy);
         if (dist < R) { const f = 1 - dist / R, push = f * f * 28; tx += (dx / (dist || 1)) * push; ty += (dy / (dist || 1)) * push; heat = f; }
         for (const w of waves) { const wx = d.ox - w.x, wy = oy - w.y, wd = Math.hypot(wx, wy), band = Math.abs(wd - w.r); if (band < 40) { const f = (1 - band / 40) * w.a; tx += (wx / (wd || 1)) * f * 22; ty += (wy / (wd || 1)) * f * 22; heat = Math.max(heat, f); } }
@@ -156,10 +156,10 @@
       if (moving || waves.length || active-- > 0) raf = requestAnimationFrame(step);
     }
     const kick = () => { active = 20; if (!raf) raf = requestAnimationFrame(step); };
-    const pos = (e) => { const r = rect(), k = host && r.width ? W / r.width : 1; return [(e.clientX - r.left) * k, (e.clientY - r.top) * k]; };
+    const pos = (e) => { const r = rect(), k = host && r.width ? W / r.width : 1; return [(e.clientX - r.left) * k, (e.clientY - r.top) * k + (host ? 0 : off)]; };
     addEventListener("pointermove", (e) => { [mx, my] = pos(e); kick(); }, { passive: true });
     addEventListener("pointerdown", (e) => { const [px, py] = pos(e); if (px >= 0 && py >= 0 && px <= W && py <= H) { waves.push({ x: px, y: py, r: 0, a: 1 }); kick(); } }, { passive: true });
-    if (!host) addEventListener("scroll", kick, { passive: true });
+    if (!host) { const par = () => { off = (scrollY * 0.12) % GAP; c.style.transform = `translate3d(0,${-off.toFixed(1)}px,0)`; }; addEventListener("scroll", par, { passive: true }); par(); }
     host ? new ResizeObserver(() => { build(); kick(); }).observe(host) : addEventListener("resize", () => { build(); kick(); });
     document.addEventListener("mouseleave", () => { mx = my = -999; kick(); });
     build();
@@ -181,8 +181,8 @@
     const T = Object.entries(TH).filter(([k]) => H.some((h) => h.th === k));
     ul.innerHTML = T.map(([k, [n, c]], i) => `<li><a class="bub" href="/katalog.html?th=${k}" style="--c:${c};--d:${(i * 0.055).toFixed(3)}s;--f:${(-i * 0.4).toFixed(1)}s" tabindex="-1"><span class="bal"><span class="bal__body"><img src="${img(byId[THEME_PIC[k]])}" alt="" width="122" height="139" loading="lazy"></span><i>${H.filter((h) => h.th === k).length}</i><span class="bal__knot"></span><svg class="bal__str" viewBox="0 0 20 34" aria-hidden="true"><path d="M10 0 C 5 9, 15 20, 10 34" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><animate attributeName="d" dur="${(2.2 + (i % 3) * 0.35).toFixed(2)}s" begin="-${(i * 0.3).toFixed(1)}s" repeatCount="indefinite" values="M10 0 C 5 9, 15 20, 10 34;M10 0 C 15 10, 5 22, 13 34;M10 0 C 6 8, 16 21, 8 34;M10 0 C 5 9, 15 20, 10 34"/></path></svg><b>${n}</b></span></a></li>`).join("");
     const place = () => {
-      const w = b.offsetWidth, hh = b.offsetHeight, rx = Math.min(w * 0.42, 460), ry = Math.min(hh * 0.33, 250);
-      $$(".bub", ul).forEach((a, i) => { const ang = -Math.PI / 2 + (i / T.length) * Math.PI * 2; a.style.setProperty("--x", (Math.cos(ang) * rx).toFixed(0) + "px"); a.style.setProperty("--y", (Math.sin(ang) * ry).toFixed(0) + "px"); });
+      const fan = !!b.closest(".themes-anim"), w = b.offsetWidth, hh = b.offsetHeight, rx = Math.min(w * 0.42, 460), ry = fan ? Math.min(hh * 0.38, 290) : Math.min(hh * 0.33, 250);
+      $$(".bub", ul).forEach((a, i) => { const ang = fan ? ((-15 + i * (210 / (T.length - 1))) * Math.PI) / 180 : -Math.PI / 2 + (i / T.length) * Math.PI * 2; a.style.setProperty("--x", (Math.cos(ang) * rx).toFixed(0) + "px"); a.style.setProperty("--y", (Math.sin(ang) * ry).toFixed(0) + "px"); });
     };
     place(); new ResizeObserver(place).observe(b);
     core.addEventListener("click", () => {
@@ -202,7 +202,7 @@
     return (p) => {
       const feed = Math.min(1, p / 0.82);
       rc.style.setProperty("--p", feed.toFixed(4));
-      sec.style.setProperty("--feed", (p * 2400).toFixed(0) + "px");
+      sec.style.setProperty("--feedY", (-((p * 2400) % 24)).toFixed(1) + "px");
       lines.forEach((li, i) => li.classList.toggle("on", feed > 0.12 + (i / lines.length) * 0.82));
       rc.classList.toggle("stamped", p > 0.9);
       if (Math.abs(p - last) > 0.002 && p < 0.86) { pr.classList.add("printing"); clearTimeout(tmo); tmo = setTimeout(() => pr.classList.remove("printing"), 180); }
@@ -291,28 +291,38 @@
     mm.add("(max-width: 899px)", () => { rail.classList.add("rail--native"); return () => rail.classList.remove("rail--native"); });
 
     /* témata a cenovka */
-    /* témata (desktop): sekce se zamkne, nejdřív text; pak balónek pomalu přiletí zdola ve větru a text zmizí;
-       při dalším scrollu balónek uletí nahoru. Když jsou balónky otevřené, scroll nic nemění. */
+    /* témata (desktop): balónek začne letět ještě pod žlutým pruhem, doletí na místo textu a vymění ho;
+       pak krátké zamčení; při dalším scrollu uletí. Po prvním otevření se zamčení zruší (žádný lock). */
     mm.add("(min-width: 861px)", () => {
-      const sec = $("#temata"), core = $(".burst__core"), hint = $(".burst__hint"); if (!sec || !core) return;
+      const sec = $("#temata"), core = $(".burst__core"), hint = $(".burst__hint"), bEl = $("#burst"); if (!sec || !core) return;
       sec.classList.add("themes-anim");
       const txt = $$("#temata .sec__head h2, #temata .sec__head p");
+      const setCY = () => { const r = sec.getBoundingClientRect(), a = txt[0].getBoundingClientRect(), b = txt[txt.length - 1].getBoundingClientRect(); bEl.style.setProperty("--cy", Math.round((a.top + b.bottom) / 2 - r.top) + "px"); };
+      setCY();
       const tin = g.timeline({ paused: true })
-        .fromTo(core, { y: "70vh", x: 0, rotation: 0, opacity: 0 }, { keyframes: { y: ["70vh", "50vh", "32vh", "17vh", "6vh", "-1.5vh", "0vh"], x: [0, -46, 34, -24, 12, -4, 0], rotation: [0, -11, 8, -6, 3, -1, 0], opacity: [0, 1, 1, 1, 1, 1, 1], easeEach: "sine.inOut" }, duration: 0.6 }, 0.15)
-        .to(txt, { opacity: 0, y: -24, duration: 0.35, stagger: 0.05, ease: "power1.in" }, 0.32)
-        .fromTo(hint, { opacity: 0 }, { opacity: 1, duration: 0.1 }, 0.78)
-        .to({}, { duration: 0.12 });
+        .fromTo(core, { y: "80vh", x: 0, rotation: 0, opacity: 0 }, { keyframes: { y: ["80vh", "58vh", "38vh", "20vh", "7vh", "-1.5vh", "0vh"], x: [0, -46, 34, -24, 12, -4, 0], rotation: [0, -11, 8, -6, 3, -1, 0], opacity: [0, 1, 1, 1, 1, 1, 1], easeEach: "sine.inOut" }, duration: 0.75 }, 0)
+        .to(txt, { opacity: 0, y: -20, duration: 0.3, stagger: 0.05, ease: "power1.in" }, 0.45)
+        .fromTo(hint, { opacity: 0 }, { opacity: 1, duration: 0.08 }, 0.86)
+        .to({}, { duration: 0.06 });
       const tout = g.timeline({ paused: true })
         .to(core, { keyframes: { y: ["0vh", "-18vh", "-40vh", "-65vh", "-95vh"], x: [0, 28, -22, 18, -10], rotation: [0, 7, -6, 5, -3], easeEach: "sine.inOut" }, duration: 1, ease: "power1.in" })
         .to(hint, { opacity: 0, duration: 0.15 }, 0)
         .to(core, { opacity: 0, duration: 0.2 }, 0.8);
-      let open = false, pIn = 0, pOut = 0;
+      let open = false, unpinned = false, pIn = 0, pOut = 0;
       const sync = () => { if (open) return; g.to(tin, { progress: pIn, duration: 0.6, ease: "power2.out", overwrite: true }); g.to(tout, { progress: pOut, duration: 0.6, ease: "power2.out", overwrite: true }); };
-      const s1 = ST.create({ trigger: sec, start: "top top", end: "+=130%", pin: true, anticipatePin: 1, onUpdate: (s) => { pIn = s.progress; sync(); } });
+      const s1 = ST.create({ trigger: sec, start: "top top", end: "+=80%", pin: true, anticipatePin: 1 });
+      const sIn = ST.create({ trigger: sec, start: "top 62%", end: () => (unpinned ? sec.getBoundingClientRect().top + scrollY - 10 : s1.end - 60), onUpdate: (s) => { pIn = s.progress; sync(); }, onRefresh: setCY });
       const s2 = ST.create({ trigger: sec, start: "bottom 70%", end: "bottom top", onUpdate: (s) => { pOut = s.progress; sync(); } });
-      const onOpen = () => (open = true), onClose = () => { open = false; sync(); };
+      const unpin = () => {
+        if (unpinned) return;
+        const y = scrollY, a = s1.start, b = s1.end;
+        unpinned = true; s1.kill(true); ST.refresh();
+        const t = y >= b ? y - (b - a) : y > a ? a : y;
+        if (t !== y) { window.__lenis ? window.__lenis.scrollTo(t, { immediate: true, force: true }) : scrollTo(0, t); }
+      };
+      const onOpen = () => { open = true; unpin(); }, onClose = () => { open = false; sync(); };
       addEventListener("burst-open", onOpen); addEventListener("burst-close", onClose);
-      return () => { s1.kill(); s2.kill(); tin.kill(); tout.kill(); sec.classList.remove("themes-anim"); removeEventListener("burst-open", onOpen); removeEventListener("burst-close", onClose); g.set([core, hint, ...txt], { clearProps: "all" }); };
+      return () => { if (!unpinned) s1.kill(); sIn.kill(); s2.kill(); tin.kill(); tout.kill(); sec.classList.remove("themes-anim"); removeEventListener("burst-open", onOpen); removeEventListener("burst-close", onClose); g.set([core, hint, ...txt], { clearProps: "all" }); };
     });
 
     /* účtenka: zamknout scroll a tisknout; karta se oddálí jako u nafukování */

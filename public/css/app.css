@@ -665,3 +665,19 @@ body::before{content:"";position:fixed;inset:-15%;z-index:-2;pointer-events:none
 .story::before,.receipt::before{opacity:1}
 .story::before{background-color:color-mix(in srgb,var(--teal) 60%,var(--sky))}
 .story__card,.depth{background:var(--glow),var(--bg)}
+
+/* ===== 5. 10.: témata vějíř, plynulost, sklo ===== */
+.themes-anim{position:relative}
+.themes-anim>.wrap{position:static}
+.themes-anim .burst{position:absolute;inset:0;height:auto;margin:0}
+.themes-anim .burst__core{position:absolute;left:50%;top:var(--cy,38%);translate:-50% -50%;z-index:3}
+.themes-anim .burst__items li{top:var(--cy,38%)}
+.themes-anim .burst__hint{top:calc(var(--cy,38%) + clamp(130px,13vw,160px))}
+/* karty sekcí: průhledné, dokud se neoddálí; kulisa jen s oddálením (bez repaintu gradientů) */
+.story__card,.depth{background:color-mix(in srgb,var(--bg) calc(min(1,var(--k) * 3) * 100%),transparent);box-shadow:0 calc(var(--k) * 18px) calc(var(--k) * 30px) color-mix(in srgb,var(--ink) 35%,transparent)}
+.story::before,.receipt::before{opacity:var(--k)}
+.receipt::before{inset:-24px 0 0 0;background-position:0 0,0 0;transform:translate3d(0,var(--feedY,0px),0);will-change:transform}
+/* tečky výraznější i bez plátna */
+body{background-image:radial-gradient(color-mix(in srgb,var(--sky) 38%,transparent) 1.2px,transparent 1.6px)}
+/* tyrkysové sklo: jemné odlesky přes celé pozadí */
+body::after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;background:linear-gradient(115deg,rgba(255,255,255,.26) 0%,rgba(255,255,255,0) 26%,rgba(255,255,255,.14) 48%,rgba(255,255,255,0) 62%,rgba(255,255,255,.1) 100%),linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,0) 30%)}
