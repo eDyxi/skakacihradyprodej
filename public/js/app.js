@@ -303,7 +303,7 @@
       let cyN = 200, open = false, unpinned = false, pIn = 0, pOut = 0;
       const setCY = () => { const r = sec.getBoundingClientRect(), a = txt[0].getBoundingClientRect(), b = txt[txt.length - 1].getBoundingClientRect(); cyN = Math.round((a.top + b.bottom) / 2 - r.top); sec.style.setProperty("--cy", cyN + "px"); dispatchEvent(new Event("burst-place")); };
       setCY();
-      const X = () => Math.round(innerHeight * 0.33);
+      const X = () => Math.round(innerHeight * 0.336);
       const lockY = () => sec.getBoundingClientRect().top + scrollY - X();
       const tin = g.timeline({ paused: true })
         .to(txt, { opacity: 0, y: -16, duration: 0.1, ease: "power1.in" }, 0)

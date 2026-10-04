@@ -707,3 +707,9 @@ body::after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;bac
 .themes-anim .sec__head .eyebrow{margin-bottom:0}
 .themes-anim .sec__head h2{margin-top:auto;max-width:15ch}
 .themes-anim .sec__head p{margin-bottom:auto;max-width:56ch}
+
+/* ===== témata podle 2. náčrtu: sekce ~53 % výšky, pilulka níž, text výš, balónek letí přes další sekce ===== */
+.themes-anim{height:max(420px,53svh);padding:calc(10svh - 22px) 0 0;z-index:5}
+.themes-anim .sec__head{padding-bottom:0}
+.themes-anim .sec__head h2{margin-top:clamp(16px,2.6svh,30px)}
+.themes-anim .sec__head p{margin-bottom:auto}
