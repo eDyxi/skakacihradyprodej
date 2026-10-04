@@ -159,7 +159,7 @@
     const pos = (e) => { const r = rect(), k = host && r.width ? W / r.width : 1; return [(e.clientX - r.left) * k, (e.clientY - r.top) * k + (host ? 0 : off)]; };
     addEventListener("pointermove", (e) => { [mx, my] = pos(e); kick(); }, { passive: true });
     addEventListener("pointerdown", (e) => { const [px, py] = pos(e); if (px >= 0 && py >= 0 && px <= W && py <= H) { waves.push({ x: px, y: py, r: 0, a: 1 }); kick(); } }, { passive: true });
-    if (!host) { const par = () => { off = (scrollY * 0.12) % GAP; c.style.transform = `translate3d(0,${-off.toFixed(1)}px,0)`; }; addEventListener("scroll", par, { passive: true }); par(); }
+    
     host ? new ResizeObserver(() => { build(); kick(); }).observe(host) : addEventListener("resize", () => { build(); kick(); });
     document.addEventListener("mouseleave", () => { mx = my = -999; kick(); });
     build();
@@ -202,7 +202,7 @@
     return (p) => {
       const feed = Math.min(1, p / 0.82);
       rc.style.setProperty("--p", feed.toFixed(4));
-      sec.style.setProperty("--feedY", (-((p * 2400) % 24)).toFixed(1) + "px");
+      sec.style.setProperty("--feed", (p * 2400).toFixed(0) + "px");
       lines.forEach((li, i) => li.classList.toggle("on", feed > 0.12 + (i / lines.length) * 0.82));
       rc.classList.toggle("stamped", p > 0.9);
       if (Math.abs(p - last) > 0.002 && p < 0.86) { pr.classList.add("printing"); clearTimeout(tmo); tmo = setTimeout(() => pr.classList.remove("printing"), 180); }
@@ -268,7 +268,7 @@
       mm.add("(min-width: 861px)", () => {
         const card = $(".story__card"), secS = $(".story");
         const qsx = g.quickTo(card, "scaleX", { duration: 0.9, ease: "power3" }), qsy = g.quickTo(card, "scaleY", { duration: 0.9, ease: "power3" }), qs = (v) => { qsx(v); qsy(v); }, qy = g.quickTo(card, "yPercent", { duration: 0.9, ease: "power3" }), qk = g.quickTo(secS, "--k", { duration: 0.9, ease: "power3" });
-        const depth = (p) => { const k = p < 0.12 ? p / 0.12 : p > 0.86 ? (1 - p) / 0.14 : 1, e = k * k * (3 - 2 * k); qs(1 - 0.12 * e); qy(-2.5 * e); qk(e); };
+        const depth = (p) => { const k = p < 0.12 ? p / 0.12 : p > 0.86 ? (1 - p) / 0.14 : 1, e = k * k * (3 - 2 * k); qs(1 - 0.12 * e); qk(e); };
         ST.create({ trigger: ".story__pin", start: "top top", end: "+=320%", pin: true, anticipatePin: 1, scrub: 0.6, animation: tl,
           onUpdate: (s) => { depth(s.progress); dispatchEvent(new CustomEvent("story", { detail: s.progress })); const i = Math.min(steps.length - 1, Math.floor(s.progress * steps.length)); steps.forEach((li, k) => li.classList.toggle("on", k <= i)); if (gauge) gauge.textContent = Math.round(s.progress * 100) + " %"; } });
       });

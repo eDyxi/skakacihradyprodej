@@ -688,3 +688,14 @@ body::after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;bac
 .themes-anim{min-height:0;height:calc(var(--cy,200px) + 430px);padding:28px 0 0}
 .themes-anim .sec__head{margin-top:0}
 .themes-anim .burst__hint{top:calc(var(--cy,200px) + clamp(120px,12vw,150px))}
+
+/* ===== 5. 10. C: kulisa jen KOLEM oddálené karty (maska s dírou), přední pozadí průhledné s tečkami ===== */
+.story__pin,.receipt__pin{position:relative}
+.story__pin{--s:calc(1 - .12 * var(--k,0))}
+.receipt__pin{--s:calc(1 - .1 * var(--k,0))}
+.story__pin::before,.receipt__pin::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;opacity:calc(min(1,var(--k,0) * 1000));
+  -webkit-mask:linear-gradient(#000 0 0) 0 0/100% 100% no-repeat,linear-gradient(#000 0 0) 50% 45%/calc(var(--s) * 100%) calc(var(--s) * 100%) no-repeat;-webkit-mask-composite:xor;
+  mask:linear-gradient(#000 0 0) 0 0/100% 100% no-repeat,linear-gradient(#000 0 0) 50% 45%/calc(var(--s) * 100%) calc(var(--s) * 100%) no-repeat;mask-composite:exclude}
+.story__pin::before{background:radial-gradient(color-mix(in srgb,var(--card) 45%,transparent) 1.4px,transparent 1.8px) 0 0/26px 26px,color-mix(in srgb,var(--teal) 45%,#1f7fc4)}
+.receipt__pin::before{background:repeating-linear-gradient(0deg,transparent 0 22px,color-mix(in srgb,var(--ink) 18%,transparent) 22px 24px) 0 var(--feed,0px),linear-gradient(160deg,var(--gold),var(--gold-2))}
+.story__card,.receipt__card{position:relative;z-index:1}
