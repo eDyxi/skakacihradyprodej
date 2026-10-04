@@ -643,8 +643,8 @@ html{background:radial-gradient(55% 45% at 0% 16%,color-mix(in srgb,var(--teal) 
 .story::before{background:color-mix(in srgb,var(--teal) 70%,var(--sky));background-image:radial-gradient(color-mix(in srgb,var(--card) 55%,transparent) 1.4px,transparent 1.8px);background-size:26px 26px}
 .receipt::before{background:repeating-linear-gradient(0deg,transparent 0 22px,color-mix(in srgb,var(--ink) 18%,transparent) 22px 24px),linear-gradient(160deg,var(--gold),var(--gold-2));background-position:0 var(--feed),0 0}
 .story__card,.depth{background:color-mix(in srgb,var(--paper) calc(var(--k) * 100%),transparent)}
-.story__card{--k:initial}
-.depth{--k:initial}
+.story__card{--k:inherit}
+.depth{--k:inherit}
 .story__pin,.receipt__pin{position:relative}
 /* témata: text v normálním toku hned pod pruhem */
 .themes-sec .sec__head{text-align:left}
