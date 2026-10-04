@@ -749,3 +749,16 @@ body::after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;bac
 .themes-anim{height:max(460px,61svh)}
 .themes-anim .burst__core{top:calc(var(--cy,38%) + 72px)}
 .themes-anim .burst__hint{top:calc(var(--cy,200px) + 72px + 162px)}
+
+/* ===== 5. 10. E ===== */
+/* mraky: zleva zvenku doprava ven, vlastní vlnka */
+.cloud--fly{left:0;width:var(--w);animation:fly var(--t) linear var(--o) infinite backwards}
+@keyframes fly{0%{translate:-30vw 0}50%{translate:45vw var(--ym)}100%{translate:118vw var(--y1)}}
+/* čáry mezi sekcemi: o 10 % kratší, do ztracena, umístěné doprostřed mezery (JS) */
+.themes-sec::after{display:none}
+.receipt,#na-miru,#faq{position:relative}
+.dv{position:absolute;left:50%;width:79%;translate:-50% 0;height:3px;border-radius:3px;background:linear-gradient(90deg,transparent,var(--ink) 22%,var(--ink) 78%,transparent);pointer-events:none;z-index:6}
+/* chyť a otoč – napravo vedle hradu */
+.hero__note{left:auto;right:-3%;top:46%;transform:rotate(7deg);text-align:left;max-width:none;line-height:.95}
+/* Jak to probíhá: tmavší kulisa se posouvá se scrollem */
+.story__pin::before{background-position:0 var(--sfeed,0px),0 0}

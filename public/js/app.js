@@ -221,12 +221,41 @@
 
   /* ---------- ÚVOD ---------- */
   const FEATURED = [34, 17, 111, 8, 54, 105, 81, 57, 64, 90, 70, 21];
+  /* mraky: 10 ks, zleva zvenku doprava ven, každý jiná výška, rychlost a vlnka */
+  function clouds() {
+    const hero = $(".hero"); if (!hero || RM) return;
+    const P = '<path d="M22 50a16 16 0 0 1 2-32 22 22 0 0 1 40-6 18 18 0 0 1 32 10 14 14 0 0 1 2 28z"/>';
+    const r = (a, b) => a + Math.random() * (b - a);
+    hero.insertAdjacentHTML("afterbegin", Array.from({ length: 10 }, (_, i) => {
+      const t = r(24, 46), y0 = r(-2, 90);
+      return `<svg class="cloud cloud--fly" viewBox="0 0 120 60" aria-hidden="true" style="--w:${Math.round(r(48, 130))}px;top:${y0.toFixed(1)}%;--t:${t.toFixed(1)}s;--o:${(i * 2.6 + r(0, 1.5)).toFixed(1)}s;--ym:${Math.round(r(-40, 40))}px;--y1:${Math.round(r(-30, 30))}px;opacity:${r(0.75, 1).toFixed(2)}">${P}</svg>`;
+    }).join(""));
+  }
+
+  /* čáry mezi sekcemi + páska: přesně doprostřed mezery (měří se obsah, ne prázdné boxy) */
+  function spacers() {
+    const pairs = [
+      [() => $(".hero__grid"), () => $(".story .eyebrow"), $(".tape"), "tape"],
+      [() => $(".burst__hint"), () => $(".receipt .eyebrow"), $(".receipt"), "line", () => $("#temata")],
+      [() => $(".printer"), () => $("#na-miru .eyebrow"), $("#na-miru"), "line", () => $(".receipt__pin")],
+      [() => $("#na-miru .custom"), () => $("#faq .eyebrow"), $("#faq"), "line", () => $("#na-miru")],
+    ];
+    const run = () => pairs.forEach(([aEnd, bStart, el, kind, aBox]) => {
+      const A = aEnd(), B = bStart(); if (!A || !B || !el || el.hidden) return;
+      if (kind === "tape") { el.style.translate = "0 0"; const t = el.getBoundingClientRect(), up = t.top - A.getBoundingClientRect().bottom, dn = B.getBoundingClientRect().top - t.bottom; el.style.translate = `0 ${Math.round((dn - up) / 2)}px`; return; }
+      let dv = el.querySelector(":scope > .dv"); if (!dv) { dv = document.createElement("span"); dv.className = "dv"; dv.setAttribute("aria-hidden", "true"); el.prepend(dv); }
+      const box = aBox().getBoundingClientRect(), above = box.bottom - A.getBoundingClientRect().bottom, below = B.getBoundingClientRect().top - el.getBoundingClientRect().top;
+      dv.style.top = Math.round((below - above) / 2) + "px";
+    });
+    run(); addEventListener("resize", run); addEventListener("load", run); window.ScrollTrigger?.addEventListener("refresh", run);
+  }
+
   function home() {
     $$("[data-castle]").forEach((el) => (el.innerHTML = castle({ idle: el.dataset.castle === "idle", fan: el.dataset.castle === "story" })));
     const track = $("#rail-track");
     if (track) track.innerHTML = FEATURED.slice(0, 6).filter((i) => byId[i]).map((i) => card(byId[i])).join("") +
       `<div class="rail__end"><div><p>Dalších ${H.length - 6} modelů v katalogu</p><a class="btn" href="/katalog.html">Celý katalog ${I.arrow}</a></div></div>`;
-    burst(); sun($("#nejzadanejsi")); 
+    burst(); sun($("#nejzadanejsi")); clouds(); setTimeout(spacers, 400); 
     const printAt = receipt();
     bindForm(() => { const a = $("[data-ask-cart]"); if (a) a.hidden = true; });
     const ask = $("[data-ask-cart]"), inC = cart.get().filter((i) => byId[i.id]);
@@ -277,7 +306,7 @@
         const qsx = g.quickTo(card, "scaleX", { duration: 0.9, ease: "power3" }), qsy = g.quickTo(card, "scaleY", { duration: 0.9, ease: "power3" }), qs = (v) => { qsx(v); qsy(v); }, qy = g.quickTo(card, "yPercent", { duration: 0.9, ease: "power3" }), qk = g.quickTo(secS, "--k", { duration: 0.9, ease: "power3" });
         const depth = (p) => { const k = p < 0.12 ? p / 0.12 : p > 0.86 ? (1 - p) / 0.14 : 1, e = k * k * (3 - 2 * k); qs(1 - 0.12 * e); qk(e); };
         ST.create({ trigger: ".story__pin", start: "top top", end: "+=320%", pin: true, anticipatePin: 1, scrub: 0.6, animation: tl,
-          onUpdate: (s) => { depth(s.progress); dispatchEvent(new CustomEvent("story", { detail: s.progress })); const i = Math.min(steps.length - 1, Math.floor(s.progress * steps.length)); steps.forEach((li, k) => li.classList.toggle("on", k <= i)); if (gauge) gauge.textContent = Math.round(s.progress * 100) + " %"; } });
+          onUpdate: (s) => { depth(s.progress); secS.style.setProperty("--sfeed", (s.progress * 1800).toFixed(0) + "px"); dispatchEvent(new CustomEvent("story", { detail: s.progress })); const i = Math.min(steps.length - 1, Math.floor(s.progress * steps.length)); steps.forEach((li, k) => li.classList.toggle("on", k <= i)); if (gauge) gauge.textContent = Math.round(s.progress * 100) + " %"; } });
       });
       mm.add("(max-width: 860px)", () => {
         steps.forEach((s) => s.classList.add("on"));
@@ -304,7 +333,7 @@
       const sec = $("#temata"), core = $(".burst__core"), hint = $(".burst__hint"); if (!sec || !core) return;
       sec.classList.add("themes-anim");
       g.set(core, { xPercent: -50, yPercent: -50 });
-      const txt = $$("#temata .sec__head h2, #temata .sec__head p");
+      const txt = $$("#temata .sec__head h2, #temata .sec__head p"), pill = $("#temata .eyebrow");
       let cyN = 200, open = false, locked = false, prog = 0, pOut = 0, last = scrollY;
       const setCY = () => { const r = sec.getBoundingClientRect(), a = txt[0].getBoundingClientRect(), b = txt[txt.length - 1].getBoundingClientRect(); cyN = Math.round((a.top + b.bottom) / 2 - r.top); sec.style.setProperty("--cy", cyN + "px"); dispatchEvent(new Event("burst-place")); };
       setCY();
@@ -312,11 +341,14 @@
       const tin = g.timeline({ paused: true })
         .to(txt, { opacity: 0, y: -16, duration: 0.1, ease: "power1.in" }, 0)
         .fromTo(core, { y: "52vh", x: 0, rotation: 0 }, { keyframes: { y: ["52vh", "37vh", "23vh", "11vh", "3vh", "-1vh", "0vh"], x: [0, -42, 30, -20, 10, -3, 0], rotation: [0, -10, 7, -5, 3, -1, 0], easeEach: "sine.inOut" }, duration: 0.82 }, 0)
+        .to(pill, { y: -38, duration: 0.2, ease: "power2.out" }, 0.55)
         .fromTo(hint, { opacity: 0 }, { opacity: 1, duration: 0.08 }, 0.86)
         .to({}, { duration: 0.06 });
       const tout = g.timeline({ paused: true })
         .to(core, { keyframes: { y: ["0vh", "-18vh", "-40vh", "-65vh", "-95vh"], x: [0, 28, -22, 18, -10], rotation: [0, 7, -6, 5, -3], easeEach: "sine.inOut" }, duration: 1, ease: "power1.in" })
         .to(hint, { opacity: 0, duration: 0.15 }, 0)
+        .fromTo(pill, { y: -38 }, { y: 0, duration: 0.25, immediateRender: false }, 0.3)
+        .fromTo(txt, { opacity: 0, y: -16 }, { opacity: 1, y: 0, duration: 0.3, stagger: 0.05, immediateRender: false }, 0.38)
         .to(core, { opacity: 0, duration: 0.2 }, 0.8);
       tin.progress(0);
       const L = () => window.__lenis;
@@ -345,7 +377,7 @@
       const s2 = ST.create({ trigger: sec, start: () => lockY(), end: () => lockY() + innerHeight * 0.55, onUpdate: (s) => { pOut = s.progress; if (!open) g.to(tout, { progress: pOut, duration: 0.5, ease: "power2.out", overwrite: true }); }, onRefreshInit: setCY });
       const onOpen = () => { open = true; if (locked) unlock(); }, onClose = () => { open = false; g.to(tout, { progress: pOut, duration: 0.5, overwrite: true }); };
       addEventListener("burst-open", onOpen); addEventListener("burst-close", onClose);
-      return () => { if (locked) unlock(); s2.kill(); tin.kill(); tout.kill(); removeEventListener("wheel", onWheel); removeEventListener("keydown", onKey); removeEventListener("scroll", onScroll); sec.classList.remove("themes-anim"); sec.style.removeProperty("--cy"); removeEventListener("burst-open", onOpen); removeEventListener("burst-close", onClose); g.set([core, hint, ...txt], { clearProps: "all" }); };
+      return () => { if (locked) unlock(); s2.kill(); tin.kill(); tout.kill(); removeEventListener("wheel", onWheel); removeEventListener("keydown", onKey); removeEventListener("scroll", onScroll); sec.classList.remove("themes-anim"); sec.style.removeProperty("--cy"); removeEventListener("burst-open", onOpen); removeEventListener("burst-close", onClose); g.set([core, hint, pill, ...txt], { clearProps: "all" }); };
     });
 
     /* účtenka: zamknout scroll a tisknout; karta se oddálí jako u nafukování */
