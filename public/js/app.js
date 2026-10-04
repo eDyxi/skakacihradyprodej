@@ -378,7 +378,7 @@
       mm.add("(min-width: 861px)", () => {
         const card = $(".receipt__card"), secR = $(".receipt");
         const qx = g.quickTo(card, "scaleX", { duration: 0.9, ease: "power3" }), qy2 = g.quickTo(card, "scaleY", { duration: 0.9, ease: "power3" }), qk = g.quickTo(secR, "--k", { duration: 0.9, ease: "power3" });
-        ST.create({ trigger: ".receipt__pin", start: "top top", end: "+=200%", pin: true, scrub: 0.4,
+        ST.create({ trigger: ".receipt__pin", start: "top top", end: "+=200%", pin: true, scrub: 0.4, onToggle: (t) => document.documentElement.classList.toggle("rpin", t.isActive),
           onUpdate: (s) => { const p = s.progress, k = p < 0.1 ? p / 0.1 : p > 0.9 ? (1 - p) / 0.1 : 1, e = k * k * (3 - 2 * k); qx(1 - 0.1 * e); qy2(1 - 0.1 * e); qk(e); printAt(p); } });
       });
       mm.add("(max-width: 860px)", () => {
@@ -387,7 +387,7 @@
     }
     /* na míru: až PO účtence (pořadí pinů = pořadí v DOM) */
     const custP = (s) => { window.__customP = s.progress; dispatchEvent(new CustomEvent("custom", { detail: s.progress })); };
-    mm.add("(min-width: 861px)", () => { ST.create({ trigger: "#na-miru", start: "center center", end: "+=170%", pin: true, scrub: 0.5, onUpdate: custP }); });
+    mm.add("(min-width: 861px)", () => { ST.create({ trigger: "#na-miru", start: "center center", end: "+=170%", pin: true, scrub: 0.5, onUpdate: custP, onToggle: (t) => document.documentElement.classList.toggle("cpin", t.isActive) }); });
     mm.add("(max-width: 860px)", () => { ST.create({ trigger: ".custom__art", start: "top 80%", end: "bottom 30%", scrub: 0.5, onUpdate: custP }); });
     addEventListener("load", () => ST.refresh());
   }

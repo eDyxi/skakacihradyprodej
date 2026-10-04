@@ -849,3 +849,5 @@ body::after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;bac
 @media (min-width:861px){#na-miru.custom-sec{margin-top:calc(-13.5svh - 24px)}}
 /* Podle témat končí přímo čárou: horní čára Na rovinu leží na spodku sekce balónků */
 @media (min-width:861px){.receipt{margin-top:-12.5svh}}
+/* mezi Na rovinu a Na míru vždy jen čára aktivní sekce */
+.rpin #na-miru::before,.cpin .rl--b{opacity:0}
