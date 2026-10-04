@@ -847,3 +847,5 @@ body::after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;bac
 .custom__card{transform:none!important;border-radius:0;box-shadow:none}
 /* čára účtenky (dole) a horní čára Na míru leží v toku přesně na sobě → vidět je vždy jen jedna, a při zámku každé sekce stojí */
 @media (min-width:861px){#na-miru.custom-sec{margin-top:calc(-13.5svh - 24px)}}
+/* Podle témat končí přímo čárou: horní čára Na rovinu leží na spodku sekce balónků */
+@media (min-width:861px){.receipt{margin-top:-12.5svh}}
