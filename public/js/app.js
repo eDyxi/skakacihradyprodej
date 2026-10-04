@@ -279,7 +279,6 @@
     g.timeline()
       .from(".hero__logo .hl1, .hero__logo .hl2", { y: -160, scaleY: 1.35, scaleX: 0.8, opacity: 0, transformOrigin: "50% 100%", duration: 1.3, ease: "elastic.out(1, 0.4)", stagger: 0.16 })
       .from(".hero__lede, .hero__cta, .hero__facts li", { y: 24, opacity: 0, duration: 0.6, stagger: 0.05, ease: "back.out(1.8)" }, "-=.8");
-    g.to(".cloud", { yPercent: (i) => -40 - i * 25, ease: "none", scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: true } });
 
     /* příběh: hrad se nafukuje se scrollem */
     const mm = g.matchMedia();
