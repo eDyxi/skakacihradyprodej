@@ -55,7 +55,7 @@
     if (!b) return;
     e.preventDefault();
     const id = +b.dataset.add;
-    if (cart.has(id)) { location.href = "/kosik.html"; return; }
+    if (cart.has(id)) { miniCart(); return; }
     cart.add(id, byId[id]?.fi ? 0 : 0);
     b.classList.add("done"); b.innerHTML = I.ok + "<span>V poptávce</span>"; b.setAttribute("aria-label", "V poptávce – otevřít");
     badge(true);
@@ -221,6 +221,9 @@
       `<div class="rail__end"><div><p>Dalších ${H.length - 6} modelů v katalogu</p><a class="btn" href="/katalog.html">Celý katalog ${I.arrow}</a></div></div>`;
     burst(); sun($("#nejzadanejsi")); dotsBg($(".story__card")); dotsBg($(".receipt__card"));
     const printAt = receipt();
+    bindForm(() => { const a = $("[data-ask-cart]"); if (a) a.hidden = true; });
+    const ask = $("[data-ask-cart]"), inC = cart.get().filter((i) => byId[i.id]);
+    if (ask && inC.length) { ask.hidden = false; ask.innerHTML = `V poptávce: <b>${inC.map((i) => byId[i.id].n).join(", ")}</b> – pošleme s ní. <a href="/kosik.html">Upravit</a>`; }
     setTimeout(() => { if (!window.__3d) $$(".hero__art, .story__art").forEach((e) => e.classList.add("no3d")); }, 6000);
     const cnt = $("[data-count]"); if (cnt) cnt.textContent = H.length;
     const minP = $("[data-min-price]"); if (minP) minP.textContent = kc(Math.min(...H.map((h) => h.p)));
@@ -229,7 +232,12 @@
     const steps = $$(".story__steps li");
     if (!g || !ST || RM) { steps.forEach((s) => s.classList.add("on")); $("#rail")?.classList.add("rail--native"); printAt?.(1); window.__customP = 1; return; }
     g.registerPlugin(ST);
-    if (window.Lenis) { const l = new Lenis({ lerp: 0.12 }); l.on("scroll", ST.update); g.ticker.add((t) => l.raf(t * 1000)); g.ticker.lagSmoothing(0); }
+    if (window.Lenis) {
+      const l = (window.__lenis = new Lenis({ lerp: 0.085, wheelMultiplier: 0.9, smoothWheel: true }));
+      document.documentElement.classList.add("lenis", "lenis-smooth");
+      l.on("scroll", ST.update); g.ticker.add((t) => l.raf(t * 1000)); g.ticker.lagSmoothing(0);
+      document.addEventListener("click", (e) => { const a = e.target.closest('a[href^="#"], a[href^="/#"]'); if (!a) return; const id = a.getAttribute("href").split("#")[1]; const t = id && document.getElementById(id); if (t) { e.preventDefault(); l.scrollTo(t, { offset: -70, duration: 1.4 }); } });
+    }
 
     /* hero intro: slova vyskočí, hrad dopadne */
     g.timeline()
@@ -261,7 +269,7 @@
         const card = $(".story__card");
         const qsx = g.quickTo(card, "scaleX", { duration: 0.9, ease: "power3" }), qsy = g.quickTo(card, "scaleY", { duration: 0.9, ease: "power3" }), qs = (v) => { qsx(v); qsy(v); }, qy = g.quickTo(card, "yPercent", { duration: 0.9, ease: "power3" }), qk = g.quickTo(card, "--k", { duration: 0.9, ease: "power3" });
         const depth = (p) => { const k = p < 0.12 ? p / 0.12 : p > 0.86 ? (1 - p) / 0.14 : 1, e = k * k * (3 - 2 * k); qs(1 - 0.12 * e); qy(-2.5 * e); qk(e); };
-        ST.create({ trigger: ".story__pin", start: "top top", end: "+=320%", pin: true, scrub: 0.6, animation: tl,
+        ST.create({ trigger: ".story__pin", start: "top top", end: "+=320%", pin: true, anticipatePin: 1, scrub: 0.6, animation: tl,
           onUpdate: (s) => { depth(s.progress); dispatchEvent(new CustomEvent("story", { detail: s.progress })); const i = Math.min(steps.length - 1, Math.floor(s.progress * steps.length)); steps.forEach((li, k) => li.classList.toggle("on", k <= i)); if (gauge) gauge.textContent = Math.round(s.progress * 100) + " %"; } });
       });
       mm.add("(max-width: 860px)", () => {
@@ -276,7 +284,7 @@
       const dist = () => track.scrollWidth - rail.clientWidth + 8;
       const skew = g.quickTo(".rail__track .card", "skewX", { duration: 0.5, ease: "power3" });
       const tw = g.to(track, { x: () => -dist(), ease: "none",
-        scrollTrigger: { trigger: "#nejzadanejsi", start: "top top", end: () => "+=" + dist(), pin: true, scrub: 0.5, invalidateOnRefresh: true,
+        scrollTrigger: { trigger: "#nejzadanejsi", start: "center center", end: () => "+=" + dist(), pin: true, anticipatePin: 1, scrub: 0.5, invalidateOnRefresh: true,
           onUpdate: (s) => skew(g.utils.clamp(-9, 9, s.getVelocity() / -260)) } });
       return () => tw.kill();
     });
@@ -288,7 +296,7 @@
       mm.add("(min-width: 861px)", () => {
         const card = $(".receipt__card");
         const qx = g.quickTo(card, "scaleX", { duration: 0.9, ease: "power3" }), qy2 = g.quickTo(card, "scaleY", { duration: 0.9, ease: "power3" }), qk = g.quickTo(card, "--k", { duration: 0.9, ease: "power3" });
-        ST.create({ trigger: ".receipt__pin", start: "top top", end: "+=200%", pin: true, scrub: 0.4,
+        ST.create({ trigger: ".receipt__pin", start: "top top", end: "+=200%", pin: true, anticipatePin: 1, scrub: 0.4,
           onUpdate: (s) => { const p = s.progress, k = p < 0.1 ? p / 0.1 : p > 0.9 ? (1 - p) / 0.1 : 1, e = k * k * (3 - 2 * k); qx(1 - 0.1 * e); qy2(1 - 0.1 * e); qk(e); printAt(p); } });
       });
       mm.add("(max-width: 860px)", () => {
@@ -297,11 +305,37 @@
     }
     /* na míru: až PO účtence (pořadí pinů = pořadí v DOM) */
     const custP = (s) => { window.__customP = s.progress; dispatchEvent(new CustomEvent("custom", { detail: s.progress })); };
-    mm.add("(min-width: 861px)", () => { ST.create({ trigger: "#na-miru", start: "top top", end: "+=170%", pin: true, scrub: 0.5, onUpdate: custP }); });
+    mm.add("(min-width: 861px)", () => { ST.create({ trigger: "#na-miru", start: "top top", end: "+=170%", pin: true, anticipatePin: 1, scrub: 0.5, onUpdate: custP }); });
     mm.add("(max-width: 860px)", () => { ST.create({ trigger: ".custom__art", start: "top 80%", end: "bottom 30%", scrub: 0.5, onUpdate: custP }); });
-    g.from(".foot__word span", { yPercent: 60, rotation: (i) => (i ? 4 : -4), opacity: 0, stagger: 0.12, ease: "back.out(2)", duration: 0.8, scrollTrigger: { trigger: ".foot", start: "top 85%" } });
     addEventListener("load", () => ST.refresh());
   }
+
+  /* ---------- mini košík (bublina u ikonky) ---------- */
+  function miniCart() {
+    let box = $(".mc");
+    if (!box) {
+      box = document.createElement("div"); box.className = "mc"; box.setAttribute("role", "dialog"); box.setAttribute("aria-label", "Vaše poptávka");
+      document.body.append(box);
+      box.addEventListener("click", (e) => {
+        if (e.target === box || e.target.closest("[data-mc-close]")) close();
+        const rm = e.target.closest("[data-mc-rm]"); if (rm) { cart.rm(+rm.dataset.mcRm); fill(); refreshCards(); }
+      });
+      addEventListener("keydown", (e) => e.key === "Escape" && close());
+    }
+    function fill() {
+      const C = cart.get().filter((i) => byId[i.id]);
+      const sum = C.reduce((s, i) => s + byId[i.id].p + (byId[i.id].fi ? 0 : FAN[i.fan][1]), 0);
+      box.innerHTML = `<div class="mc__box"><div class="mc__head"><b>Vaše poptávka</b><button type="button" class="mc__x" data-mc-close aria-label="Zavřít">✕</button></div>
+      ${C.length ? `<ul class="mc__list">${C.map(({ id }) => { const h = byId[id]; return `<li><img src="${img(h)}" alt="" width="64" height="48"><div><a href="/hrad.html?id=${id}">${h.n}</a><small>${num(h.d)} × ${num(h.w)} × ${num(h.h)} m</small></div><b>${kc(h.p)}</b><button type="button" data-mc-rm="${id}" aria-label="Odebrat ${h.n}">✕</button></li>`; }).join("")}</ul>
+      <div class="mc__sum"><span>Celkem</span><b>${kc(sum)}</b></div>
+      <div class="mc__btns"><button type="button" class="btn btn--ghost btn--sm" data-mc-close>Vybírat dál</button><a class="btn btn--sm" href="/kosik.html">Dokončit poptávku ${I.arrow}</a></div>`
+      : `<p class="mc__empty"><span class="hand">Zatím prázdno.</span><br>Vyberte si hrad a klikněte na „Do poptávky“.</p><div class="mc__btns"><a class="btn btn--sm" href="/katalog.html">Do katalogu ${I.arrow}</a></div>`}</div>`;
+    }
+    function close() { box.classList.remove("on"); window.__lenis?.start(); }
+    fill(); requestAnimationFrame(() => box.classList.add("on")); $(".mc__x", box)?.focus({ preventScroll: true });
+  }
+  function refreshCards() { $$("[data-add]").forEach((b) => { const on = cart.has(+b.dataset.add); b.classList.toggle("done", on); b.innerHTML = on ? I.ok + "<span>V poptávce</span>" : I.plus + "<span>Do poptávky</span>"; }); badge(); }
+  document.addEventListener("click", (e) => { const a = e.target.closest(".nav__cart"); if (a && PAGE !== "kosik") { e.preventDefault(); miniCart(); } });
 
   /* ---------- KATALOG ---------- */
   const AREA = { s: ["do 16 m²", (a) => a <= 16], m: ["16–30 m²", (a) => a > 16 && a <= 30], l: ["nad 30 m²", (a) => a > 30] };
@@ -438,6 +472,12 @@
     list.addEventListener("click", (e) => { const b = e.target.closest("[data-rm]"); if (b) { cart.rm(+b.dataset.rm); render(); } });
     render();
 
+    bindForm(render);
+  }
+
+  /* formulář poptávky (košík i konec úvodu) */
+  function bindForm(onSent) {
+    if (!$("#form")) return;
     const f = $("#form"), hint = $("#form-hint");
     f.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -447,7 +487,7 @@
       const btn = f.querySelector("button[type=submit]"); btn.disabled = true; hint.textContent = "Odesílám…";
       try {
         const r = await fetch("/api/poptavka", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(d) });
-        if (r.ok) { f.innerHTML = `<p class="ok">Díky, poptávka odešla. Ozveme se nejpozději další pracovní den.</p>`; cart.set([]); render(); return; }
+        if (r.ok) { f.innerHTML = `<p class="ok">Díky, poptávka odešla. Ozveme se nejpozději další pracovní den.</p>`; cart.set([]); onSent?.(); return; }
         throw new Error(r.status);
       } catch {
         const body = [`Jméno: ${d.jmeno}`, `E-mail: ${d.email}`, `Telefon: ${d.telefon}`, `Město/obec: ${d.mesto}`, "", ...d.kosik.map((i) => `č. ${i.id} ${i.nazev} – ${i.fukar} – ${kc(i.cena)}`), "", d.zprava].join("\n");
