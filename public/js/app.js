@@ -188,7 +188,7 @@
     core.addEventListener("click", () => {
       const open = !b.classList.contains("open");
       b.classList.remove("closing");
-      if (open) { b.classList.add("open"); } else { b.classList.remove("open"); b.classList.add("closing"); setTimeout(() => { b.classList.remove("closing"); dispatchEvent(new Event("burst-close")); }, 340); }
+      if (open) { b.classList.add("open"); dispatchEvent(new Event("burst-open")); } else { b.classList.remove("open"); b.classList.add("closing"); setTimeout(() => { b.classList.remove("closing"); dispatchEvent(new Event("burst-close")); }, 340); }
       core.setAttribute("aria-expanded", open); $(".core__ball b", core).textContent = open ? "Zavřít" : "Vyber svět";
       $$(".bub", ul).forEach((a) => (a.tabIndex = open ? 0 : -1));
     });
@@ -291,29 +291,29 @@
     mm.add("(max-width: 899px)", () => { rail.classList.add("rail--native"); return () => rail.classList.remove("rail--native"); });
 
     /* témata a cenovka */
-    /* témata: text hned pod žlutým pruhem; balónek přiletí zdola ve větru, text zmizí (zůstane pilulka).
-       Jednorázově – po „Zavřít“ se vše vrátí a přehraje při dalším příjezdu. */
-    (() => {
+    /* témata (desktop): sekce se zamkne, nejdřív text; pak balónek pomalu přiletí zdola ve větru a text zmizí;
+       při dalším scrollu balónek uletí nahoru. Když jsou balónky otevřené, scroll nic nemění. */
+    mm.add("(min-width: 861px)", () => {
       const sec = $("#temata"), core = $(".burst__core"), hint = $(".burst__hint"); if (!sec || !core) return;
+      sec.classList.add("themes-anim");
       const txt = $$("#temata .sec__head h2, #temata .sec__head p");
-      let played = false, tl = null;
-      const reset = () => { tl?.kill(); played = false; g.set(core, { y: "75vh", x: 0, rotation: 0, opacity: 0 }); g.set(hint, { opacity: 0 }); g.to(txt, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }); };
-      const play = () => {
-        if (played) return; played = true;
-        tl = g.timeline()
-          .set(core, { opacity: 1 })
-          .to(core, { keyframes: { y: ["75vh", "52vh", "32vh", "16vh", "5vh", "-2vh", "0vh"], x: [0, -46, 34, -24, 12, -4, 0], rotation: [0, -11, 8, -6, 3, -1, 0], easeEach: "sine.inOut" }, duration: 3.4, ease: "power1.out" })
-          .to(txt, { opacity: 0, y: -24, duration: 0.6, stagger: 0.08, ease: "power2.in" }, 0.35)
-          .to(hint, { opacity: 1, duration: 0.4 }, "-=0.3");
-      };
-      g.set(core, { y: "75vh", opacity: 0 }); g.set(hint, { opacity: 0 });
-      ST.create({ trigger: ".burst", start: "top 78%", end: "bottom 15%", onEnter: play, onEnterBack: play });
-      addEventListener("burst-close", () => {
-        reset();
-        const again = () => { const r = $(".burst").getBoundingClientRect(); if (r.top < innerHeight * 0.78 && r.bottom > innerHeight * 0.15) play(); };
-        setTimeout(() => addEventListener("scroll", again, { once: true, passive: true }), 500);
-      });
-    })();
+      const tin = g.timeline({ paused: true })
+        .fromTo(core, { y: "70vh", x: 0, rotation: 0, opacity: 0 }, { keyframes: { y: ["70vh", "50vh", "32vh", "17vh", "6vh", "-1.5vh", "0vh"], x: [0, -46, 34, -24, 12, -4, 0], rotation: [0, -11, 8, -6, 3, -1, 0], opacity: [0, 1, 1, 1, 1, 1, 1], easeEach: "sine.inOut" }, duration: 0.6 }, 0.15)
+        .to(txt, { opacity: 0, y: -24, duration: 0.35, stagger: 0.05, ease: "power1.in" }, 0.32)
+        .fromTo(hint, { opacity: 0 }, { opacity: 1, duration: 0.1 }, 0.78)
+        .to({}, { duration: 0.12 });
+      const tout = g.timeline({ paused: true })
+        .to(core, { keyframes: { y: ["0vh", "-18vh", "-40vh", "-65vh", "-95vh"], x: [0, 28, -22, 18, -10], rotation: [0, 7, -6, 5, -3], easeEach: "sine.inOut" }, duration: 1, ease: "power1.in" })
+        .to(hint, { opacity: 0, duration: 0.15 }, 0)
+        .to(core, { opacity: 0, duration: 0.2 }, 0.8);
+      let open = false, pIn = 0, pOut = 0;
+      const sync = () => { if (open) return; g.to(tin, { progress: pIn, duration: 0.6, ease: "power2.out", overwrite: true }); g.to(tout, { progress: pOut, duration: 0.6, ease: "power2.out", overwrite: true }); };
+      const s1 = ST.create({ trigger: sec, start: "top top", end: "+=130%", pin: true, anticipatePin: 1, onUpdate: (s) => { pIn = s.progress; sync(); } });
+      const s2 = ST.create({ trigger: sec, start: "bottom 70%", end: "bottom top", onUpdate: (s) => { pOut = s.progress; sync(); } });
+      const onOpen = () => (open = true), onClose = () => { open = false; sync(); };
+      addEventListener("burst-open", onOpen); addEventListener("burst-close", onClose);
+      return () => { s1.kill(); s2.kill(); tin.kill(); tout.kill(); sec.classList.remove("themes-anim"); removeEventListener("burst-open", onOpen); removeEventListener("burst-close", onClose); g.set([core, hint, ...txt], { clearProps: "all" }); };
+    });
 
     /* účtenka: zamknout scroll a tisknout; karta se oddálí jako u nafukování */
     if (printAt) {

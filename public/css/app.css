@@ -648,3 +648,20 @@ html{background:radial-gradient(55% 45% at 0% 16%,color-mix(in srgb,var(--teal) 
 .story__pin,.receipt__pin{position:relative}
 /* témata: text v normálním toku hned pod pruhem */
 .themes-sec .sec__head{text-align:left}
+
+/* ===== 4. 10. večer: témata, pozadí bez probliknutí, animovaná tyrkysová záře ===== */
+.themes-anim{min-height:100svh;display:block;padding:calc(var(--nav-h) + 10px) 0 12px}
+.themes-anim .sec__head{position:relative;left:auto;top:auto;translate:none;text-align:center;margin:0 auto;width:auto;max-width:760px;z-index:4;pointer-events:none}
+.themes-anim .sec__head p{margin-inline:auto}
+.themes-anim .burst{height:max(440px,calc(100svh - var(--nav-h) - 230px));margin-top:-40px}
+/* stránka: víc tyrkysová a modrá, záře se pomalu přelévá */
+:root{--bg:#BEEDF2;--paper:#CFF2F5;--paper-2:#B5E6EC;--teal:#1FC4C9;
+  --glow:radial-gradient(48% 42% at 6% 14%,color-mix(in srgb,var(--teal) 55%,transparent),transparent 70%),radial-gradient(46% 40% at 96% 52%,color-mix(in srgb,var(--sky) 42%,transparent),transparent 70%),radial-gradient(40% 36% at 30% 98%,color-mix(in srgb,var(--teal) 38%,transparent),transparent 72%),radial-gradient(30% 28% at 78% 8%,color-mix(in srgb,var(--gold) 22%,transparent),transparent 70%)}
+html{background:var(--bg)}
+body::before{content:"";position:fixed;inset:-15%;z-index:-2;pointer-events:none;background:var(--glow);animation:glowmove 26s ease-in-out infinite alternate;will-change:transform}
+@keyframes glowmove{0%{transform:translate(0,0) rotate(0deg) scale(1)}50%{transform:translate(3%,-2%) rotate(4deg) scale(1.05)}100%{transform:translate(-3%,2%) rotate(-3deg) scale(1.02)}}
+@media (prefers-reduced-motion:reduce){body::before{animation:none}}
+/* sekce s kartou: karta vypadá jako stránka, kulisa vidět jen na okrajích při oddálení (bez probliknutí) */
+.story::before,.receipt::before{opacity:1}
+.story::before{background-color:color-mix(in srgb,var(--teal) 60%,var(--sky))}
+.story__card,.depth{background:var(--glow),var(--bg)}
