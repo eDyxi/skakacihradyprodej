@@ -851,3 +851,27 @@ body::after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;bac
 @media (min-width:861px){.receipt{margin-top:-12.5svh}}
 /* mezi Na rovinu a Na míru vždy jen čára aktivní sekce */
 .rpin #na-miru::before,.cpin .rl--b{opacity:0}
+
+/* ===== 6. 10.: originální tyrkysové pozadí se zářemi a slunečními paprsky ===== */
+:root{--bg:#A6E3E8;--paper:#BDEBEF;--paper-2:#A3DEE4;--teal:#17B9C0;
+  --glow:radial-gradient(42% 38% at 4% 10%,color-mix(in srgb,var(--teal) 62%,transparent),transparent 70%),
+    radial-gradient(40% 36% at 98% 46%,color-mix(in srgb,var(--sky) 52%,transparent),transparent 70%),
+    radial-gradient(36% 32% at 26% 96%,color-mix(in srgb,#2fd3b4 45%,transparent),transparent 72%),
+    radial-gradient(30% 26% at 86% 4%,color-mix(in srgb,var(--gold) 46%,transparent),transparent 72%),
+    radial-gradient(26% 24% at 60% 70%,color-mix(in srgb,var(--sky) 26%,transparent),transparent 70%),
+    radial-gradient(22% 20% at 40% 34%,color-mix(in srgb,#ffffff 30%,transparent),transparent 70%)}
+html{background:linear-gradient(160deg,#9EE0E6 0%,#B4ECEC 45%,#93D8EA 100%)}
+/* sluneční paprsky z pravého horního rohu, pomalu rotují */
+html::after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;background:repeating-conic-gradient(from var(--a) at 88% 6%,rgba(255,214,90,.2) 0deg 5deg,transparent 5deg 13deg);-webkit-mask:radial-gradient(circle at 88% 6%,#000 0,rgba(0,0,0,.55) 30%,transparent 62%);mask:radial-gradient(circle at 88% 6%,#000 0,rgba(0,0,0,.55) 30%,transparent 62%);animation:sun 140s linear infinite}
+@media (prefers-reduced-motion:reduce){html::after{animation:none}}
+
+/* ===== kurzor = žlutá kulička se září; klik = větší záře + puls ===== */
+.has-cur,.has-cur *{cursor:none!important}
+.has-cur input,.has-cur textarea,.has-cur select{cursor:text!important}
+.cur{width:16px;height:16px;margin:-8px 0 0 -8px;box-shadow:0 0 16px 5px rgba(255,210,63,.6),0 0 2px 1px rgba(255,210,63,.9);transition:width .25s var(--bounce),height .25s var(--bounce),margin .25s var(--bounce),box-shadow .35s var(--ease),opacity .2s}
+.cur::after{content:"";position:absolute;inset:-2px;border-radius:50%;border:2px solid var(--gold);opacity:0;pointer-events:none}
+.cur.press{box-shadow:0 0 34px 14px rgba(255,210,63,.75),0 0 4px 2px rgba(255,210,63,1);animation:curpress .45s var(--bounce)}
+.cur.press::after{animation:curring .7s ease-out}
+.cur.out{opacity:0}
+@keyframes curpress{30%{scale:.78}100%{scale:1}}
+@keyframes curring{0%{opacity:.9;scale:1}100%{opacity:0;scale:4.2}}
