@@ -204,6 +204,66 @@ async function story() {
   S.kick();
 }
 
+
+/* ---------- NA MÍRU: 3D návrh se „vygeneruje“ – drátěný model, skenovací linka odhalí texturu ---------- */
+const SCAN_V = "varying float vWy;\n";
+async function custom() {
+  const host = document.querySelector(".custom__art");
+  if (!host) return;
+  const S = stage(host);
+  const { g, size } = normalize((await loader.loadAsync("/assets/3d/105.glb")).scene);
+  const U = { uScan: { value: -0.1 }, uH: { value: size.y } };
+  const patch = (mat, wire) => {
+    mat.onBeforeCompile = (sh) => {
+      Object.assign(sh.uniforms, U);
+      sh.vertexShader = SCAN_V + sh.vertexShader.replace("#include <project_vertex>", "#include <project_vertex>\nvWy = (modelMatrix * vec4(transformed, 1.0)).y;");
+      sh.fragmentShader = "uniform float uScan, uH;\n" + SCAN_V + sh.fragmentShader.replace("void main() {", "void main() {\n" + (wire ? "if (vWy < uScan) discard;" : "if (vWy > uScan) discard;"))
+        .replace("#include <dithering_fragment>", "#include <dithering_fragment>\n" + (wire ? "" : "float band = 1.0 - smoothstep(0.0, 0.035 * uH, uScan - vWy);\ngl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(1.0, 0.82, 0.25), band * 0.9);"));
+    };
+    mat.customProgramCacheKey = () => (wire ? "scanW" : "scanT");
+  };
+  const wire = new THREE.MeshBasicMaterial({ color: 0x8fd4ff, wireframe: true, transparent: true, opacity: 0.35 });
+  patch(wire, true);
+  const ghosts = [];
+  g.traverse((m) => {
+    if (!m.isMesh) return;
+    m.frustumCulled = false;
+    m.material = m.material.clone();
+    patch(m.material, false);
+    const w = new THREE.Mesh(m.geometry, wire);
+    w.frustumCulled = false;
+    ghosts.push([m, w]);
+  });
+  ghosts.forEach(([m, w]) => { m.parent.add(w); w.position.copy(m.position); w.quaternion.copy(m.quaternion); w.scale.copy(m.scale); });
+  const grid = new THREE.GridHelper(size.x * 2.2, 22, 0xffd23f, 0x38b6ff);
+  grid.material.transparent = true;
+  grid.material.opacity = 0.35;
+  const pivot = new THREE.Group();
+  pivot.add(g, grid);
+  S.scene.add(pivot);
+  host.classList.add("is3d");
+  const label = host.querySelector("[data-gen]"), j = jelly(190, 7);
+  let target = window.__customP ?? (RM ? 1 : 0), p = target, done = false, yaw = -0.5, drag = null, spin = 0;
+  addEventListener("custom", (e) => { target = e.detail; S.kick(); });
+  const cv = host.querySelector(".c3d");
+  cv.addEventListener("pointerdown", (e) => { drag = e.clientX; cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener("pointermove", (e) => { if (drag === null) return; spin = (e.clientX - drag) * 0.012; yaw += spin; drag = e.clientX; });
+  cv.addEventListener("pointerup", () => (drag = null));
+  S.onTick((t, dt) => {
+    aim(S.cam, size, 1.15, 0.05);
+    p += (target - p) * (1 - Math.exp(-dt * 5));
+    U.uScan.value = -0.05 * size.y + p * size.y * 1.12;
+    if (label) label.textContent = Math.round(p * 100);
+    if (p > 0.97 && !done) { done = true; j.hit(3.5); } else if (p < 0.9) done = false;
+    squash(g, j.step(dt));
+    if (drag === null) { spin *= 0.94; yaw += spin + (RM ? 0 : dt * 0.25); }
+    pivot.rotation.y = yaw;
+  });
+  S.kick();
+}
+
 hero().catch((e) => { console.warn("3D hero:", e); fail(document.querySelector(".hero__art")); });
 const st = document.querySelector(".story");
 if (st) new IntersectionObserver(([e], o) => { if (e.isIntersecting) { o.disconnect(); story().catch((x) => { console.warn("3D story:", x); fail(document.querySelector(".story__art")); }); } }, { rootMargin: "700px" }).observe(st);
+const cu = document.querySelector(".custom__art");
+if (cu) new IntersectionObserver(([e], o) => { if (e.isIntersecting) { o.disconnect(); custom().catch((x) => { console.warn("3D návrh:", x); }); } }, { rootMargin: "600px" }).observe(cu);

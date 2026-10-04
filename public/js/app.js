@@ -45,9 +45,8 @@
   /* ---------- karta ---------- */
   const card = (h, lazy = true) => `<article class="card${cart.has(h.id) ? " in-cart" : ""}" data-cur="Detail">
   <div class="card__img"><img src="${img(h)}" alt="${h.n} – ${TYP[h.t].toLowerCase()} č. ${h.id}" width="${h.ph ? 600 : h.iw}" height="${h.ph ? 600 : h.ih}" ${lazy ? 'loading="lazy"' : ""} decoding="async">
-  <span class="card__no">č. ${h.id}</span>${h.m3d ? '<span class="card__3d">3D</span>' : ""}${season() ? '<span class="card__sale">−10 až 15 %</span>' : ""}</div>
+  ${h.m3d ? '<span class="card__3d">3D</span>' : ""}<span class="card__dims">${num(h.d)} × ${num(h.w)} × ${num(h.h)} m</span></div>
   <div class="card__body"><h3><a class="card__lnk" href="/hrad.html?id=${h.id}">${h.n}</a></h3>
-  <p class="card__meta">${TYP[h.t]} · ${size(h)} · výška ${num(h.h)} m</p>
   <div class="card__foot"><span class="card__price">${kc(h.p)}</span>
   <button class="card__add${cart.has(h.id) ? " done" : ""}" type="button" data-add="${h.id}" aria-label="${cart.has(h.id) ? "V poptávce – otevřít" : "Přidat " + h.n + " do poptávky"}">${cart.has(h.id) ? I.ok + "<span>V poptávce</span>" : I.plus + "<span>Do poptávky</span>"}</button></div></div></article>`;
 
@@ -166,52 +165,12 @@
     build();
   }
 
-  /* gumové struny se žlutou září – tmavá sekce Nejžádanější */
-  function strings(sec) {
+  /* žluté slunce: střed paprsků plynule sleduje kurzor */
+  function sun(sec) {
     if (!sec || RM || !FINE) return;
-    const c = document.createElement("canvas"); c.className = "strings"; c.setAttribute("aria-hidden", "true"); sec.prepend(c);
-    const x = c.getContext("2d"), cs = getComputedStyle(document.documentElement);
-    const GOLD = cs.getPropertyValue("--gold").trim(), SKY = cs.getPropertyValue("--sky-2").trim();
-    let W = 0, H = 0, L = [], mx = -999, my = -999, pmx = -999, pmy = -999, gx = 78, gy = 18, vis = false, raf = 0;
-    const SEG = 26;
-    function build() {
-      const dpr = Math.min(devicePixelRatio || 1, 2); W = sec.offsetWidth; H = sec.offsetHeight;
-      c.width = W * dpr; c.height = H * dpr; x.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const n = Math.max(10, Math.round(H / 46)); L = [];
-      for (let i = 0; i < n; i++) { const y0 = (H / (n + 1)) * (i + 1), P = []; for (let px = -SEG; px <= W + SEG; px += SEG) P.push({ x: px, y: 0, v: 0 }); L.push({ y0, P, glow: 0 }); }
-    }
-    function step(t) {
-      raf = 0; if (!vis) return;
-      const r = sec.getBoundingClientRect(), lx = mx - r.left, ly = my - r.top, plx = pmx - r.left, ply = pmy - r.top;
-      x.clearRect(0, 0, W, H);
-      for (const [k, s] of L.entries()) {
-        const P = s.P; let near = 0;
-        for (let i = 1; i < P.length - 1; i++) {
-          const p = P[i];
-          let f = (P[i - 1].y + P[i + 1].y - 2 * p.y) * 0.32 - p.y * 0.012;
-          const dx = p.x - lx, dy = s.y0 + p.y - ly, d = Math.hypot(dx, dy);
-          if (d < 120) { f += (dy / (d || 1)) * (1 - d / 120) * 3.2; near = Math.max(near, 1 - d / 120); }
-          /* „brnknutí“ při přejetí přes strunu */
-          if ((ply - s.y0) * (ly - s.y0) < 0 && Math.abs(p.x - lx) < 30) p.v += (ly - ply) * 0.35;
-          p.v = (p.v + f) * 0.955; 
-        }
-        for (const p of P) p.y += p.v;
-        s.glow += (near - s.glow) * 0.15;
-        const wob = Math.sin(t / 900 + k * 0.7) * 5;
-        x.beginPath();
-        P.forEach((p, i) => { const yy = s.y0 + p.y + Math.sin(p.x / 140 + t / 1100 + k) * wob * 0.6; i ? x.lineTo(p.x, yy) : x.moveTo(p.x, yy); });
-        const gr = x.createLinearGradient(0, 0, W, 0);
-        gr.addColorStop(0, SKY); gr.addColorStop(0.5, GOLD); gr.addColorStop(1, SKY);
-        x.strokeStyle = gr; x.globalAlpha = 0.22 + s.glow * 0.7; x.lineWidth = 1.6 + s.glow * 2.6; x.stroke();
-      }
-      x.globalAlpha = 1; pmx = mx; pmy = my;
-      if (lx > 0 && ly > 0) { gx += ((lx / W) * 100 - gx) * 0.06; gy += ((ly / H) * 100 - gy) * 0.06; sec.style.setProperty("--gx", gx.toFixed(1) + "%"); sec.style.setProperty("--gy", gy.toFixed(1) + "%"); }
-      raf = requestAnimationFrame(step);
-    }
-    addEventListener("pointermove", (e) => { mx = e.clientX; my = e.clientY; }, { passive: true });
-    new IntersectionObserver(([e]) => { vis = e.isIntersecting; if (vis && !raf) raf = requestAnimationFrame(step); }).observe(sec);
-    new ResizeObserver(build).observe(sec);
-    build();
+    let tx = 72, ty = 28, x = tx, y = ty, raf = 0;
+    const step = () => { x += (tx - x) * 0.07; y += (ty - y) * 0.07; sec.style.setProperty("--gx", x.toFixed(2) + "%"); sec.style.setProperty("--gy", y.toFixed(2) + "%"); raf = Math.abs(tx - x) + Math.abs(ty - y) > 0.05 ? requestAnimationFrame(step) : 0; };
+    sec.addEventListener("pointermove", (e) => { const r = sec.getBoundingClientRect(); tx = ((e.clientX - r.left) / r.width) * 100; ty = ((e.clientY - r.top) / r.height) * 100; if (!raf) raf = requestAnimationFrame(step); });
   }
 
   /* témata: jeden hrad uprostřed, po kliknutí gumově vystřelí ostatní */
@@ -220,9 +179,9 @@
     const b = $("#burst"); if (!b) return;
     const ul = $("#burst-items"), core = $(".burst__core", b);
     const T = Object.entries(TH).filter(([k]) => H.some((h) => h.th === k));
-    ul.innerHTML = T.map(([k, [n, c]], i) => `<li><a class="bub" href="/katalog.html?th=${k}" style="--c:${c};--d:${(i * 0.055).toFixed(3)}s" tabindex="-1"><img src="${img(byId[THEME_PIC[k]])}" alt="" width="140" height="140" loading="lazy"><b>${n}</b><i>${H.filter((h) => h.th === k).length}</i></a></li>`).join("");
+    ul.innerHTML = T.map(([k, [n, c]], i) => `<li><a class="bub" href="/katalog.html?th=${k}" style="--c:${c};--d:${(i * 0.055).toFixed(3)}s;--f:${(-i * 0.4).toFixed(1)}s" tabindex="-1"><span class="bal"><span class="bal__body"><img src="${img(byId[THEME_PIC[k]])}" alt="" width="122" height="139" loading="lazy"></span><i>${H.filter((h) => h.th === k).length}</i><span class="bal__knot"></span><span class="bal__str"></span><b>${n}</b></span></a></li>`).join("");
     const place = () => {
-      const w = b.offsetWidth, hh = b.offsetHeight, rx = Math.min(w * 0.4, 430), ry = Math.min(hh * 0.36, 240);
+      const w = b.offsetWidth, hh = b.offsetHeight, rx = Math.min(w * 0.42, 460), ry = Math.min(hh * 0.33, 250);
       $$(".bub", ul).forEach((a, i) => { const ang = -Math.PI / 2 + (i / T.length) * Math.PI * 2; a.style.setProperty("--x", (Math.cos(ang) * rx).toFixed(0) + "px"); a.style.setProperty("--y", (Math.sin(ang) * ry).toFixed(0) + "px"); });
     };
     place(); new ResizeObserver(place).observe(b);
@@ -230,7 +189,7 @@
       const open = !b.classList.contains("open");
       b.classList.remove("closing");
       if (open) { b.classList.add("open"); } else { b.classList.remove("open"); b.classList.add("closing"); setTimeout(() => b.classList.remove("closing"), 340); }
-      core.setAttribute("aria-expanded", open); core.querySelector("b").textContent = open ? "Zavřít" : "Vyber svět";
+      core.setAttribute("aria-expanded", open); $(".core__ball b", core).textContent = open ? "Zavřít" : "Vyber svět";
       $$(".bub", ul).forEach((a) => (a.tabIndex = open ? 0 : -1));
     });
   }
@@ -260,7 +219,7 @@
     const track = $("#rail-track");
     if (track) track.innerHTML = FEATURED.filter((i) => byId[i]).map((i) => card(byId[i])).join("") +
       `<div class="rail__end"><div><p>Dalších ${H.length - FEATURED.length} modelů v katalogu</p><a class="btn" href="/katalog.html">Celý katalog ${I.arrow}</a></div></div>`;
-    burst(); strings($("#nejzadanejsi")); dotsBg($(".story__card")); dotsBg($(".receipt__card"));
+    burst(); sun($("#nejzadanejsi")); dotsBg($(".story__card")); dotsBg($(".receipt__card"));
     const printAt = receipt();
     setTimeout(() => { if (!window.__3d) $$(".hero__art, .story__art").forEach((e) => e.classList.add("no3d")); }, 6000);
     const cnt = $("[data-count]"); if (cnt) cnt.textContent = H.length;
@@ -268,7 +227,7 @@
 
     const g = window.gsap, ST = window.ScrollTrigger;
     const steps = $$(".story__steps li");
-    if (!g || !ST || RM) { steps.forEach((s) => s.classList.add("on")); $("#rail")?.classList.add("rail--native"); printAt?.(1); return; }
+    if (!g || !ST || RM) { steps.forEach((s) => s.classList.add("on")); $("#rail")?.classList.add("rail--native"); printAt?.(1); window.__customP = 1; return; }
     g.registerPlugin(ST);
     if (window.Lenis) { const l = new Lenis({ lerp: 0.12 }); l.on("scroll", ST.update); g.ticker.add((t) => l.raf(t * 1000)); g.ticker.lagSmoothing(0); }
 
@@ -324,6 +283,8 @@
     mm.add("(max-width: 899px)", () => { rail.classList.add("rail--native"); return () => rail.classList.remove("rail--native"); });
 
     /* témata a cenovka */
+    /* na míru: 3D návrh se „generuje“ se scrollem */
+    ST.create({ trigger: ".custom__art", start: "top 85%", end: "center 40%", scrub: 0.6, onUpdate: (s) => { window.__customP = s.progress; dispatchEvent(new CustomEvent("custom", { detail: s.progress })); } });
     /* účtenka: zamknout scroll a tisknout; karta se oddálí jako u nafukování */
     if (printAt) {
       mm.add("(min-width: 861px)", () => {

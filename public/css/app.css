@@ -454,3 +454,53 @@ input[type=range]{width:100%;accent-color:var(--purple)}
 .rc__stamp{position:absolute;right:8px;top:64px;margin:0;padding:8px 12px 6px;border:3px solid var(--red);border-radius:12px;color:var(--red);font:800 1.15rem/1 var(--f-d);letter-spacing:.06em;transform:rotate(-14deg) scale(2.4);opacity:0;transition:transform .45s var(--bounce),opacity .2s}
 .rc.stamped .rc__stamp{opacity:.9;transform:rotate(-14deg) scale(1)}
 @media (max-width:860px){.receipt__pin,.receipt .depth{min-height:auto}.receipt .deal{padding:72px 0}}
+
+/* ===== karty: jen fotka, jméno, cena (+ rozměr v rohu) ===== */
+.card__body{padding:14px 16px 16px;gap:4px}
+.card__body h3{font-size:1.2rem}
+.card__meta{display:none}
+.card__foot,.card:hover .card__foot{margin:auto 0 0;padding:10px 0 0;background:none;border:0}
+.card__dims{position:absolute;right:10px;bottom:10px;font:800 .8rem/1 var(--f-d);background:var(--ink);color:var(--card);border-radius:99px;padding:6px 9px 5px}
+.card__3d{left:10px;bottom:10px}
+
+/* ===== Nejžádanější: žluté slunce za kurzorem (kreslené paprsky) ===== */
+@property --a{syntax:"<angle>";inherits:false;initial-value:0deg}
+#nejzadanejsi.sec--sun{--gx:72%;--gy:28%;background:var(--gold);color:var(--ink);border-block:var(--line) solid var(--ink)}
+#nejzadanejsi.sec--sun::before{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-conic-gradient(from var(--a) at var(--gx) var(--gy),color-mix(in srgb,var(--card) 50%,var(--gold)) 0deg 7deg,transparent 7deg 14deg);-webkit-mask:radial-gradient(circle at var(--gx) var(--gy),#000 0 18%,transparent 72%);mask:radial-gradient(circle at var(--gx) var(--gy),#000 0 18%,transparent 72%);animation:sun 80s linear infinite}
+#nejzadanejsi.sec--sun::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(color-mix(in srgb,var(--gold-2) 70%,var(--ink)) 2.2px,transparent 2.8px) 0 0/16px 16px;-webkit-mask:linear-gradient(25deg,#000 0,transparent 40%);mask:linear-gradient(25deg,#000 0,transparent 40%)}
+@keyframes sun{to{--a:360deg}}
+#nejzadanejsi .rail__end{border-color:var(--ink)}
+
+/* ===== témata: balónky ===== */
+.burst{height:clamp(620px,66vw,760px)}
+.burst__core,.burst__core:hover,.burst.open .burst__core{width:auto;aspect-ratio:auto;padding:0;border:0;background:none;box-shadow:none;border-radius:0;animation:none;transform:none;display:grid;justify-items:center;gap:0}
+.core__ball{display:grid;place-items:center;width:clamp(170px,18vw,210px);aspect-ratio:1/1.12;border:var(--line) solid var(--ink);border-radius:50%/56% 56% 44% 44%;background:radial-gradient(circle at 32% 26%,color-mix(in srgb,var(--card) 85%,transparent) 0 8%,transparent 9%),var(--gold);box-shadow:var(--sh);animation:breathe 2.4s var(--ease) infinite;transform-origin:50% 92%;transition:transform .5s var(--bounce),background .3s}
+.core__ball b{font:800 1.35rem/1.02 var(--f-d);max-width:6ch;text-align:center}
+.burst__core:hover .core__ball{transform:scale(1.06,.94)}
+.burst.open .core__ball{animation:none;transform:scale(.78,.84);background:radial-gradient(circle at 32% 26%,color-mix(in srgb,var(--card) 85%,transparent) 0 8%,transparent 9%),var(--card)}
+.core__knot{width:18px;height:12px;margin-top:-3px;background:var(--gold);border:2px solid var(--ink);border-radius:3px 3px 9px 9px}
+.core__str{width:2px;height:64px;background:var(--ink);transform-origin:top;animation:sway 3s ease-in-out infinite}
+@keyframes sway{50%{transform:rotate(7deg)}}
+.burst__hint{top:calc(50% + clamp(150px,15vw,180px))}
+.bub{--s:clamp(96px,10vw,122px);top:calc(var(--s) * -.85)}
+.bal{display:grid;justify-items:center;animation:bob 3.2s ease-in-out var(--f,0s) infinite alternate}
+.bal__body{position:relative;display:block;width:var(--s);height:calc(var(--s) * 1.14);border:var(--line) solid var(--ink);border-radius:50%/56% 56% 44% 44%;overflow:hidden;background:var(--c);box-shadow:var(--sh-sm);transition:transform .45s var(--bounce)}
+.bub .bal__body img{width:100%;height:100%;object-fit:cover;border:0;border-radius:0;box-shadow:none;background:none}
+.bal__body::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 6px var(--c);background:radial-gradient(circle at 30% 22%,rgba(255,255,255,.75) 0 7%,transparent 8%)}
+.bal__knot{width:14px;height:10px;margin-top:-2px;background:var(--c);border:2px solid var(--ink);border-radius:3px 3px 7px 7px}
+.bal__str{width:2px;height:30px;background:var(--ink)}
+.bub:hover .bal__body{transform:scale(1.09,.93)}
+.bub:hover img{transform:none}
+@keyframes bob{from{transform:translateY(-6px) rotate(-3deg)}to{transform:translateY(6px) rotate(3deg)}}
+
+/* ===== na míru: 3D návrh (blueprint) ===== */
+.custom__art{position:relative;aspect-ratio:1/.9;border:var(--line) solid var(--ink);border-radius:var(--r-lg);box-shadow:var(--sh);overflow:hidden;background:linear-gradient(var(--navy),#132a4d)}
+.custom__art::before{content:"";position:absolute;inset:0;background-image:linear-gradient(color-mix(in srgb,var(--sky) 22%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--sky) 22%,transparent) 1px,transparent 1px);background-size:28px 28px}
+.custom__art .custom__pics{position:absolute;inset:24px;height:auto}
+.custom__art.is3d .custom__pics{display:none}
+.custom__art .c3d{z-index:1;touch-action:pan-y;cursor:grab}
+.custom__label{position:absolute;left:14px;top:12px;margin:0;z-index:2;font:800 .8rem/1 var(--f-d);letter-spacing:.12em;color:var(--sky-2);background:color-mix(in srgb,var(--ink) 60%,transparent);border:2px solid var(--sky-2);border-radius:99px;padding:7px 10px 5px}
+.custom__note{position:absolute;right:16px;bottom:10px;margin:0;z-index:2;color:var(--gold)}
+.custom__art:not(.is3d) .custom__label{display:none}
+.bal{position:relative}
+.bub .bal>i{top:-4px;right:-6px}
