@@ -713,3 +713,6 @@ body::after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;bac
 .themes-anim .sec__head{padding-bottom:0}
 .themes-anim .sec__head h2{margin-top:clamp(16px,2.6svh,30px)}
 .themes-anim .sec__head p{margin-bottom:auto}
+.themes-anim .burst__core{top:calc(var(--cy,38%) + 7svh)}
+.themes-anim .burst__items li{top:calc(var(--cy,38%) + 7svh)}
+.themes-anim .burst__hint{top:calc(var(--cy,200px) + 7svh + clamp(120px,12vw,150px))}
