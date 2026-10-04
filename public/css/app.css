@@ -504,3 +504,30 @@ input[type=range]{width:100%;accent-color:var(--purple)}
 .custom__art:not(.is3d) .custom__label{display:none}
 .bal{position:relative}
 .bub .bal>i{top:-4px;right:-6px}
+
+/* ===== drobné úpravy 4. 10. ===== */
+.logo{width:clamp(128px,14vw,168px);margin-top:10px}
+/* balónek Vyber svět: hover + po otevření malý žlutý „Zavřít“ */
+.core__ball{transition:width .55s var(--bounce),transform .5s var(--bounce)}
+.burst__core:hover .core__ball{animation:wiggle .8s var(--ease)}
+@keyframes wiggle{20%{transform:rotate(-7deg) scale(1.06,.94)}45%{transform:rotate(5deg) scale(.96,1.05)}70%{transform:rotate(-2deg) scale(1.02,.98)}100%{transform:none}}
+.burst.open .core__ball{width:clamp(96px,9vw,112px);transform:none;animation:none;background:radial-gradient(circle at 32% 26%,color-mix(in srgb,var(--card) 85%,transparent) 0 8%,transparent 9%),var(--gold)}
+.burst.open .burst__core:hover .core__ball{animation:wiggle .8s var(--ease)}
+.burst.open .core__ball b{font-size:1.05rem}
+.core__str{width:30px;height:70px;color:var(--ink);background:none;animation:none;margin-top:-1px}
+.bal__str{width:20px;height:34px;color:var(--ink);background:none;margin-top:-1px}
+/* slunce jemněji + rozmazané tečky zleva doprava přes celou sekci */
+#nejzadanejsi.sec--sun::before{opacity:.42}
+#nejzadanejsi.sec--sun::after{opacity:.32;filter:blur(1.1px);-webkit-mask:linear-gradient(90deg,#000 0,rgba(0,0,0,.5) 45%,transparent 92%);mask:linear-gradient(90deg,#000 0,rgba(0,0,0,.5) 45%,transparent 92%)}
+/* Jak to probíhá: světle modrá místo tmavé */
+.story{background:var(--sky-2);background-image:radial-gradient(color-mix(in srgb,var(--card) 55%,transparent) 1.4px,transparent 1.8px);background-size:26px 26px}
+/* sleva: pruhy + svítící modré hvězdičky a text */
+.tape{background:repeating-linear-gradient(-45deg,rgba(255,255,255,.3) 0 16px,rgba(255,255,255,0) 16px 32px),var(--gold)}
+.tape__row span{text-shadow:0 0 12px rgba(255,255,255,.9),0 0 3px rgba(255,255,255,.9)}
+.tape__row span::after{color:var(--sky);text-shadow:0 0 8px var(--sky),0 0 18px var(--sky),0 0 2px var(--card)}
+/* na míru: skicák místo blueprintu */
+.custom__art{background:var(--card)}
+.custom__art::before{background-image:linear-gradient(color-mix(in srgb,var(--sky) 20%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--sky) 20%,transparent) 1px,transparent 1px);background-size:24px 24px}
+.custom__label{color:var(--ink);background:var(--card);border-color:var(--ink)}
+.custom__note{color:var(--purple)}
+@media (min-width:861px){.custom-sec{min-height:100svh;display:flex;align-items:center}}

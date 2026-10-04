@@ -179,7 +179,7 @@
     const b = $("#burst"); if (!b) return;
     const ul = $("#burst-items"), core = $(".burst__core", b);
     const T = Object.entries(TH).filter(([k]) => H.some((h) => h.th === k));
-    ul.innerHTML = T.map(([k, [n, c]], i) => `<li><a class="bub" href="/katalog.html?th=${k}" style="--c:${c};--d:${(i * 0.055).toFixed(3)}s;--f:${(-i * 0.4).toFixed(1)}s" tabindex="-1"><span class="bal"><span class="bal__body"><img src="${img(byId[THEME_PIC[k]])}" alt="" width="122" height="139" loading="lazy"></span><i>${H.filter((h) => h.th === k).length}</i><span class="bal__knot"></span><span class="bal__str"></span><b>${n}</b></span></a></li>`).join("");
+    ul.innerHTML = T.map(([k, [n, c]], i) => `<li><a class="bub" href="/katalog.html?th=${k}" style="--c:${c};--d:${(i * 0.055).toFixed(3)}s;--f:${(-i * 0.4).toFixed(1)}s" tabindex="-1"><span class="bal"><span class="bal__body"><img src="${img(byId[THEME_PIC[k]])}" alt="" width="122" height="139" loading="lazy"></span><i>${H.filter((h) => h.th === k).length}</i><span class="bal__knot"></span><svg class="bal__str" viewBox="0 0 20 34" aria-hidden="true"><path d="M10 0 C 5 9, 15 20, 10 34" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><animate attributeName="d" dur="${(2.2 + (i % 3) * 0.35).toFixed(2)}s" begin="-${(i * 0.3).toFixed(1)}s" repeatCount="indefinite" values="M10 0 C 5 9, 15 20, 10 34;M10 0 C 15 10, 5 22, 13 34;M10 0 C 6 8, 16 21, 8 34;M10 0 C 5 9, 15 20, 10 34"/></path></svg><b>${n}</b></span></a></li>`).join("");
     const place = () => {
       const w = b.offsetWidth, hh = b.offsetHeight, rx = Math.min(w * 0.42, 460), ry = Math.min(hh * 0.33, 250);
       $$(".bub", ul).forEach((a, i) => { const ang = -Math.PI / 2 + (i / T.length) * Math.PI * 2; a.style.setProperty("--x", (Math.cos(ang) * rx).toFixed(0) + "px"); a.style.setProperty("--y", (Math.sin(ang) * ry).toFixed(0) + "px"); });
@@ -217,8 +217,8 @@
   function home() {
     $$("[data-castle]").forEach((el) => (el.innerHTML = castle({ idle: el.dataset.castle === "idle", fan: el.dataset.castle === "story" })));
     const track = $("#rail-track");
-    if (track) track.innerHTML = FEATURED.filter((i) => byId[i]).map((i) => card(byId[i])).join("") +
-      `<div class="rail__end"><div><p>Dalších ${H.length - FEATURED.length} modelů v katalogu</p><a class="btn" href="/katalog.html">Celý katalog ${I.arrow}</a></div></div>`;
+    if (track) track.innerHTML = FEATURED.slice(0, 6).filter((i) => byId[i]).map((i) => card(byId[i])).join("") +
+      `<div class="rail__end"><div><p>Dalších ${H.length - 6} modelů v katalogu</p><a class="btn" href="/katalog.html">Celý katalog ${I.arrow}</a></div></div>`;
     burst(); sun($("#nejzadanejsi")); dotsBg($(".story__card")); dotsBg($(".receipt__card"));
     const printAt = receipt();
     setTimeout(() => { if (!window.__3d) $$(".hero__art, .story__art").forEach((e) => e.classList.add("no3d")); }, 6000);
@@ -284,7 +284,9 @@
 
     /* témata a cenovka */
     /* na míru: 3D návrh se „generuje“ se scrollem */
-    ST.create({ trigger: ".custom__art", start: "top 85%", end: "center 40%", scrub: 0.6, onUpdate: (s) => { window.__customP = s.progress; dispatchEvent(new CustomEvent("custom", { detail: s.progress })); } });
+    const custP = (s) => { window.__customP = s.progress; dispatchEvent(new CustomEvent("custom", { detail: s.progress })); };
+    mm.add("(min-width: 861px)", () => { ST.create({ trigger: "#na-miru", start: "center center", end: "+=170%", pin: true, scrub: 0.5, onUpdate: custP }); });
+    mm.add("(max-width: 860px)", () => { ST.create({ trigger: ".custom__art", start: "top 80%", end: "bottom 30%", scrub: 0.5, onUpdate: custP }); });
     /* účtenka: zamknout scroll a tisknout; karta se oddálí jako u nafukování */
     if (printAt) {
       mm.add("(min-width: 861px)", () => {

@@ -205,58 +205,74 @@ async function story() {
 }
 
 
-/* ---------- NA MÍRU: 3D návrh se „vygeneruje“ – drátěný model, skenovací linka odhalí texturu ---------- */
-const SCAN_V = "varying float vWy;\n";
+/* ---------- NA MÍRU: hrad se nejdřív nakreslí (obrys + skica), pak se vybarví ---------- */
+const CUSTOM_MODEL = "/assets/3d/017.glb";
+const NOISE = `
+float hash3(vec3 p){ p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
+float vnoise(vec3 x){ vec3 i = floor(x), f = fract(x); f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(mix(hash3(i), hash3(i + vec3(1,0,0)), f.x), mix(hash3(i + vec3(0,1,0)), hash3(i + vec3(1,1,0)), f.x), f.y),
+             mix(mix(hash3(i + vec3(0,0,1)), hash3(i + vec3(1,0,1)), f.x), mix(hash3(i + vec3(0,1,1)), hash3(i + vec3(1,1,1)), f.x), f.y), f.z); }
+`;
 async function custom() {
   const host = document.querySelector(".custom__art");
   if (!host) return;
   const S = stage(host);
-  const { g, size } = normalize((await loader.loadAsync("/assets/3d/105.glb")).scene);
-  const U = { uScan: { value: -0.1 }, uH: { value: size.y } };
-  const patch = (mat, wire) => {
-    mat.onBeforeCompile = (sh) => {
-      Object.assign(sh.uniforms, U);
-      sh.vertexShader = SCAN_V + sh.vertexShader.replace("#include <project_vertex>", "#include <project_vertex>\nvWy = (modelMatrix * vec4(transformed, 1.0)).y;");
-      sh.fragmentShader = "uniform float uScan, uH;\n" + SCAN_V + sh.fragmentShader.replace("void main() {", "void main() {\n" + (wire ? "if (vWy < uScan) discard;" : "if (vWy > uScan) discard;"))
-        .replace("#include <dithering_fragment>", "#include <dithering_fragment>\n" + (wire ? "" : "float band = 1.0 - smoothstep(0.0, 0.035 * uH, uScan - vWy);\ngl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(1.0, 0.82, 0.25), band * 0.9);"));
-    };
-    mat.customProgramCacheKey = () => (wire ? "scanW" : "scanT");
+  const { g, size } = normalize((await loader.loadAsync(CUSTOM_MODEL)).scene);
+  const U = { uDraw: { value: -1 }, uFill: { value: 0 }, uH: { value: size.y }, uThick: { value: size.y * 0.014 } };
+  const VW = "varying vec3 vW;\n";
+  const cut = "if (vW.y > uDraw + sin(vW.x * 38.0 + vW.z * 21.0) * 0.012 * uH) discard;\n";
+  const hull = new THREE.MeshBasicMaterial({ color: 0x1e2a44, side: THREE.BackSide });
+  hull.onBeforeCompile = (sh) => {
+    Object.assign(sh.uniforms, U);
+    sh.vertexShader = "uniform float uThick, uH;\n" + VW + sh.vertexShader.replace("#include <project_vertex>", "vec4 wp = modelMatrix * vec4(transformed, 1.0);\nvec3 nn = mat3(modelMatrix) * normal;\nnn = dot(nn, nn) > 1e-6 ? normalize(nn) : normalize(wp.xyz - vec3(0.0, uH * 0.45, 0.0));\nwp.xyz += nn * uThick;\nvW = wp.xyz;\nvec4 mvPosition = viewMatrix * wp;\ngl_Position = projectionMatrix * mvPosition;");
+    sh.fragmentShader = "uniform float uDraw, uH;\n" + VW + sh.fragmentShader.replace("void main() {", "void main() {\n" + cut);
   };
-  const wire = new THREE.MeshBasicMaterial({ color: 0x8fd4ff, wireframe: true, transparent: true, opacity: 0.35 });
-  patch(wire, true);
-  const ghosts = [];
+  hull.customProgramCacheKey = () => "hull";
+  const hulls = [];
   g.traverse((m) => {
     if (!m.isMesh) return;
     m.frustumCulled = false;
     m.material = m.material.clone();
-    patch(m.material, false);
-    const w = new THREE.Mesh(m.geometry, wire);
-    w.frustumCulled = false;
-    ghosts.push([m, w]);
+    m.material.onBeforeCompile = (sh) => {
+      Object.assign(sh.uniforms, U);
+      sh.vertexShader = VW + sh.vertexShader.replace("#include <project_vertex>", "#include <project_vertex>\nvW = (modelMatrix * vec4(transformed, 1.0)).xyz;");
+      sh.fragmentShader = "uniform float uDraw, uFill, uH;\n" + VW + NOISE + sh.fragmentShader
+        .replace("void main() {", "void main() {\n" + cut)
+        .replace("#include <map_fragment>", `#include <map_fragment>
+float n = vnoise(vW * 5.5) * 0.75 + vnoise(vW * 17.0) * 0.25;
+float paint = smoothstep(n - 0.05, n + 0.05, uFill * 1.1);
+float hatch = step(0.82, fract((vW.x + vW.y * 1.3) * 34.0)) * (1.0 - paint);
+vec3 paper = vec3(0.98, 0.97, 0.93) * (1.0 - 0.22 * hatch);
+diffuseColor.rgb = mix(paper, diffuseColor.rgb, paint);`);
+    };
+    m.material.customProgramCacheKey = () => "paint";
+    const h = new THREE.Mesh(m.geometry, hull);
+    h.frustumCulled = false;
+    hulls.push([m, h]);
   });
-  ghosts.forEach(([m, w]) => { m.parent.add(w); w.position.copy(m.position); w.quaternion.copy(m.quaternion); w.scale.copy(m.scale); });
-  const grid = new THREE.GridHelper(size.x * 2.2, 22, 0xffd23f, 0x38b6ff);
-  grid.material.transparent = true;
-  grid.material.opacity = 0.35;
-  const pivot = new THREE.Group();
-  pivot.add(g, grid);
+  hulls.forEach(([m, h]) => { m.parent.add(h); h.position.copy(m.position); h.quaternion.copy(m.quaternion); h.scale.copy(m.scale); });
+  const pivot = new THREE.Group(), sh = shadow(size);
+  pivot.add(g, sh);
   S.scene.add(pivot);
   host.classList.add("is3d");
   const label = host.querySelector("[data-gen]"), j = jelly(190, 7);
-  let target = window.__customP ?? (RM ? 1 : 0), p = target, done = false, yaw = -0.5, drag = null, spin = 0;
+  let target = window.__customP ?? (RM ? 1 : 0), p = target, done = false, yaw = -0.45, drag = null, spin = 0;
   addEventListener("custom", (e) => { target = e.detail; S.kick(); });
   const cv = host.querySelector(".c3d");
   cv.addEventListener("pointerdown", (e) => { drag = e.clientX; cv.setPointerCapture(e.pointerId); });
   cv.addEventListener("pointermove", (e) => { if (drag === null) return; spin = (e.clientX - drag) * 0.012; yaw += spin; drag = e.clientX; });
   cv.addEventListener("pointerup", () => (drag = null));
   S.onTick((t, dt) => {
-    aim(S.cam, size, 1.15, 0.05);
+    aim(S.cam, size, 1.18, 0.05);
     p += (target - p) * (1 - Math.exp(-dt * 5));
-    U.uScan.value = -0.05 * size.y + p * size.y * 1.12;
-    if (label) label.textContent = Math.round(p * 100);
-    if (p > 0.97 && !done) { done = true; j.hit(3.5); } else if (p < 0.9) done = false;
+    const d = clamp((p - 0.04) / 0.46), f = clamp((p - 0.52) / 0.4);
+    U.uDraw.value = -0.06 * size.y + d * size.y * 1.15;
+    U.uFill.value = f;
+    sh.material.opacity = d;
+    if (label) label.textContent = f > 0.99 ? "hotovo ✓" : f > 0 ? `barvy ${Math.round(f * 100)} %` : `skica ${Math.round(d * 100)} %`;
+    if (f > 0.98 && !done) { done = true; j.hit(3.5); } else if (f < 0.9) done = false;
     squash(g, j.step(dt));
-    if (drag === null) { spin *= 0.94; yaw += spin + (RM ? 0 : dt * 0.25); }
+    if (drag === null) { spin *= 0.94; yaw += spin + (RM ? 0 : dt * 0.18); }
     pivot.rotation.y = yaw;
   });
   S.kick();
