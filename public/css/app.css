@@ -746,3 +746,6 @@ body::after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;bac
 .themes-anim{height:max(440px,58svh)}
 .themes-anim .burst__core{top:calc(var(--cy,38%) + 40px)}
 .themes-anim .burst__hint{top:calc(var(--cy,200px) + 40px + 162px)}
+.themes-anim{height:max(460px,61svh)}
+.themes-anim .burst__core{top:calc(var(--cy,38%) + 72px)}
+.themes-anim .burst__hint{top:calc(var(--cy,200px) + 72px + 162px)}
