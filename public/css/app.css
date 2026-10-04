@@ -537,3 +537,5 @@ input[type=range]{width:100%;accent-color:var(--purple)}
 #nejzadanejsi.sec--sun::before{opacity:.28}
 .burst.open .burst__core:hover .core__ball{animation:none;transform:scale(1.09,.93)}
 @media (min-width:861px){.custom-sec{min-height:100svh;padding:calc(var(--nav-h) + 16px) 0 32px}}
+/* Vyber svět: stejný mírný hover jako ostatní balónky (bez kývání) */
+.burst__core:hover .core__ball{animation:none;transform:scale(1.09,.93)}
