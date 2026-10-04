@@ -235,7 +235,6 @@
   /* čáry mezi sekcemi + páska: přesně doprostřed mezery (měří se obsah, ne prázdné boxy) */
   function spacers() {
     const pairs = [
-      { a: "#na-miru .custom", b: "#faq .eyebrow", abox: "#na-miru", bbox: "#faq", x: "#na-miru", mode: "bottom", extra: 8 },
     ];
     const tape = () => { const el = $(".tape"), A = $(".hero__grid"), B = $(".story .eyebrow"); if (!el || el.hidden || !A || !B) return; el.style.translate = "0 0"; const t = el.getBoundingClientRect(), up = t.top - A.getBoundingClientRect().bottom, dn = B.getBoundingClientRect().top - t.bottom; el.style.translate = `0 ${Math.round((dn - up) / 2)}px`; };
     const run = () => { tape(); pairs.forEach((p, k) => {
@@ -337,7 +336,7 @@
       const M = g.timeline({ paused: true })
         .to(txt, { opacity: 0, y: -16, duration: 0.1, ease: "power1.in" }, 0)
         .fromTo(core, { y: "52vh", x: 0, rotation: 0 }, { keyframes: { y: ["52vh", "37vh", "23vh", "11vh", "3vh", "-1vh", "0vh"], x: [0, -42, 30, -20, 10, -3, 0], rotation: [0, -10, 7, -5, 3, -1, 0], easeEach: "sine.inOut" }, duration: 0.82 }, 0)
-        .to(pill, { y: -38, duration: 0.2, ease: "power2.out" }, 0.55)
+        .to(pill, { y: -26, duration: 0.2, ease: "power2.out" }, 0.55)
         .fromTo(hint, { opacity: 0 }, { opacity: 1, duration: 0.08 }, 0.86)
         .to(core, { keyframes: { y: ["0vh", "-18vh", "-40vh", "-65vh", "-95vh"], x: [0, 28, -22, 18, -10], rotation: [0, 7, -6, 5, -3], easeEach: "sine.inOut" }, duration: 1, ease: "power1.in" }, 1)
         .to(hint, { opacity: 0, duration: 0.15 }, 1)

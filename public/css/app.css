@@ -801,3 +801,19 @@ body::after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;bac
 .rl--t{top:12.5svh}
 .rl--b{top:86.5svh}
 @media (max-width:860px){.rl{display:none}}
+
+/* ===== 5. 10. I ===== */
+/* Témata: pilulka + texty uprostřed sekce, balónek víc na střed, „klikni“ vedle provázku */
+.themes-anim{padding:0}
+.themes-anim .sec__head{justify-content:center;padding:0}
+.themes-anim .sec__head h2{margin-top:14px}
+.themes-anim .sec__head p{margin-bottom:0}
+.themes-anim .burst__core{top:calc(var(--cy,38%) + 30px)}
+.themes-anim .burst__hint{left:calc(50% + 40px);top:calc(var(--cy,200px) + 30px + 58px);transform:rotate(-6deg)}
+/* Na míru: bez zbytečného místa nahoře, dvě čáry se stejnou mezerou od obsahu (zůstanou vidět i při zámku) */
+@media (min-width:861px){.custom-sec{min-height:100svh;display:flex;align-items:center;padding:calc(var(--nav-h) + 8px) 0 8px}}
+.custom{position:relative}
+.custom::before,.custom::after{content:"";position:absolute;left:50%;width:79vw;translate:-50% 0;height:3px;border-radius:3px;background:linear-gradient(90deg,transparent,var(--ink) 22%,var(--ink) 78%,transparent);pointer-events:none}
+.custom::before{top:-52px}
+.custom::after{bottom:-52px}
+.dv[data-k]{display:none}
