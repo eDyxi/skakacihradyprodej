@@ -291,6 +291,20 @@
     mm.add("(max-width: 899px)", () => { rail.classList.add("rail--native"); return () => rail.classList.remove("rail--native"); });
 
     /* témata a cenovka */
+    /* témata: nejdřív text, pak balónek vyletí zdola a text uletí; po odjetí balónek uletí nahoru */
+    mm.add("(min-width: 861px)", () => {
+      const sec = $("#temata"); if (!sec) return;
+      sec.classList.add("themes-anim");
+      const tl = g.timeline()
+        .fromTo(".burst__core", { yPercent: 320, scale: 0.55, opacity: 0 }, { yPercent: 0, scale: 1, opacity: 1, duration: 0.45, ease: "elastic.out(1, 0.5)" }, 0.3)
+        .to("#temata .sec__head", { yPercent: -140, opacity: 0, duration: 0.3, ease: "power2.in" }, 0.36)
+        .fromTo(".burst__hint", { opacity: 0 }, { opacity: 1, duration: 0.1 }, 0.78);
+      ST.create({ trigger: "#temata", start: "top top", end: "+=110%", pin: true, anticipatePin: 1, scrub: 0.5, animation: tl });
+      const out = g.to("#burst", { yPercent: -110, opacity: 0, ease: "power2.in" });
+      ST.create({ trigger: "#temata", start: "bottom 45%", end: "bottom top", scrub: 0.5, animation: out });
+      return () => sec.classList.remove("themes-anim");
+    });
+
     /* účtenka: zamknout scroll a tisknout; karta se oddálí jako u nafukování */
     if (printAt) {
       mm.add("(min-width: 861px)", () => {

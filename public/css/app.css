@@ -608,3 +608,29 @@ html.lenis,html.lenis body{height:auto}
 .mc__btns{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
 .mc__empty{margin:6px 0 14px}
 @media (max-width:860px){.mc__box{top:auto;bottom:calc(92px + env(safe-area-inset-bottom));right:12px;left:12px;width:auto;transform-origin:50% 100%}.mc__box::before{display:none}}
+
+/* ===== 4. 10. – mraky, pruh, balónek se scrollem, mezery, pozadí ===== */
+/* mraky: 4, rychlejší, z obou stran, vždy přiletí zvenku */
+.cloud{animation:drift var(--t,40s) linear var(--o,0s) infinite backwards;animation-direction:var(--dir,normal)}
+/* Nejžádanější: pruh o ~12 % větší */
+@media (min-width:900px){
+  #nejzadanejsi{padding:clamp(40px,4.6vw,62px) 0}
+  #nejzadanejsi h2{font-size:clamp(1.9rem,2.9vw,2.6rem)}
+  .rail__track .card,.rail__end{width:clamp(212px,17vw,252px)}
+  .rail__track .card__body h3,.rail__track .card__price{font-size:1.12rem}
+  .rail__track .card__add{min-height:40px;font-size:.88rem}
+}
+/* témata: text uprostřed nad balónkem, pak uletí */
+.themes-anim{min-height:100svh;display:flex;align-items:center;padding:calc(var(--nav-h) + 8px) 0 24px}
+.themes-anim>.wrap{position:relative;width:min(100% - 32px,var(--wrap))}
+.themes-anim .sec__head{position:absolute;left:50%;top:50%;translate:-50% -50%;z-index:4;text-align:center;margin:0;pointer-events:none;width:min(720px,90%)}
+.themes-anim .sec__head p{margin-inline:auto}
+.themes-anim .burst{height:min(76svh,720px)}
+/* mezery Na míru → Otázky → Poptávka */
+@media (min-width:861px){.custom-sec{min-height:92svh;padding-bottom:8px}}
+#faq{padding-top:clamp(28px,4vw,56px);padding-bottom:clamp(24px,3vw,44px)}
+#poptavka{padding-top:clamp(20px,3vw,40px)}
+/* pozadí celé stránky: víc do světle modré + jemné boční záře */
+:root{--paper:#E3F2FF}
+html{background:radial-gradient(55% 45% at 0% 18%,color-mix(in srgb,var(--sky) 26%,transparent),transparent 72%),radial-gradient(50% 40% at 100% 62%,color-mix(in srgb,var(--gold) 20%,transparent),transparent 70%),radial-gradient(45% 40% at 8% 96%,color-mix(in srgb,var(--sky) 18%,transparent),transparent 70%),#DDF0FF;background-attachment:fixed;min-height:100%}
+body{background-color:transparent}
