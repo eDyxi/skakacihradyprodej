@@ -725,3 +725,20 @@ body::after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;bac
 @media (prefers-reduced-motion:reduce){.core__ball::after{animation:none;box-shadow:0 0 22px 6px rgba(255,210,63,.5)}}
 .receipt{border-top:var(--line) solid var(--ink)}
 .receipt .deal{align-items:start;padding-top:calc(var(--nav-h) + 28px)}
+
+/* ===== 5. 10. D: řada balónků, text níž, menší balónek a „klikni“, mizející čára, rohy karet ===== */
+.themes-anim{padding:calc(14svh - 22px) 0 0}
+.themes-anim .burst__core,.themes-anim .burst__items li{top:var(--cy,38%)}
+.themes-anim .burst__hint{top:calc(var(--cy,200px) + 158px);font-size:1.2rem}
+.core__ball{width:clamp(150px,16vw,190px)}
+.burst.open .core__ball{width:clamp(88px,8vw,100px)}
+.burst.open .core__ball b{font-size:.95rem}
+.themes-anim .bub b{white-space:normal;max-width:var(--lw,140px);font-size:.85rem;line-height:1.05}
+/* čára mezi Témata a Na rovinu – do ztracena na obou stranách */
+.receipt{border-top:0}
+.themes-sec{position:relative}
+.themes-sec::after{content:"";position:absolute;left:6%;right:6%;bottom:0;height:3px;border-radius:3px;background:linear-gradient(90deg,transparent,var(--ink) 22%,var(--ink) 78%,transparent);pointer-events:none}
+/* rohy oddálené karty: dovyplnit kulisou, ať nekouká obdélník */
+.story__card{--bd:color-mix(in srgb,var(--teal) 45%,#1f7fc4)}
+.receipt__card{--bd:var(--gold)}
+.story__card,.depth{box-shadow:0 0 0 calc(var(--k,0) * 14px) var(--bd,transparent),0 calc(var(--k,0) * 18px) calc(var(--k,0) * 30px) color-mix(in srgb,var(--ink) 35%,transparent)}
