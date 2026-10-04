@@ -787,3 +787,17 @@ body::after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;bac
 .story__card,.depth{outline:0;box-shadow:0 0 0 calc(var(--k,0) * 14px) color-mix(in srgb,var(--bd,transparent) calc(var(--k,0) * 100%),transparent)}
 .receipt__pin,.receipt .depth{min-height:92svh}
 .themes-anim{height:max(500px,70svh)}
+
+/* ===== 5. 10. H ===== */
+/* Témata o ~20 % menší */
+.themes-anim{height:max(400px,48svh);padding:calc(9svh - 22px) 0 0}
+.themes-anim .core__ball{width:clamp(140px,14vw,170px)}
+.themes-anim .core__str{height:44px}
+.themes-anim .burst__core{top:calc(var(--cy,38%) + 16px)}
+.themes-anim .burst__hint{top:calc(var(--cy,200px) + 151px)}
+/* Na rovinu: zpět na celou výšku (žádný modrý pruh dole), dvě pevné čáry na modré kartě */
+.receipt__pin,.receipt .depth{min-height:100svh}
+.rl{position:absolute;left:50%;width:79%;translate:-50% 0;height:3px;border-radius:3px;background:linear-gradient(90deg,transparent,var(--ink) 22%,var(--ink) 78%,transparent);pointer-events:none;z-index:3}
+.rl--t{top:12.5svh}
+.rl--b{top:86.5svh}
+@media (max-width:860px){.rl{display:none}}

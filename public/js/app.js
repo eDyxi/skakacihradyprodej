@@ -235,8 +235,6 @@
   /* čáry mezi sekcemi + páska: přesně doprostřed mezery (měří se obsah, ne prázdné boxy) */
   function spacers() {
     const pairs = [
-      { a: ".burst__hint", b: ".receipt .eyebrow", abox: "#temata", bbox: ".receipt__pin", x: ".receipt__pin", mode: "top" },
-      { a: ".printer", b: "#na-miru .eyebrow", abox: ".receipt__pin", bbox: "#na-miru", x: "#na-miru", mode: "top" },
       { a: "#na-miru .custom", b: "#faq .eyebrow", abox: "#na-miru", bbox: "#faq", x: "#na-miru", mode: "bottom", extra: 8 },
     ];
     const tape = () => { const el = $(".tape"), A = $(".hero__grid"), B = $(".story .eyebrow"); if (!el || el.hidden || !A || !B) return; el.style.translate = "0 0"; const t = el.getBoundingClientRect(), up = t.top - A.getBoundingClientRect().bottom, dn = B.getBoundingClientRect().top - t.bottom; el.style.translate = `0 ${Math.round((dn - up) / 2)}px`; };
@@ -303,7 +301,7 @@
         const card = $(".story__card"), secS = $(".story");
         const qsx = g.quickTo(card, "scaleX", { duration: 0.9, ease: "power3" }), qsy = g.quickTo(card, "scaleY", { duration: 0.9, ease: "power3" }), qs = (v) => { qsx(v); qsy(v); }, qy = g.quickTo(card, "yPercent", { duration: 0.9, ease: "power3" }), qk = g.quickTo(secS, "--k", { duration: 0.9, ease: "power3" });
         const depth = (p) => { const k = p < 0.12 ? p / 0.12 : p > 0.86 ? (1 - p) / 0.14 : 1, e = k * k * (3 - 2 * k); qs(1 - 0.12 * e); qk(e); };
-        ST.create({ trigger: ".story__pin", start: "top top", end: "+=320%", pin: true, anticipatePin: 1, scrub: 0.6, animation: tl,
+        ST.create({ trigger: ".story__pin", start: "top top", end: "+=320%", pin: true, scrub: 0.6, animation: tl,
           onUpdate: (s) => { depth(s.progress); secS.style.setProperty("--sfeed", (s.progress * 1800).toFixed(0) + "px"); dispatchEvent(new CustomEvent("story", { detail: s.progress })); const i = Math.min(steps.length - 1, Math.floor(s.progress * steps.length)); steps.forEach((li, k) => li.classList.toggle("on", k <= i)); if (gauge) gauge.textContent = Math.round(s.progress * 100) + " %"; } });
       });
       mm.add("(max-width: 860px)", () => {
@@ -318,7 +316,7 @@
       const dist = () => track.scrollWidth - rail.clientWidth + 8;
       const skew = g.quickTo(".rail__track .card", "skewX", { duration: 0.5, ease: "power3" });
       const tw = g.to(track, { x: () => -dist(), ease: "none",
-        scrollTrigger: { trigger: "#nejzadanejsi", start: "center center", end: () => "+=" + dist(), pin: true, anticipatePin: 1, scrub: 0.5, invalidateOnRefresh: true,
+        scrollTrigger: { trigger: "#nejzadanejsi", start: "center center", end: () => "+=" + dist(), pin: true, scrub: 0.5, invalidateOnRefresh: true,
           onUpdate: (s) => skew(g.utils.clamp(-9, 9, s.getVelocity() / -260)) } });
       return () => tw.kill();
     });
@@ -381,7 +379,7 @@
       mm.add("(min-width: 861px)", () => {
         const card = $(".receipt__card"), secR = $(".receipt");
         const qx = g.quickTo(card, "scaleX", { duration: 0.9, ease: "power3" }), qy2 = g.quickTo(card, "scaleY", { duration: 0.9, ease: "power3" }), qk = g.quickTo(secR, "--k", { duration: 0.9, ease: "power3" });
-        ST.create({ trigger: ".receipt__pin", start: "top top", end: "+=200%", pin: true, anticipatePin: 1, scrub: 0.4,
+        ST.create({ trigger: ".receipt__pin", start: "top top", end: "+=200%", pin: true, scrub: 0.4,
           onUpdate: (s) => { const p = s.progress, k = p < 0.1 ? p / 0.1 : p > 0.9 ? (1 - p) / 0.1 : 1, e = k * k * (3 - 2 * k); qx(1 - 0.1 * e); qy2(1 - 0.1 * e); qk(e); printAt(p); } });
       });
       mm.add("(max-width: 860px)", () => {
@@ -390,7 +388,7 @@
     }
     /* na míru: až PO účtence (pořadí pinů = pořadí v DOM) */
     const custP = (s) => { window.__customP = s.progress; dispatchEvent(new CustomEvent("custom", { detail: s.progress })); };
-    mm.add("(min-width: 861px)", () => { ST.create({ trigger: "#na-miru", start: "top top", end: "+=170%", pin: true, anticipatePin: 1, scrub: 0.5, onUpdate: custP }); });
+    mm.add("(min-width: 861px)", () => { ST.create({ trigger: "#na-miru", start: "top top", end: "+=170%", pin: true, scrub: 0.5, onUpdate: custP }); });
     mm.add("(max-width: 860px)", () => { ST.create({ trigger: ".custom__art", start: "top 80%", end: "bottom 30%", scrub: 0.5, onUpdate: custP }); });
     addEventListener("load", () => ST.refresh());
   }
