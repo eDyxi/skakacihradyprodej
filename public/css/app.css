@@ -840,3 +840,10 @@ body::after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;bac
   mask:linear-gradient(#000 0 0) 0 0/100% 100% no-repeat,linear-gradient(#000 0 0) 50% 50%/calc((1 - .1 * var(--k,0)) * 100%) calc((1 - .1 * var(--k,0)) * 100%) no-repeat;mask-composite:exclude}
 /* Otázky: bez zbytečné mezery nahoře */
 #faq{padding-top:28px}
+
+/* ===== 5. 10. K: Na míru bez oddálení (původní animace), sekce uprostřed; čára Na rovinu→Na míru je jedna ===== */
+.rl--b{display:block}
+.custom__bd{display:none}
+.custom__card{transform:none!important;border-radius:0;box-shadow:none}
+/* čára účtenky (dole) a horní čára Na míru leží v toku přesně na sobě → vidět je vždy jen jedna, a při zámku každé sekce stojí */
+@media (min-width:861px){#na-miru.custom-sec{margin-top:calc(-13.5svh - 24px)}}
