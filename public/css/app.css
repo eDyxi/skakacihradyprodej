@@ -778,3 +778,4 @@ body::after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;bac
 .story__card,.depth{outline:calc(var(--k,0) * 3px) solid color-mix(in srgb,var(--ink) calc(var(--k,0) * var(--k,0) * var(--k,0) * 100%),transparent);
   box-shadow:0 0 0 calc(var(--k,0) * 14px) color-mix(in srgb,var(--bd,transparent) calc(var(--k,0) * 100%),transparent),0 calc(var(--k,0) * 18px) calc(var(--k,0) * 30px) color-mix(in srgb,var(--ink) calc(var(--k,0) * var(--k,0) * var(--k,0) * 35%),transparent)}
 .story__pin::before,.receipt__pin::before{opacity:calc(min(1,var(--k,0) * 2.2))}
+@keyframes fly{0%{translate:-11vw 0}50%{translate:50vw var(--ym)}100%{translate:104vw var(--y1)}}
