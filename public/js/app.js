@@ -283,10 +283,6 @@
     mm.add("(max-width: 899px)", () => { rail.classList.add("rail--native"); return () => rail.classList.remove("rail--native"); });
 
     /* témata a cenovka */
-    /* na míru: 3D návrh se „generuje“ se scrollem */
-    const custP = (s) => { window.__customP = s.progress; dispatchEvent(new CustomEvent("custom", { detail: s.progress })); };
-    mm.add("(min-width: 861px)", () => { ST.create({ trigger: "#na-miru", start: "center center", end: "+=170%", pin: true, scrub: 0.5, onUpdate: custP }); });
-    mm.add("(max-width: 860px)", () => { ST.create({ trigger: ".custom__art", start: "top 80%", end: "bottom 30%", scrub: 0.5, onUpdate: custP }); });
     /* účtenka: zamknout scroll a tisknout; karta se oddálí jako u nafukování */
     if (printAt) {
       mm.add("(min-width: 861px)", () => {
@@ -299,6 +295,10 @@
         ST.create({ trigger: ".printer", start: "top 75%", once: true, onEnter: () => { const o = { p: 0 }; g.to(o, { p: 1, duration: 2.6, ease: "none", onUpdate: () => printAt(o.p) }); } });
       });
     }
+    /* na míru: až PO účtence (pořadí pinů = pořadí v DOM) */
+    const custP = (s) => { window.__customP = s.progress; dispatchEvent(new CustomEvent("custom", { detail: s.progress })); };
+    mm.add("(min-width: 861px)", () => { ST.create({ trigger: "#na-miru", start: "top top", end: "+=170%", pin: true, scrub: 0.5, onUpdate: custP }); });
+    mm.add("(max-width: 860px)", () => { ST.create({ trigger: ".custom__art", start: "top 80%", end: "bottom 30%", scrub: 0.5, onUpdate: custP }); });
     g.from(".foot__word span", { yPercent: 60, rotation: (i) => (i ? 4 : -4), opacity: 0, stagger: 0.12, ease: "back.out(2)", duration: 0.8, scrollTrigger: { trigger: ".foot", start: "top 85%" } });
     addEventListener("load", () => ST.refresh());
   }

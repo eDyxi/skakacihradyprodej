@@ -531,3 +531,9 @@ input[type=range]{width:100%;accent-color:var(--purple)}
 .custom__label{color:var(--ink);background:var(--card);border-color:var(--ink)}
 .custom__note{color:var(--purple)}
 @media (min-width:861px){.custom-sec{min-height:100svh;display:flex;align-items:center}}
+
+/* ===== 4. 10. – opravy ===== */
+:root{--sky-2:#45BAFF}
+#nejzadanejsi.sec--sun::before{opacity:.28}
+.burst.open .burst__core:hover .core__ball{animation:none;transform:scale(1.09,.93)}
+@media (min-width:861px){.custom-sec{min-height:100svh;padding:calc(var(--nav-h) + 16px) 0 32px}}
