@@ -742,3 +742,7 @@ body::after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;bac
 .story__card{--bd:color-mix(in srgb,var(--teal) 45%,#1f7fc4)}
 .receipt__card{--bd:var(--gold)}
 .story__card,.depth{box-shadow:0 0 0 calc(var(--k,0) * 14px) var(--bd,transparent),0 calc(var(--k,0) * 18px) calc(var(--k,0) * 30px) color-mix(in srgb,var(--ink) 35%,transparent)}
+/* balónek níž (nepřekrývá pilulku), víc místa pro „klikni“ */
+.themes-anim{height:max(440px,58svh)}
+.themes-anim .burst__core{top:calc(var(--cy,38%) + 40px)}
+.themes-anim .burst__hint{top:calc(var(--cy,200px) + 40px + 162px)}
