@@ -609,16 +609,13 @@
     const NS = "http://www.w3.org/2000/svg";
     const draw = (el) => {
       el.querySelector(":scope > .cl")?.remove();
-      const tw = el.offsetWidth, th = el.offsetHeight, H = Math.max(60, th + 34), s = H / 54, pad = 4;
-      /* obláčky podle mráčku z oblohy (viewBox 120×60): levý r16, velký r21, pravý r18, krajní r14 */
-      /* přesná geometrie mráčku z oblohy (path v 120×60): levý lalok, velký, pravý, malý krajní */
-      let C = [[23, 34, 16], [45.3, 23.6, 22], [78.1, 23.2, 18], [97, 36, 14]].map(([x, y, r]) => [x * s, y * s, r * s]);
-      const W0 = 104 * s, Wn = Math.max(W0, tw + 30);
-      const extra = Wn - W0;
-      if (extra > 0) { C[2][0] += extra; C[3][0] += extra; const bx = C[1][0], rx = C[2][0], n = Math.round(extra / (33 * s)); for (let i = 1; i <= n; i++) C.splice(1 + i, 0, [bx + ((rx - bx) * i) / (n + 1), (i % 2 ? 25 : 23.4) * s, (i % 2 ? 19 : 21) * s]); }
-      const minX = C[0][0] - C[0][2], maxX = C[C.length - 1][0] + C[C.length - 1][2], base = 50 * s;
-      const W = maxX - minX + pad * 2, top = Math.min(...C.map(([, y, r]) => y - r)), Hh = base - top + pad * 2;
-      const sh = (k) => C.map(([x, y, r]) => `<circle cx="${(x - minX + pad).toFixed(1)}" cy="${(y - top + pad).toFixed(1)}" r="${(r + k).toFixed(1)}"/>`).join("") + `<rect x="${(C[0][0] - minX + pad).toFixed(1)}" y="${(Math.min(...C.map((c) => c[1])) - top + pad - k).toFixed(1)}" width="${(C[C.length - 1][0] - C[0][0]).toFixed(1)}" height="${(base - Math.min(...C.map((c) => c[1])) + 2 * k).toFixed(1)}"/>`;
+      const tw = el.offsetWidth, th = el.offsetHeight, pad = 4;
+      /* přesně mráček z oblohy (4 laloky): mírně roztažený do šířky (max 1,55×) a zvětšený, kruhy → jemné elipsy */
+      const s0 = Math.max(60, th + 34) / 54, ratio = (tw + 34) / (104 * s0), sx = Math.min(1.55, Math.max(1, ratio)), s = s0 * Math.max(1, ratio / 1.55);
+      const C = [[23, 34, 16], [45.3, 23.6, 22], [78.1, 23.2, 18], [97, 36, 14]].map(([x, y, r]) => [x * s * sx, y * s, r * s * sx, r * s]);
+      const minX = C[0][0] - C[0][2], maxX = C[3][0] + C[3][2], base = 50 * s, top = Math.min(...C.map(([, y, , ry]) => y - ry)), cyMin = Math.min(...C.map((c) => c[1]));
+      const W = maxX - minX + pad * 2, Hh = base - top + pad * 2;
+      const sh = (k) => C.map(([x, y, rx, ry]) => `<ellipse cx="${(x - minX + pad).toFixed(1)}" cy="${(y - top + pad).toFixed(1)}" rx="${(rx + k).toFixed(1)}" ry="${(ry + k).toFixed(1)}"/>`).join("") + `<rect x="${(C[0][0] - minX + pad).toFixed(1)}" y="${(cyMin - top + pad - k).toFixed(1)}" width="${(C[3][0] - C[0][0]).toFixed(1)}" height="${(base - cyMin + 2 * k).toFixed(1)}"/>`;
       const svg = document.createElementNS(NS, "svg");
       svg.setAttribute("class", "cl"); svg.setAttribute("aria-hidden", "true"); svg.setAttribute("width", W.toFixed(0)); svg.setAttribute("height", Hh.toFixed(0)); svg.setAttribute("viewBox", `0 0 ${W.toFixed(1)} ${Hh.toFixed(1)}`);
       svg.innerHTML = `<g fill="var(--ink)">${sh(3)}</g><g fill="var(--card)">${sh(0)}</g>`;
