@@ -1017,3 +1017,21 @@ h1,h2{text-shadow:.035em .045em 0 color-mix(in srgb,var(--ink) 18%,transparent)}
 .st-actions #st-send{flex:1 1 100%}
 .ci--design img{object-fit:cover}
 @media (max-width:900px){.studio__grid{grid-template-columns:minmax(0,1fr)}.st-stage{position:relative;top:0}}
+
+/* ===== 6. 10. F ===== */
+/* úvod: jen výrazná černá */
+.hi{color:var(--ink);font-weight:800}
+/* pilulky = mráčky jako na obloze: velké obláčky nahoře, kreslený stín přes celý tvar, výraznější dýchání a plutí */
+.eyebrow{box-shadow:none;filter:drop-shadow(4px 4px 0 var(--ink));border-radius:999px;padding:9px 16px 7px;margin-top:14px;animation:cloudy 4.6s ease-in-out infinite}
+.eyebrow::before,.eyebrow::after{content:"";position:absolute;z-index:1;background:var(--card);border:var(--line) solid var(--ink);border-radius:50%;clip-path:inset(0 0 calc(50% - 1.5px) 0);pointer-events:none;margin:0;display:block}
+.eyebrow::before{width:34px;height:34px;top:-16px;left:18%}
+.eyebrow::after{width:26px;height:26px;top:-12px;left:auto;right:20%}
+@keyframes cloudy{0%,100%{translate:0 0;scale:1}30%{translate:3px -6px;scale:1.06 1.04}60%{translate:-2px -3px;scale:.98 1.01}}
+@media (prefers-reduced-motion:reduce){.eyebrow{animation:none}}
+/* poptávka dole: malé fotky + jména místo textu */
+.ask__cart{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;padding:10px 12px}
+.ask__lbl{font:700 .95rem/1 var(--f-d)}
+.ask__items{display:flex;flex-wrap:wrap;gap:6px;flex:1 1 100%}
+.ask__it{display:inline-flex;align-items:center;gap:6px;padding:3px 10px 3px 3px;border:2px solid var(--ink);border-radius:99px;background:var(--paper);text-decoration:none;font:600 .85rem/1 var(--f-d)}
+.ask__it img{width:30px;height:30px;object-fit:cover;border-radius:50%;border:2px solid var(--ink)}
+.ask__edit{font:700 .9rem/1 var(--f-d)}

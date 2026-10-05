@@ -257,7 +257,7 @@
     const printAt = receipt();
     bindForm(() => { const a = $("[data-ask-cart]"); if (a) a.hidden = true; });
     const ask = $("[data-ask-cart]"), inC = cart.get().filter((i) => byId[i.id]);
-    if (ask && inC.length) { ask.hidden = false; ask.innerHTML = `V poptávce: <b>${inC.map((i) => byId[i.id].n).join(", ")}</b> – pošleme s ní. <a href="/kosik.html">Upravit</a>`; }
+    if (ask && inC.length) { ask.hidden = false; ask.innerHTML = `<span class="ask__lbl">V poptávce</span><span class="ask__items">${inC.map((i) => `<a class="ask__it" href="/hrad.html?id=${i.id}"><img src="${img(byId[i.id])}" alt="" width="44" height="44" loading="lazy"><span>${byId[i.id].n}</span></a>`).join("")}</span><a class="ask__edit" href="/kosik.html">Upravit</a>`; }
     setTimeout(() => { if (!window.__3d) $$(".hero__art, .story__art").forEach((e) => e.classList.add("no3d")); }, 6000);
     const cnt = $("[data-count]"); if (cnt) cnt.textContent = H.length;
     const minP = $("[data-min-price]"); if (minP) minP.textContent = kc(Math.min(...H.map((h) => h.p)));
