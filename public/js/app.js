@@ -270,7 +270,8 @@
       const l = (window.__lenis = new Lenis({ lerp: 0.085, wheelMultiplier: 0.9, smoothWheel: true }));
       document.documentElement.classList.add("lenis", "lenis-smooth");
       l.on("scroll", ST.update); g.ticker.add((t) => l.raf(t * 1000)); g.ticker.lagSmoothing(0);
-      document.addEventListener("click", (e) => { const a = e.target.closest('a[href^="#"], a[href^="/#"]'); if (!a) return; const id = a.getAttribute("href").split("#")[1]; const t = id && document.getElementById(id); if (t) { e.preventDefault(); l.scrollTo(t, { offset: -70, duration: 1.4 }); } });
+      document.addEventListener("click", (e) => { const a = e.target.closest('a[href^="#"], a[href^="/#"]'); if (!a) return; const id = a.getAttribute("href").split("#")[1]; const t = id && document.getElementById(id); if (t) { e.preventDefault(); window.__skipLock = true; l.scrollTo(t, { offset: -70, duration: 1.4, onComplete: () => setTimeout(() => (window.__skipLock = false), 120) }); } });
+      if (location.hash) { const t = document.getElementById(location.hash.slice(1)); if (t) setTimeout(() => { window.__skipLock = true; ST.refresh(); l.scrollTo(t, { offset: -70, immediate: true, force: true }); setTimeout(() => (window.__skipLock = false), 400); }, 700); }
     }
 
     /* hero intro: slova vyskočí, hrad dopadne */
@@ -338,7 +339,7 @@
       const M = g.timeline({ paused: true })
         .to(txt, { opacity: 0, y: -16, duration: 0.1, ease: "power1.in" }, 0)
         .fromTo(core, { y: "52vh", x: 0, rotation: 0 }, { keyframes: { y: ["52vh", "37vh", "23vh", "11vh", "3vh", "-1vh", "0vh"], x: [0, -42, 30, -20, 10, -3, 0], rotation: [0, -10, 7, -5, 3, -1, 0], easeEach: "sine.inOut" }, duration: 0.82 }, 0)
-        .to(pill, { y: -26, duration: 0.2, ease: "power2.out" }, 0.55)
+        .to(pill, { y: -10, duration: 0.2, ease: "power2.out" }, 0.55)
         .fromTo(hint, { opacity: 0 }, { opacity: 1, duration: 0.08 }, 0.86)
         .to(core, { keyframes: { y: ["0vh", "-18vh", "-40vh", "-65vh", "-95vh"], x: [0, 28, -22, 18, -10], rotation: [0, 7, -6, 5, -3], easeEach: "sine.inOut" }, duration: 1, ease: "power1.in" }, 1)
         .to(hint, { opacity: 0, duration: 0.15 }, 1)
@@ -361,6 +362,7 @@
       addEventListener("wheel", onWheel, { passive: false }); addEventListener("keydown", onKey);
       /* hlídání průjezdu bodem zámku */
       const onScroll = () => {
+        if (window.__skipLock) { last = scrollY; return; }
         const y = scrollY, ly = lockY();
         if (!locked && !open) {
           if (last < ly && y >= ly && prog < 1) lock();
@@ -551,6 +553,14 @@
       $("#s-hrady").textContent = kc(hr); $("#s-fans").textContent = kc(fa); $("#s-total").textContent = kc(hr + fa);
       $("#s-season").hidden = !season(); $("#s-season b").textContent = `${kc(Math.round((hr * 0.85) / 100) * 100)} – ${kc(Math.round((hr * 0.9) / 100) * 100)}`;
     }
+    try {
+      const dz = JSON.parse(localStorage.getItem("shp-design") || "null");
+      if (dz) {
+        list.insertAdjacentHTML("beforebegin", `<div class="ci ci--design"><img src="${dz.img}" alt="Váš 3D návrh" width="120" height="90"><div><h3>Váš 3D návrh</h3><p class="card__meta">${dz.sum.replace(/[<>]/g, "")}</p></div><div class="ci__side"><a class="ci__rm" href="/studio.html">Upravit</a><button class="ci__rm" type="button" id="dz-rm">Odebrat</button></div></div>`);
+        const ta = $("#form textarea"); if (ta && !ta.value) ta.value = dz.sum;
+        $("#dz-rm").addEventListener("click", () => { localStorage.removeItem("shp-design"); $(".ci--design").remove(); });
+      }
+    } catch {}
     list.addEventListener("change", (e) => { const s = e.target.closest("[data-fan]"); if (s) { cart.fan(+s.dataset.fan, +s.value); render(); } });
     list.addEventListener("click", (e) => { const b = e.target.closest("[data-rm]"); if (b) { cart.rm(+b.dataset.rm); render(); } });
     render();
@@ -570,7 +580,7 @@
       const btn = f.querySelector("button[type=submit]"); btn.disabled = true; hint.textContent = "Odesílám…";
       try {
         const r = await fetch("/api/poptavka", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(d) });
-        if (r.ok) { f.innerHTML = `<p class="ok">Díky, poptávka odešla. Ozveme se nejpozději další pracovní den.</p>`; cart.set([]); onSent?.(); return; }
+        if (r.ok) { localStorage.removeItem("shp-design"); f.innerHTML = `<p class="ok">Díky, poptávka odešla. Ozveme se nejpozději další pracovní den.</p>`; cart.set([]); onSent?.(); return; }
         throw new Error(r.status);
       } catch {
         const body = [`Jméno: ${d.jmeno}`, `E-mail: ${d.email}`, `Telefon: ${d.telefon}`, `Město/obec: ${d.mesto}`, "", ...d.kosik.map((i) => `č. ${i.id} ${i.nazev} – ${i.fukar} – ${kc(i.cena)}`), "", d.zprava].join("\n");

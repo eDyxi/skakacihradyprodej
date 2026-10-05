@@ -965,3 +965,55 @@ h1,h2{text-shadow:.035em .045em 0 color-mix(in srgb,var(--ink) 18%,transparent)}
 .kat-hero h1{margin:14px auto 14px;max-width:14ch}
 .kat-hero__lede{margin:0 auto clamp(28px,4vw,44px)}
 .chooser{text-align:left}
+
+/* ===== 6. 10. E ===== */
+/* úvod: pilulka přesně nad logem; ostré štítky „116 modelů“ a „od 30 000 Kč“ */
+.hero__brand{width:min(100%,620px);text-align:center}
+.hero__brand .eyebrow{margin-bottom:14px}
+.tag-hi{display:inline-block;padding:1px 9px 0;border:2px solid var(--ink);border-radius:10px;background:var(--gold);color:var(--ink);font-weight:800;box-shadow:2px 2px 0 var(--ink);white-space:nowrap}
+/* pilulky jako mráčky: dva obláčky nahoře, dýchají a jemně plují */
+.eyebrow{position:relative;isolation:isolate;animation:cloudy 5.5s ease-in-out infinite}
+.eyebrow::before,.eyebrow::after{content:"";position:absolute;z-index:1;background:var(--card);border:var(--line) solid var(--ink);border-radius:50%;clip-path:inset(0 0 calc(50% - 1px) 0);pointer-events:none;margin:0;vertical-align:0}
+.eyebrow::before{width:24px;height:24px;top:-11px;left:22%}
+.eyebrow::after{width:18px;height:18px;top:-8px;right:24%}
+@keyframes cloudy{0%,100%{translate:0 0;scale:1}50%{translate:0 -3px;scale:1.035 1.02}}
+@media (prefers-reduced-motion:reduce){.eyebrow{animation:none}}
+/* účtenka jako dřív (původní písmo a červené razítko) */
+.rc__head{font:800 1.15rem/1.1 "Baloo 2",system-ui,sans-serif;color:var(--ink)}
+.rc__thanks{font:700 1.3rem/1 var(--f-h);color:var(--purple)}
+.rc__stamp{font:800 1.15rem/1 "Baloo 2",system-ui,sans-serif;color:var(--red)}
+.rc p{font-size:revert}
+.deal .rc__head,.deal .rc__thanks,.deal .rc__stamp{font-weight:800}
+.deal .rc__thanks{font-weight:700}
+/* 3D studio */
+.studio__head{text-align:center;padding:clamp(28px,5vw,60px) 0 22px}
+.studio__head h1{font-size:clamp(2.4rem,6vw,4.6rem);margin:12px auto}
+.studio__lede{max-width:60ch;margin:0 auto;color:#172440;font-weight:600}
+.studio__grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,.65fr);gap:24px;align-items:start;padding-bottom:90px}
+.st-stage{position:sticky;top:calc(var(--nav-h) + 8px)}
+.st-3d{position:relative;aspect-ratio:4/3;border:var(--line) solid var(--ink);border-radius:var(--r-lg);box-shadow:var(--sh);overflow:hidden;background:radial-gradient(circle at 50% 35%,#fff 0,var(--paper) 60%,var(--paper-2));cursor:grab}
+.st-3d canvas{display:block;width:100%;height:100%;touch-action:none}
+.st-load{position:absolute;inset:0;display:grid;place-items:center;margin:0;font-size:1.8rem}
+.st-3d.ready .st-load{display:none}
+.st-price{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-top:14px;background:var(--gold);border:var(--line) solid var(--ink);border-radius:18px;box-shadow:var(--sh-sm);padding:12px 16px}
+.st-price b{font:700 1.6rem/1 var(--f-d)}
+.st-price small{color:#172440;font-weight:600}
+.st-panel{display:grid;gap:16px;background:var(--card);border:var(--line) solid var(--ink);border-radius:var(--r-lg);box-shadow:var(--sh);padding:20px}
+.st-panel fieldset{border:0;margin:0;padding:0;display:grid;gap:10px}
+.st-panel legend{font:700 1.15rem/1 var(--f-d);margin-bottom:8px}
+.st-r{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;align-items:center;font-weight:700}
+.st-r output{justify-self:end;font:700 1rem/1 var(--f-d);background:var(--paper);border:2px solid var(--ink);border-radius:99px;padding:4px 9px 3px}
+.st-r input{grid-column:1/-1;accent-color:var(--sky)}
+.st-c{display:grid;gap:6px;font-weight:700}
+.sw{display:flex;gap:7px;flex-wrap:wrap}
+.sw button{width:30px;height:30px;border-radius:50%;background:var(--c);border:2px solid var(--ink);cursor:pointer;transition:transform .25s var(--bounce)}
+.sw button:hover{transform:scale(1.15)}
+.sw button[aria-pressed="true"]{box-shadow:0 0 0 3px var(--card),0 0 0 5px var(--ink);transform:scale(1.08)}
+.st-seg{display:flex;flex-wrap:wrap;gap:6px}
+.st-seg button{min-height:40px;padding:0 12px;border:2px solid var(--ink);border-radius:99px;background:var(--card);font:600 .92rem/1 var(--f-d);cursor:pointer}
+.st-seg button[aria-pressed="true"]{background:var(--sky);box-shadow:3px 3px 0 var(--ink)}
+.st-file{justify-self:start}
+.st-actions{display:flex;flex-wrap:wrap;gap:10px}
+.st-actions #st-send{flex:1 1 100%}
+.ci--design img{object-fit:cover}
+@media (max-width:900px){.studio__grid{grid-template-columns:minmax(0,1fr)}.st-stage{position:relative;top:0}}
