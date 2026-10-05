@@ -611,10 +611,11 @@
       el.querySelector(":scope > .cl")?.remove();
       const tw = el.offsetWidth, th = el.offsetHeight, H = Math.max(60, th + 34), s = H / 54, pad = 4;
       /* obláčky podle mráčku z oblohy (viewBox 120×60): levý r16, velký r21, pravý r18, krajní r14 */
-      let C = [[22, 34, 16], [44, 27, 21], [78, 28, 18], [92, 36, 14]].map(([x, y, r]) => [x * s, y * s, r * s]);
-      const W0 = 106 * s, Wn = Math.max(W0, tw + 34);
+      /* přesná geometrie mráčku z oblohy (path v 120×60): levý lalok, velký, pravý, malý krajní */
+      let C = [[23, 34, 16], [45.3, 23.6, 22], [78.1, 23.2, 18], [97, 36, 14]].map(([x, y, r]) => [x * s, y * s, r * s]);
+      const W0 = 104 * s, Wn = Math.max(W0, tw + 30);
       const extra = Wn - W0;
-      if (extra > 0) { C[2][0] += extra; C[3][0] += extra; const n = Math.floor(extra / (34 * s)); for (let i = 1; i <= n; i++) C.splice(1 + i, 0, [44 * s + (extra * i) / (n + 1), (i % 2 ? 31 : 26) * s, (i % 2 ? 17 : 19) * s]); }
+      if (extra > 0) { C[2][0] += extra; C[3][0] += extra; const bx = C[1][0], rx = C[2][0], n = Math.round(extra / (33 * s)); for (let i = 1; i <= n; i++) C.splice(1 + i, 0, [bx + ((rx - bx) * i) / (n + 1), (i % 2 ? 25 : 23.4) * s, (i % 2 ? 19 : 21) * s]); }
       const minX = C[0][0] - C[0][2], maxX = C[C.length - 1][0] + C[C.length - 1][2], base = 50 * s;
       const W = maxX - minX + pad * 2, top = Math.min(...C.map(([, y, r]) => y - r)), Hh = base - top + pad * 2;
       const sh = (k) => C.map(([x, y, r]) => `<circle cx="${(x - minX + pad).toFixed(1)}" cy="${(y - top + pad).toFixed(1)}" r="${(r + k).toFixed(1)}"/>`).join("") + `<rect x="${(C[0][0] - minX + pad).toFixed(1)}" y="${(Math.min(...C.map((c) => c[1])) - top + pad - k).toFixed(1)}" width="${(C[C.length - 1][0] - C[0][0]).toFixed(1)}" height="${(base - Math.min(...C.map((c) => c[1])) + 2 * k).toFixed(1)}"/>`;
