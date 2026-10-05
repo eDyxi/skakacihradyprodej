@@ -1128,3 +1128,6 @@ h1,h2{text-shadow:.035em .045em 0 color-mix(in srgb,var(--ink) 18%,transparent)}
 .st-panel[data-typ="arena"] .st-row:has([data-k="roof"]),.st-panel[data-typ="arena"] .st-row:has([data-k="side"]),.st-panel[data-typ="arena"] .st-row:has([data-k="animal"]),.st-panel[data-typ="draha"] .st-row:has([data-k="animal"]){display:none}
 .st-panel[data-typ="arena"] [data-k="extras"] [data-v="step"],.st-panel[data-typ="arena"] [data-k="extras"] [data-v="arch"]{display:none}
 .st-panel[data-typ="arena"] .st-row:has([data-k="walls"]) [data-k="walls"]{display:flex}
+.st-bot{padding-bottom:90px}
+.st-bot .bot{max-width:none;margin:0}
+.studio__grid{padding-bottom:28px}
