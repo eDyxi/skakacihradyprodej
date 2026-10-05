@@ -609,7 +609,7 @@
     const NS = "http://www.w3.org/2000/svg";
     const draw = (el) => {
       el.querySelector(":scope > .cl")?.remove();
-      const tw = el.offsetWidth, th = el.offsetHeight, H = Math.max(56, th + 30), s = H / 54, pad = 4;
+      const tw = el.offsetWidth, th = el.offsetHeight, H = Math.max(60, th + 34), s = H / 54, pad = 4;
       /* obláčky podle mráčku z oblohy (viewBox 120×60): levý r16, velký r21, pravý r18, krajní r14 */
       let C = [[22, 34, 16], [44, 27, 21], [78, 28, 18], [92, 36, 14]].map(([x, y, r]) => [x * s, y * s, r * s]);
       const W0 = 106 * s, Wn = Math.max(W0, tw + 34);
@@ -617,17 +617,42 @@
       if (extra > 0) { C[2][0] += extra; C[3][0] += extra; const n = Math.floor(extra / (34 * s)); for (let i = 1; i <= n; i++) C.splice(1 + i, 0, [44 * s + (extra * i) / (n + 1), (i % 2 ? 31 : 26) * s, (i % 2 ? 17 : 19) * s]); }
       const minX = C[0][0] - C[0][2], maxX = C[C.length - 1][0] + C[C.length - 1][2], base = 50 * s;
       const W = maxX - minX + pad * 2, top = Math.min(...C.map(([, y, r]) => y - r)), Hh = base - top + pad * 2;
-      const sh = (k) => C.map(([x, y, r]) => `<circle cx="${(x - minX + pad).toFixed(1)}" cy="${(y - top + pad).toFixed(1)}" r="${(r + k).toFixed(1)}"/>`).join("") + `<rect x="${(C[0][0] - minX + pad).toFixed(1)}" y="${(30 * s - top + pad).toFixed(1)}" width="${(C[C.length - 1][0] - C[0][0]).toFixed(1)}" height="${(base - 30 * s + k).toFixed(1)}"/>`;
+      const sh = (k) => C.map(([x, y, r]) => `<circle cx="${(x - minX + pad).toFixed(1)}" cy="${(y - top + pad).toFixed(1)}" r="${(r + k).toFixed(1)}"/>`).join("") + `<rect x="${(C[0][0] - minX + pad).toFixed(1)}" y="${(Math.min(...C.map((c) => c[1])) - top + pad - k).toFixed(1)}" width="${(C[C.length - 1][0] - C[0][0]).toFixed(1)}" height="${(base - Math.min(...C.map((c) => c[1])) + 2 * k).toFixed(1)}"/>`;
       const svg = document.createElementNS(NS, "svg");
       svg.setAttribute("class", "cl"); svg.setAttribute("aria-hidden", "true"); svg.setAttribute("width", W.toFixed(0)); svg.setAttribute("height", Hh.toFixed(0)); svg.setAttribute("viewBox", `0 0 ${W.toFixed(1)} ${Hh.toFixed(1)}`);
       svg.innerHTML = `<g fill="var(--ink)">${sh(3)}</g><g fill="var(--card)">${sh(0)}</g>`;
-      svg.style.bottom = (-(Hh - pad - (base - top) ) - 4).toFixed(0) + "px";
+      svg.style.bottom = "-3px";
       el.prepend(svg);
     };
     const all = () => $$(".eyebrow").forEach(draw);
     all(); document.fonts?.ready.then(all); addEventListener("resize", all);
   }
-  badge(); navState(); seasonal(); cursor(); dotsBg(); headWords(); cloudPills();
+  /* AI asistent v Otázkách (Workers AI, při výpadku odpovídá z otázek na stránce) */
+  function assistant() {
+    const box = $("#bot"); if (!box) return;
+    const log = $("#bot-log"), form = $("#bot-form"), inp = $("#bot-in"), hist = [];
+    const norm = (t) => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9 ]/g, " ");
+    const faqs = $$(".faq details").map((d) => ({ q: d.querySelector("summary").textContent, a: d.querySelector("p").textContent }));
+    const local = (q) => {
+      const w = norm(q).split(/\s+/).filter((x) => x.length > 2);
+      let best = null, sc = 0;
+      faqs.forEach((f) => { const t = norm(f.q + " " + f.a); const s2 = w.reduce((s, x) => s + (t.includes(x.slice(0, 5)) ? 1 : 0), 0); if (s2 > sc) { sc = s2; best = f; } });
+      return sc >= 1 ? best.a : "Na tohle vám nejrychleji odpoví Mirek: +420 736 214 975, nebo nám napište poptávku níže – ozveme se do druhého pracovního dne.";
+    };
+    const add = (t, who) => { const p = document.createElement("p"); p.className = "msg msg--" + who; p.textContent = t; log.append(p); log.scrollTop = log.scrollHeight; return p; };
+    async function ask(q) {
+      q = q.trim(); if (!q) return;
+      add(q, "me"); hist.push({ role: "user", content: q }); inp.value = "";
+      const typing = add("", "bot"); typing.classList.add("msg--typing"); typing.innerHTML = "<i></i><i></i><i></i>";
+      let reply;
+      try { const r = await fetch("/api/chat", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ messages: hist }) }); const d = await r.json(); if (!d.ok) throw 0; reply = d.reply; }
+      catch { reply = local(q); }
+      typing.remove(); add(reply, "bot"); hist.push({ role: "assistant", content: reply });
+    }
+    form.addEventListener("submit", (e) => { e.preventDefault(); ask(inp.value); });
+    $("#bot-chips").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) ask(b.textContent); });
+  }
+  badge(); navState(); seasonal(); cursor(); dotsBg(); headWords(); cloudPills(); assistant();
   ({ home, katalog, detail, kosik })[PAGE]?.();
   reveal();
 })();

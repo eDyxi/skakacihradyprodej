@@ -3,33 +3,41 @@
 <meta property="og:title" content="3D studio – navrhněte si vlastní skákací hrad | Skákací hrady"><meta property="og:description" content="Navrhněte si skákací hrad na míru: rozměry, barvy, věže, skluzavka a nápis, živě ve 3D."><meta property="og:image" content="/assets/hrady/034.webp">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M8 58V26l8-14 8 14v8h16v-8l8-14 8 14v32z' fill='%2338B6FF' stroke='%231E2A44' stroke-width='4' stroke-linejoin='round'/%3E%3Crect x='20' y='40' width='24' height='18' rx='6' fill='%23FFD23F' stroke='%231E2A44' stroke-width='4'/%3E%3C/svg%3E"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Caveat:wght@700&family=Fredoka:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/css/app.css?v=20261006j"></head><body data-page="studio"><a class="sr" href="#main">Přeskočit na obsah</a>
+<link rel="stylesheet" href="/css/app.css?v=20261007b"></head><body data-page="studio"><a class="sr" href="#main">Přeskočit na obsah</a>
 <header class="nav" id="nav"><div class="wrap nav__in"><a class="logo" href="/"><svg viewBox="0 -4 300 118" role="img" aria-label="Skákací hrady"><g text-anchor="middle">
 <text class="ex" x="152" y="52" font-size="54">SKÁKACÍ</text><text class="t1" x="148" y="48" font-size="54">SKÁKACÍ</text>
 <text class="ex" x="152" y="108" font-size="62">HRADY</text><text class="t2" x="148" y="104" font-size="62">HRADY</text></g></svg></a>
 <nav class="nav__pill" aria-label="Hlavní menu"><a href="/katalog.html" data-nav="katalog">Katalog</a><a href="/#na-miru">Na míru</a><a href="/studio.html" data-nav="studio">3D studio</a><a href="/#faq">Otázky</a><a class="nav__phone" href="tel:+420736214975">736 214 975</a></nav>
 <a class="nav__cart" href="/kosik.html" aria-label="Poptávka – vybrané hrady"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h2.4l2.2 11h10.6L21 8H7"/><circle cx="9.5" cy="19.5" r="1.5"/><circle cx="17" cy="19.5" r="1.5"/></svg><b data-cart-count></b></a></div></header><main id="main" class="studio"><div class="wrap studio__head"><span class="eyebrow">3D studio</span><h1>Navrhněte si <span class="ac ac--o">vlastní hrad</span></h1>
-<p class="studio__lede">Nastavte rozměry, barvy, věže, skluzavku i nápis. Hrad se vám poskládá živě ve 3D – otáčejte ho myší nebo prstem. Hotový návrh pošlete jedním klikem do poptávky.</p></div>
+<p class="studio__lede">Začněte předlohou z katalogu, nebo poskládejte vlastní: typ, rozměry, barvy, věže, okna, stříšku, skluzavku i vybavení. Hrad se staví živě ve 3D – otáčejte ho myší nebo prstem.</p></div>
 <div class="wrap studio__grid">
- <div class="st-stage"><div id="st-3d" class="st-3d"><p class="st-load hand">nafukuji…</p></div>
-  <div class="st-price"><span>Orientační cena</span><b id="st-price">—</b><small>přesnou cenu pošleme v nabídce</small></div></div>
+ <div class="st-stage"><div id="st-3d" class="st-3d"><p class="st-load hand">nafukuji…</p><p class="st-hint">táhni = otáčení · kolečko = zoom</p></div>
+  <div class="st-price"><span>Orientační cena</span><b id="st-price">—</b><small id="st-dim"></small></div></div>
  <form class="st-panel" id="st-form" onsubmit="return false">
-  <fieldset><legend>Rozměry</legend>
-   <label class="st-r">Šířka <output id="o-w"></output><input type="range" id="w" min="3" max="8" step="0.5" value="5"></label>
-   <label class="st-r">Délka <output id="o-d"></output><input type="range" id="d" min="3" max="8" step="0.5" value="5"></label>
-   <label class="st-r">Výška <output id="o-h"></output><input type="range" id="h" min="3" max="6" step="0.5" value="4"></label></fieldset>
-  <fieldset><legend>Barvy</legend>
+  <div class="st-row st-row--top"><span class="st-l">Předloha</span><div class="st-ctl"><div class="st-presets" id="st-presets"></div></div></div>
+  <div class="st-row"><span class="st-l">Typ</span><div class="st-ctl"><div class="st-seg" data-k="typ"><button type="button" data-v="hrad">Skákací hrad</button><button type="button" data-v="combo">Hrad se skluzavkou</button><button type="button" data-v="skluzavka">Velká skluzavka</button><button type="button" data-v="draha">Překážková dráha</button></div></div></div>
+  <div class="st-row"><span class="st-l">Rozměry</span><div class="st-ctl st-dims">
+   <label class="st-r">Šířka <output id="o-w"></output><input type="range" id="w" step="0.5"></label>
+   <label class="st-r">Délka <output id="o-d"></output><input type="range" id="d" step="0.5"></label>
+   <label class="st-r">Výška <output id="o-h"></output><input type="range" id="h" step="0.5"></label></div></div>
+  <div class="st-row"><span class="st-l">Schéma</span><div class="st-ctl"><div class="st-schemes" id="st-schemes"></div></div></div>
+  <div class="st-row"><span class="st-l">Barvy</span><div class="st-ctl st-colors">
    <div class="st-c"><span>Stěny</span><div class="sw" data-k="wall"></div></div>
-   <div class="st-c"><span>Věže a špice</span><div class="sw" data-k="acc"></div></div>
-   <div class="st-c"><span>Podlaha</span><div class="sw" data-k="floor"></div></div></fieldset>
-  <fieldset><legend>Tvar</legend>
-   <div class="st-seg" data-k="tower"><button type="button" data-v="cone">Špice</button><button type="button" data-v="ball">Kuličky</button><button type="button" data-v="none">Bez věží</button></div>
-   <div class="st-seg" data-k="slide"><button type="button" data-v="none">Bez skluzavky</button><button type="button" data-v="left">Skluzavka vlevo</button><button type="button" data-v="right">Skluzavka vpravo</button></div></fieldset>
-  <fieldset><legend>Nápis a logo</legend>
-   <input class="input" id="txt" maxlength="22" value="SKÁKACÍ HRADY" aria-label="Nápis na banneru">
-   <label class="btn btn--ghost btn--sm st-file">Nahrát logo<input type="file" id="logo" accept="image/*" hidden></label></fieldset>
+   <div class="st-c"><span>Pruhy</span><div class="sw" data-k="wall2"></div></div>
+   <div class="st-c"><span>Věže</span><div class="sw" data-k="acc"></div></div>
+   <div class="st-c"><span>Podlaha</span><div class="sw" data-k="floor"></div></div></div></div>
+  <div class="st-row"><span class="st-l">Věže</span><div class="st-ctl"><div class="st-seg" data-k="towers"><button type="button" data-v="4">4 věže</button><button type="button" data-v="2">2 vpředu</button><button type="button" data-v="0">Bez věží</button></div>
+   <div class="st-seg" data-k="tstyle"><button type="button" data-v="cone">Špice</button><button type="button" data-v="ball">Kulička</button><button type="button" data-v="onion">Cibule</button><button type="button" data-v="crayon">Pastelka</button><button type="button" data-v="palm">Palma</button><button type="button" data-v="flat">Cimbuří</button></div></div></div>
+  <div class="st-row"><span class="st-l">Stěny</span><div class="st-ctl"><div class="st-seg" data-k="walls"><button type="button" data-v="tubes">Plné válce</button><button type="button" data-v="mesh">Síťová okna</button></div>
+   <div class="st-seg" data-k="stripes"><button type="button" data-v="0">Jednobarevné</button><button type="button" data-v="1">Pruhované</button></div></div></div>
+  <div class="st-row"><span class="st-l">Stříška</span><div class="st-ctl"><div class="st-seg" data-k="roof"><button type="button" data-v="none">Bez stříšky</button><button type="button" data-v="arch">Oblouková</button><button type="button" data-v="flat">Rovná</button></div></div></div>
+  <div class="st-row"><span class="st-l">Skluzavka</span><div class="st-ctl"><div class="st-seg" data-k="side"><button type="button" data-v="right">Vpravo</button><button type="button" data-v="left">Vlevo</button></div>
+   <div class="st-seg" data-k="lanes"><button type="button" data-v="1">1 dráha</button><button type="button" data-v="2">2 dráhy</button><button type="button" data-v="3">3 dráhy</button></div></div></div>
+  <div class="st-row"><span class="st-l">Vybavení</span><div class="st-ctl"><div class="st-seg st-seg--multi" data-k="extras"><button type="button" data-v="step">Vstupní schod</button><button type="button" data-v="arch">Brána s obloukem</button><button type="button" data-v="hoop">Basketbalový koš</button><button type="button" data-v="pillars">Překážky uvnitř</button><button type="button" data-v="flag">Vlajky</button></div></div></div>
+  <div class="st-row"><span class="st-l">Nápis</span><div class="st-ctl st-txt"><input class="input" id="txt" maxlength="22" value="SKÁKACÍ HRADY" aria-label="Nápis na banneru">
+   <label class="btn btn--ghost btn--sm st-file">Nahrát logo<input type="file" id="logo" accept="image/*" hidden></label></div></div>
   <div class="st-actions"><button type="button" class="btn btn--ghost btn--sm" id="st-rnd">🎲 Náhodný návrh</button><button type="button" class="btn btn--ghost btn--sm" id="st-png">Stáhnout obrázek</button>
    <button type="button" class="btn" id="st-send">Poslat návrh do poptávky <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
  </form></div></main><footer class="foot"><div class="wrap foot__in"><a class="foot__logo" href="/" aria-label="Skákací hrady – úvod"><svg viewBox="0 -4 300 118" role="img" aria-label="Skákací hrady"><g text-anchor="middle">
 <text class="ex" x="152" y="52" font-size="54">SKÁKACÍ</text><text class="t1" x="148" y="48" font-size="54">SKÁKACÍ</text>
-<text class="ex" x="152" y="108" font-size="62">HRADY</text><text class="t2" x="148" y="104" font-size="62">HRADY</text></g></svg></a></div></footer><script src="/js/data.js?v=20261006j" defer></script><script src="/js/app.js?v=20261006j" defer></script><script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script><script type="module" src="/js/studio.js?v=20261006j"></script></body></html>
+<text class="ex" x="152" y="108" font-size="62">HRADY</text><text class="t2" x="148" y="104" font-size="62">HRADY</text></g></svg></a></div></footer><script src="/js/data.js?v=20261007b" defer></script><script src="/js/app.js?v=20261007b" defer></script><script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script><script type="module" src="/js/studio.js?v=20261007b"></script></body></html>

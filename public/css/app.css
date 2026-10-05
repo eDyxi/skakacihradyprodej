@@ -1043,3 +1043,69 @@ h1,h2{text-shadow:.035em .045em 0 color-mix(in srgb,var(--ink) 18%,transparent)}
 .eyebrow{background:none;border:0;filter:none;box-shadow:none;padding:8px 18px 9px;margin-top:30px;isolation:isolate;position:relative}
 .eyebrow::before,.eyebrow::after{display:none!important}
 .eyebrow>.cl{position:absolute;left:50%;translate:-50% 0;z-index:-1;overflow:visible;filter:drop-shadow(4px 4px 0 var(--ink));pointer-events:none}
+
+/* ===== 6. 10. G: katalog – řádkový výběr, lišta s rozmazaným pozadím ===== */
+.chooser{gap:0;padding:clamp(14px,2.4vw,26px) clamp(16px,2.6vw,30px)}
+.ch-step{display:grid;grid-template-columns:200px minmax(0,1fr);gap:18px;align-items:center;padding:14px 0}
+.ch-row{display:contents}
+.ch-row>.ch-step,.ch-step+.ch-step{border-top:2px dashed color-mix(in srgb,var(--ink) 30%,transparent)}
+.ch-h{margin:0}
+.ch-t{font-size:clamp(1.15rem,1.7vw,1.45rem);line-height:1.1}
+.ch-types{grid-template-columns:repeat(5,minmax(0,1fr))}
+.ch-budget{grid-template-columns:auto minmax(0,1fr);align-items:center;gap:16px}
+.ch-budget output{min-width:150px;text-align:center}
+@media (max-width:960px){.ch-step{grid-template-columns:minmax(0,1fr);gap:10px}.ch-budget{grid-template-columns:minmax(0,1fr)}}
+.kbar{top:0;margin-top:calc(-1 * var(--nav-h));padding:calc(var(--nav-h) + 6px) 0 12px}
+.kbar::before{content:"";position:absolute;inset:0 0 -18px 0;z-index:-1;pointer-events:none;-webkit-backdrop-filter:blur(12px) saturate(1.1);backdrop-filter:blur(12px) saturate(1.1);background:linear-gradient(to bottom,color-mix(in srgb,var(--bg) 88%,transparent) 0,color-mix(in srgb,var(--bg) 72%,transparent) 78%,transparent);-webkit-mask:linear-gradient(#000 78%,transparent);mask:linear-gradient(#000 78%,transparent)}
+.kbar__in{box-shadow:var(--sh-sm),0 10px 30px color-mix(in srgb,var(--ink) 12%,transparent)}
+
+/* ===== 3D studio v2: řádky panelu, předlohy, schémata ===== */
+.st-panel{gap:0;padding:8px 18px 18px}
+.st-row{display:grid;grid-template-columns:92px minmax(0,1fr);gap:12px;align-items:start;padding:12px 0;border-bottom:2px dashed color-mix(in srgb,var(--ink) 16%,transparent)}
+.st-l{font:700 1.02rem/1.1 var(--f-d);padding-top:9px}
+.st-ctl{display:grid;gap:8px;min-width:0}
+.st-presets{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 8px;scrollbar-width:thin}
+.st-pre{flex:none;display:grid;gap:2px;text-align:left;padding:8px 12px;border:2px solid var(--ink);border-radius:14px;background:var(--paper);cursor:pointer;transition:transform .3s var(--bounce),background .2s}
+.st-pre b{font:700 .92rem/1.1 var(--f-d)}
+.st-pre small{font-size:.75rem;color:var(--ink-2);font-weight:600}
+.st-pre:hover{transform:translateY(-2px)}
+.st-pre[aria-pressed="true"]{background:var(--gold);box-shadow:3px 3px 0 var(--ink)}
+.st-schemes{display:flex;flex-wrap:wrap;gap:6px}
+.st-sch{display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 4px;border:2px solid var(--ink);border-radius:99px;background:var(--card);font:600 .85rem/1 var(--f-d);cursor:pointer}
+.st-sch span{width:28px;height:18px;border-radius:99px;border:2px solid var(--ink)}
+.st-colors{gap:6px}
+.st-c{grid-template-columns:62px minmax(0,1fr);align-items:center;font-size:.9rem}
+.sw{gap:5px}
+.sw button{width:24px;height:24px}
+.st-dims{gap:6px}
+.st-txt{grid-template-columns:minmax(0,1fr) auto;align-items:center}
+.st-actions{padding-top:14px}
+.st-hint{position:absolute;left:14px;bottom:10px;margin:0;font:600 .8rem/1 var(--f-d);color:var(--ink-2);background:color-mix(in srgb,var(--card) 80%,transparent);padding:6px 10px;border-radius:99px;pointer-events:none}
+.st-3d{box-shadow:var(--sh),0 0 60px color-mix(in srgb,var(--sky) 35%,transparent)}
+/* řádky podle typu */
+.st-panel[data-typ="skluzavka"] .st-row:has([data-k="walls"]),.st-panel[data-typ="skluzavka"] .st-row:has([data-k="roof"]),.st-panel[data-typ="draha"] .st-row:has([data-k="roof"]){display:none}
+.st-panel:not([data-typ="combo"]):not([data-typ="skluzavka"]) .st-row:has([data-k="side"]){display:none}
+.st-panel[data-typ="skluzavka"] [data-k="side"]{display:none}
+.st-panel[data-typ="skluzavka"] [data-k="extras"] [data-v="hoop"],.st-panel[data-typ="skluzavka"] [data-k="extras"] [data-v="pillars"],.st-panel[data-typ="skluzavka"] [data-k="extras"] [data-v="step"],.st-panel[data-typ="draha"] [data-k="extras"] [data-v="hoop"],.st-panel[data-typ="draha"] [data-k="extras"] [data-v="step"]{display:none}
+@media (max-width:520px){.st-row{grid-template-columns:minmax(0,1fr)}.st-l{padding:0}}
+
+/* ===== AI asistent ===== */
+.bot{max-width:880px;margin-top:22px;background:var(--card);border:var(--line) solid var(--ink);border-radius:var(--r-lg);box-shadow:var(--sh),0 0 50px color-mix(in srgb,var(--sky) 25%,transparent);overflow:hidden}
+.bot__head{display:flex;align-items:center;gap:12px;padding:14px 18px;background:linear-gradient(120deg,var(--sky),color-mix(in srgb,var(--sky) 55%,var(--teal,#1FC4C9)));border-bottom:var(--line) solid var(--ink)}
+.bot__head b{display:block;font:700 1.2rem/1.1 var(--f-d)}
+.bot__head small{font-weight:600;color:#14203A}
+.bot__av{display:grid;place-items:center;width:46px;height:46px;border-radius:50%;background:var(--card);border:var(--line) solid var(--ink);animation:cloudy 4s ease-in-out infinite}
+.bot__av svg{width:28px}
+.bot__log{display:flex;flex-direction:column;gap:10px;max-height:320px;overflow-y:auto;padding:16px 18px;overscroll-behavior:contain}
+.msg{max-width:82%;margin:0;padding:10px 14px;border:2px solid var(--ink);border-radius:18px;font-weight:600;line-height:1.45;animation:wpop .45s var(--bounce) both}
+.msg--bot{align-self:flex-start;background:var(--paper);border-bottom-left-radius:6px}
+.msg--me{align-self:flex-end;background:var(--gold);border-bottom-right-radius:6px}
+.msg--typing{display:flex;gap:5px}
+.msg--typing i{width:8px;height:8px;border-radius:50%;background:var(--ink);animation:dot 1s ease-in-out infinite}
+.msg--typing i:nth-child(2){animation-delay:.15s}.msg--typing i:nth-child(3){animation-delay:.3s}
+@keyframes dot{50%{transform:translateY(-5px);opacity:.5}}
+.bot__chips{display:flex;flex-wrap:wrap;gap:6px;padding:0 18px 12px}
+.bot__chips button{min-height:34px;padding:0 12px;border:2px solid var(--ink);border-radius:99px;background:var(--card);font:600 .85rem/1 var(--f-d);cursor:pointer;transition:transform .25s var(--bounce),background .2s}
+.bot__chips button:hover{background:var(--sky);transform:translateY(-2px)}
+.bot__form{display:flex;gap:8px;padding:12px 18px 16px;border-top:2px dashed color-mix(in srgb,var(--ink) 18%,transparent)}
+.bot__form .input{border-radius:99px}
