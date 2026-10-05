@@ -1035,3 +1035,6 @@ h1,h2{text-shadow:.035em .045em 0 color-mix(in srgb,var(--ink) 18%,transparent)}
 .ask__it{display:inline-flex;align-items:center;gap:6px;padding:3px 10px 3px 3px;border:2px solid var(--ink);border-radius:99px;background:var(--paper);text-decoration:none;font:600 .85rem/1 var(--f-d)}
 .ask__it img{width:30px;height:30px;object-fit:cover;border-radius:50%;border:2px solid var(--ink)}
 .ask__edit{font:700 .9rem/1 var(--f-d)}
+.eyebrow{margin-top:22px}
+.eyebrow::before{width:46px;height:46px;top:-23px;left:20%}
+.eyebrow::after{width:34px;height:34px;top:-16px;right:17%}
