@@ -6,9 +6,9 @@ import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.j
 const $ = (s) => document.querySelector(s), $$ = (s) => [...document.querySelectorAll(s)];
 const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const PAL = { modrá: "#38B6FF", tyrkysová: "#1FC4C9", žlutá: "#FFD23F", oranžová: "#FF8A1F", červená: "#EE3B35", růžová: "#FF7DB8", fialová: "#7E5BD6", zelená: "#43C463", tmavězelená: "#1E8F4E", hnědá: "#9A5B2E", šedá: "#9AA6B6", tmavomodrá: "#1B3A63", bílá: "#F7F7F2" };
-const RANGES = { hrad: { w: [3, 8], d: [3, 8], h: [3, 5.5] }, combo: { w: [4, 9], d: [4, 8], h: [3.5, 6] }, skluzavka: { w: [3, 7], d: [6, 13], h: [4, 8] }, draha: { w: [3, 5], d: [7, 15], h: [3, 5] } };
-const TYPE_N = { hrad: "skákací hrad", combo: "hrad se skluzavkou", skluzavka: "velká skluzavka", draha: "překážková dráha" };
-const DEF = { typ: "hrad", w: 5, d: 5, h: 4, wall: "modrá", wall2: "žlutá", acc: "červená", floor: "červená", towers: "4", tstyle: "cone", walls: "tubes", stripes: "0", roof: "none", side: "right", lanes: "1", extras: ["step"], txt: "SKÁKACÍ HRADY", logo: null };
+const RANGES = { arena: { w: [4, 8], d: [4, 8], h: [1.5, 3] }, hrad: { w: [3, 8], d: [3, 8], h: [3, 5.5] }, combo: { w: [4, 9], d: [4, 8], h: [3.5, 6] }, skluzavka: { w: [3, 7], d: [6, 13], h: [4, 8] }, draha: { w: [3, 5], d: [7, 15], h: [3, 5] } };
+const TYPE_N = { arena: "hrací aréna", hrad: "skákací hrad", combo: "hrad se skluzavkou", skluzavka: "velká skluzavka", draha: "překážková dráha" };
+const DEF = { typ: "hrad", w: 5, d: 5, h: 4, wall: "modrá", wall2: "žlutá", acc: "červená", floor: "červená", towers: "4", tstyle: "cone", walls: "tubes", stripes: "0", roof: "none", side: "right", lanes: "1", extras: ["step"], animal: "none", txt: "SKÁKACÍ HRADY", logo: null };
 const S = structuredClone({ ...DEF, logo: null });
 S.logo = null;
 
@@ -26,6 +26,9 @@ const PRESETS = [
   { n: "Mega skluzavka", no: 64, p: { typ: "skluzavka", w: 5, d: 10, h: 7, wall: "žlutá", wall2: "červená", acc: "modrá", floor: "modrá", towers: "2", tstyle: "cone", stripes: "1", lanes: "3", extras: ["arch"] } },
   { n: "Ledový tobogán", no: 77, p: { typ: "skluzavka", w: 4, d: 8, h: 6, wall: "modrá", wall2: "bílá", acc: "bílá", floor: "tyrkysová", towers: "0", tstyle: "cone", stripes: "1", lanes: "2", extras: ["arch"] } },
   { n: "Překážková dráha", no: 3, p: { typ: "draha", w: 3.5, d: 12, h: 4, wall: "červená", wall2: "žlutá", acc: "modrá", floor: "modrá", towers: "0", tstyle: "cone", stripes: "1", extras: ["arch", "pillars"] } },
+  { n: "Lví král", no: 9, p: { typ: "combo", w: 6, d: 5, h: 4.5, wall: "žlutá", wall2: "zelená", acc: "zelená", floor: "modrá", towers: "4", tstyle: "palm", walls: "mesh", stripes: "1", roof: "none", side: "right", lanes: "1", extras: ["step"], animal: "lev" } },
+  { n: "Medvídkův hrad", no: 119, p: { typ: "hrad", w: 5, d: 5, h: 4, wall: "zelená", wall2: "žlutá", acc: "oranžová", floor: "červená", towers: "2", tstyle: "ball", walls: "mesh", stripes: "1", roof: "none", extras: ["step"], animal: "medved" } },
+  { n: "Fotbalová aréna", no: 61, p: { typ: "arena", w: 7, d: 5, h: 2, wall: "červená", wall2: "bílá", acc: "zelená", floor: "zelená", towers: "4", tstyle: "ball", stripes: "1", extras: [] } },
   { n: "Kompakt do auta", no: 21, p: { typ: "hrad", w: 3, d: 4, h: 3, wall: "modrá", wall2: "žlutá", acc: "žlutá", floor: "červená", towers: "0", tstyle: "cone", walls: "mesh", stripes: "0", roof: "flat", extras: ["step"] } },
 ];
 const SCHEMES = [
@@ -173,6 +176,18 @@ function hoop(g, x, y, z) {
   add(g, new THREE.TorusGeometry(0.28, 0.04, 8, 20), mat("oranžová"), x, y - 0.25, z + 0.3, Math.PI / 2);
 }
 
+function animalHead(g, x, y, z) {
+  if (S.animal === "none") return;
+  const k = S.animal, col = { medved: "hnědá", lev: "žlutá", kocka: "růžová" }[k];
+  if (k === "lev") { const mane = add(g, new THREE.TorusGeometry(0.78, 0.36, 12, 28), mat("oranžová"), x, y, z - 0.12); mane.scale.set(1, 1, 0.6); }
+  const head = add(g, new THREE.SphereGeometry(0.72, 28, 20), mat(col), x, y, z); head.scale.set(1, 0.95, 0.8);
+  if (k === "kocka") [-1, 1].forEach((sd) => add(g, new THREE.ConeGeometry(0.26, 0.5, 4), mat(col), x + sd * 0.42, y + 0.68, z - 0.05, 0, Math.PI / 4, sd * -0.25));
+  else if (k === "medved") [-1, 1].forEach((sd) => { add(g, new THREE.SphereGeometry(0.26, 18, 12), mat(col), x + sd * 0.55, y + 0.55, z - 0.05); add(g, new THREE.SphereGeometry(0.14, 14, 10), mat("bílá"), x + sd * 0.55, y + 0.55, z + 0.12, 0, 0, 0, 0); });
+  const muz = add(g, new THREE.SphereGeometry(0.34, 20, 14), mat("bílá"), x, y - 0.2, z + 0.48); muz.scale.set(1.15, 0.8, 0.7);
+  add(g, new THREE.SphereGeometry(0.1, 12, 10), mat("tmavomodrá"), x, y - 0.1, z + 0.72, 0, 0, 0, 0);
+  [-1, 1].forEach((sd) => { add(g, new THREE.SphereGeometry(0.1, 12, 10), mat("tmavomodrá"), x + sd * 0.26, y + 0.16, z + 0.55, 0, 0, 0, 0); add(g, new THREE.SphereGeometry(0.035, 8, 6), mat("bílá"), x + sd * 0.26 + 0.03, y + 0.2, z + 0.64, 0, 0, 0, 0); });
+}
+
 /* ---------- stavba podle typu ---------- */
 function build() {
   scene.remove(castle);
@@ -198,6 +213,7 @@ function build() {
     add(g, rbox(bw, 0.62, 0.5, 0.25), ma, bcx, beamY, D / 2 - T / 2);
     const b = bannerMesh(bw - 0.6, 0.48); b.position.set(bcx, beamY, D / 2 - T / 2 + 0.26); g.add(b);
     if (S.extras.includes("arch")) archGate(g, bcx, D / 2 - T / 2, Math.min(bw, 3), beamY + 0.32);
+    animalHead(g, bcx, beamY + 1.05, D / 2 - T / 2 + 0.05);
     if (S.extras.includes("step")) tubeX(g, (bx2 - bx1) * 0.62, 0.3, mf, bcx, 0.3, D / 2 + 0.36);
     /* stříška */
     const roofY = WH + 0.95;
@@ -219,6 +235,23 @@ function build() {
       wall(g, mirror(W / 2 - 0.12), -D / 2, mirror(W / 2 - 0.12), zTop + 0.5, yTop + 0.8, 0.2);
     }
     span = Math.max(W, D + 2);
+  } else if (S.typ === "arena") {
+    const WH = Math.max(1.1, H * 0.7);
+    add(g, rbox(W, 0.45, D, 0.2), mw, 0, 0.22, 0);
+    add(g, rbox(W - 2 * T, 0.12, D - 2 * T, 0.05), mf, 0, 0.5, 0, 0, 0, 0, 0);
+    [[-W / 2 + T / 2, -D / 2, -W / 2 + T / 2, D / 2], [W / 2 - T / 2, -D / 2, W / 2 - T / 2, D / 2], [-W / 2, -D / 2 + T / 2, W / 2, -D / 2 + T / 2], [-W / 2, D / 2 - T / 2, W / 2, D / 2 - T / 2]].forEach(([a1, b1, a2, b2]) => wall(g, a1, b1, a2, b2, WH, 0.24));
+    /* branka + koš */
+    const gw = Math.min(2.4, W * 0.4), gz = -D / 2 + T + 0.05;
+    [-1, 1].forEach((sd) => add(g, tube(1.3, 0.07), mat("bílá"), sd * gw / 2, 0.5 + 0.65, gz));
+    tubeX(g, gw + 0.14, 0.07, mat("bílá"), 0, 0.5 + 1.3, gz);
+    const nm = new THREE.MeshBasicMaterial({ map: netTex.clone(), transparent: true, side: THREE.DoubleSide, depthWrite: false }); nm.map.repeat.set(gw / 0.3, 1.3 / 0.3); nm.map.needsUpdate = true;
+    const net = new THREE.Mesh(new THREE.PlaneGeometry(gw, 1.3), nm); net.position.set(0, 1.15, gz - 0.02); g.add(net);
+    if (S.extras.includes("hoop")) hoop(g, 0, WH + 0.9, D / 2 - T);
+    if (S.extras.includes("pillars")) [-0.25, 0.25].forEach((t, i) => add(g, tube(WH, 0.26), stripe(i), t * W, 0.5 + WH / 2, 0.3));
+    const b = bannerMesh(Math.min(W - 1.4, 3), 0.42); b.position.set(0, WH + 0.05, D / 2 + 0.02); g.add(b);
+    const tr = 0.36;
+    towerAt([[-W / 2 + 0.3, -D / 2 + 0.3], [W / 2 - 0.3, -D / 2 + 0.3], [-W / 2 + 0.3, D / 2 - 0.3], [W / 2 - 0.3, D / 2 - 0.3]], WH + 0.6, tr);
+    span = Math.max(W, D);
   } else if (S.typ === "skluzavka") {
     const plat = Math.min(2.2, D * 0.24), zTop = -D / 2 + plat, zBot = D / 2 - 1.9, top = H - 0.4;
     add(g, rbox(W, 0.5, D, 0.22), mw, 0, 0.25, 0);
@@ -228,6 +261,7 @@ function build() {
     tubeX(g, W, 0.3, ma, 0, top + 1.3, -D / 2 + 0.2);
     archGate(g, 0, zTop - 0.1, W - 0.8, top + 1.0);
     const b = bannerMesh(Math.min(W - 1.4, 3.6), 0.5); b.position.set(0, top + 1.7, zTop - 0.05); g.add(b);
+    animalHead(g, 0, top + 2.75, zTop - 0.2);
     add(g, rbox(Math.min(W - 1.2, 3.8), 0.62, 0.3, 0.2), ma, 0, top + 1.7, zTop - 0.25);
     /* šplhací stěna vzadu */
     for (let k = 0; k < 6; k++) add(g, rbox(W * 0.55, 0.2, 0.32, 0.08), mat(S.wall2), 0, 0.7 + k * (top - 0.7) / 6, -D / 2 - 0.08, 0, 0, 0, 0);
@@ -288,11 +322,11 @@ function loop() {
 const kc = (n) => Math.round(n).toLocaleString("cs-CZ") + " Kč";
 function price() {
   const a = S.w * S.d, ex = S.extras.length * 2500, tw = { 4: 5000, 2: 2500, 0: 0 }[S.towers];
-  let p = { hrad: 22000 + a * 1150, combo: 30000 + a * 1250 + +S.lanes * 9000, skluzavka: 38000 + a * 950 + (S.h - 4) * 9000 + +S.lanes * 6000, draha: 34000 + a * 950 }[S.typ];
+  let p = { arena: 20000 + a * 950, hrad: 22000 + a * 1150, combo: 30000 + a * 1250 + +S.lanes * 9000, skluzavka: 38000 + a * 950 + (S.h - 4) * 9000 + +S.lanes * 6000, draha: 34000 + a * 950 }[S.typ];
   p += tw + ex + (S.roof !== "none" && /hrad|combo/.test(S.typ) ? 6000 : 0) + (S.walls === "mesh" ? 2500 : 0) + Math.max(0, S.h - 3.5) * 3000;
   p = Math.round(p / 1000) * 1000;
   $("#st-price").textContent = "od " + kc(p);
-  $("#st-dim").textContent = `${TYPE_N[S.typ]} · ${num(S.w)} × ${num(S.d)} × ${num(S.h)} m`;
+  if (S.animal !== "none") p += 0; $("#st-dim").textContent = `${TYPE_N[S.typ]} · ${num(S.w)} × ${num(S.d)} × ${num(S.h)} m`;
   return p;
 }
 const num = (n) => String(n).replace(".", ",");
@@ -316,7 +350,7 @@ $$(".st-seg").forEach((seg) => seg.addEventListener("click", (e) => {
   if (k === "typ") { ranges(); if (S.typ === "skluzavka" && S.lanes === "1") S.lanes = "2"; }
   mark(); build();
 }));
-$("#st-presets").innerHTML = PRESETS.map((p, i) => `<button type="button" class="st-pre" data-i="${i}"><b>${p.n}</b><small>jako č. ${p.no}</small></button>`).join("");
+$("#st-presets").innerHTML = PRESETS.map((p, i) => `<button type="button" class="st-pre" data-i="${i}"><b>${p.n}</b><small>${TYPE_N[p.p.typ]}</small></button>`).join("");
 $("#st-presets").addEventListener("click", (e) => { const b = e.target.closest("[data-i]"); if (!b) return; apply(PRESETS[+b.dataset.i].p); $$(".st-pre").forEach((x) => x.setAttribute("aria-pressed", x === b)); });
 $("#st-schemes").innerHTML = SCHEMES.map(([n, c], i) => `<button type="button" class="st-sch" data-i="${i}" title="${n}"><span style="background:linear-gradient(90deg,${PAL[c.wall]} 0 25%,${PAL[c.wall2]} 25% 50%,${PAL[c.acc]} 50% 75%,${PAL[c.floor]} 75%)"></span>${n}</button>`).join("");
 $("#st-schemes").addEventListener("click", (e) => { const b = e.target.closest("[data-i]"); if (!b) return; Object.assign(S, SCHEMES[+b.dataset.i][1]); mark(); build(); });
@@ -329,9 +363,9 @@ function mark() {
 }
 $("#st-rnd").addEventListener("click", () => {
   const pick = (a) => a[Math.floor(Math.random() * a.length)], keys = Object.keys(PAL);
-  const typ = pick(["hrad", "combo", "combo", "skluzavka", "draha"]), R = RANGES[typ], rv = (k) => Math.round((R[k][0] + Math.random() * (R[k][1] - R[k][0])) * 2) / 2;
+  const typ = pick(["hrad", "combo", "combo", "skluzavka", "draha", "arena"]), R = RANGES[typ], rv = (k) => Math.round((R[k][0] + Math.random() * (R[k][1] - R[k][0])) * 2) / 2;
   const sc = pick(SCHEMES)[1];
-  apply({ typ, w: rv("w"), d: rv("d"), h: rv("h"), ...sc, towers: pick(["4", "4", "2", "0"]), tstyle: pick(["cone", "ball", "onion", "crayon", "palm", "flat"]), walls: pick(["tubes", "mesh"]), stripes: pick(["0", "1"]), roof: pick(["none", "arch", "flat"]), side: pick(["left", "right"]), lanes: pick(["1", "2", typ === "skluzavka" ? "3" : "2"]), extras: ["step", ...(Math.random() > 0.5 ? ["arch"] : []), ...(Math.random() > 0.7 ? ["flag"] : [])], txt: S.txt });
+  apply({ typ, w: rv("w"), d: rv("d"), h: rv("h"), ...sc, towers: pick(["4", "4", "2", "0"]), tstyle: pick(["cone", "ball", "onion", "crayon", "palm", "flat"]), walls: pick(["tubes", "mesh"]), stripes: pick(["0", "1"]), roof: pick(["none", "arch", "flat"]), side: pick(["left", "right"]), lanes: pick(["1", "2", typ === "skluzavka" ? "3" : "2"]), extras: ["step", ...(Math.random() > 0.5 ? ["arch"] : []), ...(Math.random() > 0.7 ? ["flag"] : [])], animal: pick(["none", "none", "medved", "lev", "kocka"]), txt: S.txt });
   $$(".st-pre").forEach((x) => x.setAttribute("aria-pressed", "false"));
   keys.length;
 });
@@ -339,7 +373,8 @@ const shot = () => { r.render(scene, cam); return r.domElement.toDataURL("image/
 $("#st-png").addEventListener("click", () => { const a = document.createElement("a"); a.href = shot(); a.download = "muj-skakaci-hrad.jpg"; a.click(); });
 $("#st-send").addEventListener("click", () => {
   const ex = { step: "vstupní schod", arch: "brána s obloukem", hoop: "basketbalový koš", pillars: "překážky uvnitř", flag: "vlajky" };
-  const sum = `3D návrh ze studia: ${TYPE_N[S.typ]} ${num(S.w)} × ${num(S.d)} m, výška ${num(S.h)} m · stěny ${S.wall}${S.stripes === "1" ? " + pruhy " + S.wall2 : ""}, věže ${S.acc}, podlaha ${S.floor} · věže: ${S.towers === "0" ? "bez věží" : S.towers + "× " + { cone: "špice", ball: "kulička", onion: "cibule", crayon: "pastelka", palm: "palma", flat: "cimbuří" }[S.tstyle]} · stěny: ${S.walls === "mesh" ? "síťová okna" : "plné"}${/hrad|combo/.test(S.typ) ? " · stříška: " + { none: "žádná", arch: "oblouková", flat: "rovná" }[S.roof] : ""}${/combo|skluzavka/.test(S.typ) ? ` · skluzavka: ${S.lanes} dráh${S.lanes === "1" ? "a" : "y"}${S.typ === "combo" ? (S.side === "left" ? " vlevo" : " vpravo") : ""}` : ""}${S.extras.length ? " · " + S.extras.map((e) => ex[e]).join(", ") : ""} · nápis „${S.txt}“${S.logo ? " · vlastní logo (pošlu e-mailem)" : ""} · orientačně od ${kc(price())}`;
+  const an = { none: "", medved: " · medvídek na čele", lev: " · lev na čele", kocka: " · kočička na čele" }[S.animal];
+  const sum = `3D návrh ze studia: ${TYPE_N[S.typ]} ${num(S.w)} × ${num(S.d)} m, výška ${num(S.h)} m · stěny ${S.wall}${S.stripes === "1" ? " + pruhy " + S.wall2 : ""}, věže ${S.acc}, podlaha ${S.floor} · věže: ${S.towers === "0" ? "bez věží" : S.towers + "× " + { cone: "špice", ball: "kulička", onion: "cibule", crayon: "pastelka", palm: "palma", flat: "cimbuří" }[S.tstyle]} · stěny: ${S.walls === "mesh" ? "síťová okna" : "plné"}${/hrad|combo/.test(S.typ) ? " · stříška: " + { none: "žádná", arch: "oblouková", flat: "rovná" }[S.roof] : ""}${/combo|skluzavka/.test(S.typ) ? ` · skluzavka: ${S.lanes} dráh${S.lanes === "1" ? "a" : "y"}${S.typ === "combo" ? (S.side === "left" ? " vlevo" : " vpravo") : ""}` : ""}${S.extras.length ? " · " + S.extras.map((e) => ex[e]).join(", ") : ""} · nápis „${S.txt}“${an}${S.logo ? " · vlastní logo (pošlu e-mailem)" : ""} · orientačně od ${kc(price())}`;
   try {
     const c = document.createElement("canvas"); c.width = 640; c.height = Math.round(640 * r.domElement.height / r.domElement.width);
     const im = new Image(); im.onload = () => { c.getContext("2d").drawImage(im, 0, 0, c.width, c.height); localStorage.setItem("shp-design", JSON.stringify({ sum, img: c.toDataURL("image/jpeg", 0.72) })); location.href = "/kosik.html"; };

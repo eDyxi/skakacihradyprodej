@@ -1125,3 +1125,6 @@ h1,h2{text-shadow:.035em .045em 0 color-mix(in srgb,var(--ink) 18%,transparent)}
 .btn:not(.btn--ghost):hover{box-shadow:6px 6px 0 var(--ink),0 0 26px color-mix(in srgb,var(--gold) 70%,transparent)}
 .cta,.chooser{box-shadow:var(--sh),0 0 60px color-mix(in srgb,var(--gold) 45%,transparent)}
 .st-price{box-shadow:var(--sh-sm),0 0 30px color-mix(in srgb,var(--gold) 55%,transparent)}
+.st-panel[data-typ="arena"] .st-row:has([data-k="roof"]),.st-panel[data-typ="arena"] .st-row:has([data-k="side"]),.st-panel[data-typ="arena"] .st-row:has([data-k="animal"]),.st-panel[data-typ="draha"] .st-row:has([data-k="animal"]){display:none}
+.st-panel[data-typ="arena"] [data-k="extras"] [data-v="step"],.st-panel[data-typ="arena"] [data-k="extras"] [data-v="arch"]{display:none}
+.st-panel[data-typ="arena"] .st-row:has([data-k="walls"]) [data-k="walls"]{display:flex}
