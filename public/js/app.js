@@ -421,58 +421,57 @@
   function refreshCards() { $$("[data-add]").forEach((b) => { const on = cart.has(+b.dataset.add); b.classList.toggle("done", on); b.innerHTML = on ? I.ok + "<span>V poptávce</span>" : I.plus + "<span>Do poptávky</span>"; }); badge(); }
   document.addEventListener("click", (e) => { const a = e.target.closest(".nav__cart"); if (a && PAGE !== "kosik") { e.preventDefault(); miniCart(); } });
 
-  /* ---------- KATALOG ---------- */
-  const AREA = { s: ["do 16 m²", (a) => a <= 16], m: ["16–30 m²", (a) => a > 16 && a <= 30], l: ["nad 30 m²", (a) => a > 30] };
-  const SORT = { doporucene: "Doporučené", "cena-asc": "Cena ↑", "cena-desc": "Cena ↓", "velikost-desc": "Největší", cislo: "Podle čísla" };
+  /* ---------- KATALOG (výběr ve 4 krocích + lišta s aktivními filtry) ---------- */
+  const AREA = { s: ["Do 16 m²", (a) => a <= 16, 0.7], m: ["16–30 m²", (a) => a > 16 && a <= 30, 0.85], l: ["Nad 30 m²", (a) => a > 30, 1] };
+  const SORT = { doporucene: "Doporučené", "cena-asc": "Nejlevnější", "cena-desc": "Nejdražší", "velikost-desc": "Největší", cislo: "Podle čísla" };
+  const TYPE_PIC = { hrad: 118, combo: 17, skluzavka: 64, draha: 3, hra: 61 };
+  const CASTLE_ICO = (k) => `<svg viewBox="0 0 40 34" aria-hidden="true" style="width:${Math.round(26 + k * 22)}px"><path d="M4 32V12l5-8 5 8v4h12v-4l5-8 5 8v20z" fill="var(--sky)" stroke="var(--ink)" stroke-width="2.6" stroke-linejoin="round"/><rect x="13" y="22" width="14" height="10" rx="4" fill="var(--gold)" stroke="var(--ink)" stroke-width="2.6"/></svg>`;
   function katalog() {
     const P = new URLSearchParams(location.search);
     const S = { typ: new Set((P.get("typ") || "").split(",").filter(Boolean)), th: new Set((P.get("th") || "").split(",").filter(Boolean)),
       plocha: new Set((P.get("plocha") || "").split(",").filter(Boolean)), max: +P.get("max") || 0, q: P.get("q") || "", sort: P.get("sort") || "doporucene" };
     const maxP = Math.max(...H.map((h) => h.p)), minP = Math.min(...H.map((h) => h.p));
-    const chips = (name, obj, count) => Object.entries(obj).map(([k, v]) => {
-      const label = Array.isArray(v) ? v[0] : v, n = count(k);
-      return n ? `<label class="chip"><input type="checkbox" name="${name}" value="${k}" ${S[name].has(k) ? "checked" : ""}><span>${label} · ${n}</span></label>` : "";
-    }).join("");
-    $("#filters-form").innerHTML = `
-      <label class="field">Hledat<input class="input" type="search" name="q" value="${S.q.replace(/"/g, "")}" placeholder="název nebo číslo" autocomplete="off"></label>
-      <fieldset><legend>Typ</legend><div class="chips">${chips("typ", TYP, (k) => H.filter((h) => h.t === k).length)}</div></fieldset>
-      <fieldset><legend>Téma</legend><div class="chips">${chips("th", Object.fromEntries(Object.entries(TH).map(([k, v]) => [k, v[0]])), (k) => H.filter((h) => h.th === k).length)}</div></fieldset>
-      <fieldset><legend>Plocha</legend><div class="chips">${chips("plocha", AREA, (k) => H.filter((h) => AREA[k][1](h.a)).length)}</div></fieldset>
-      <label class="field">Cena do <output id="maxo">${kc(S.max || maxP)}</output><input type="range" name="max" min="${minP}" max="${maxP}" step="1000" value="${S.max || maxP}"></label>
-      <button class="btn btn--ghost btn--sm" type="reset">Zrušit filtry</button>`;
+    const cnt = (f) => H.filter(f).length;
+    $$("[data-count]").forEach((e) => (e.textContent = H.length));
+    $("#ch-types").innerHTML = Object.entries(TYP).map(([k, n]) => `<button type="button" class="ty" data-f="typ" data-v="${k}"><img src="${img(byId[TYPE_PIC[k]])}" alt="" width="120" height="120" loading="lazy"><b>${n}</b><i>${cnt((h) => h.t === k)}</i></button>`).join("");
+    $("#ch-themes").innerHTML = Object.entries(TH).map(([k, [n, c]]) => `<button type="button" class="thm" data-f="th" data-v="${k}" style="--c:${c}"><img src="${img(byId[THEME_PIC[k]])}" alt="" width="40" height="40" loading="lazy">${n}<i>${cnt((h) => h.th === k)}</i></button>`).join("");
+    $("#ch-size").innerHTML = Object.entries(AREA).map(([k, [n, , sc]]) => `<button type="button" class="sz" data-f="plocha" data-v="${k}">${CASTLE_ICO(sc)}<b>${n}</b><i>${cnt((h) => AREA[k][1](h.a))}</i></button>`).join("");
+    const rng = $("#ch-max"), out = $("#ch-out");
+    Object.assign(rng, { min: minP, max: maxP, step: 1000, value: S.max || maxP });
+    $("#q").value = S.q;
     $("#sort").innerHTML = Object.entries(SORT).map(([k, v]) => `<option value="${k}" ${k === S.sort ? "selected" : ""}>${v}</option>`).join("");
-
-    const grid = $("#grid"), count = $("#count");
+    const grid = $("#grid");
+    const LBL = (f, v) => (f === "typ" ? TYP[v] : f === "th" ? TH[v][0] : AREA[v][0]);
     function run() {
       const q = S.q.trim().toLowerCase();
-      let L = H.filter((h) => (!S.typ.size || S.typ.has(h.t)) && (!S.th.size || S.th.has(h.th)) &&
-        (!S.plocha.size || [...S.plocha].some((k) => AREA[k][1](h.a))) && (!S.max || h.p <= S.max) &&
+      const L = H.filter((h) => (!S.typ.size || S.typ.has(h.t)) && (!S.th.size || S.th.has(h.th)) && (!S.plocha.size || [...S.plocha].some((k) => AREA[k][1](h.a))) && (!S.max || h.p <= S.max) &&
         (!q || h.n.toLowerCase().includes(q) || String(h.id) === q.replace(/\D/g, "")));
-      const srt = { "cena-asc": (a, b) => a.p - b.p, "cena-desc": (a, b) => b.p - a.p, "velikost-desc": (a, b) => b.a - a.a, cislo: (a, b) => a.id - b.id,
-        doporucene: (a, b) => (FEATURED.includes(b.id) - FEATURED.includes(a.id)) || a.id - b.id };
+      const srt = { "cena-asc": (a, b) => a.p - b.p, "cena-desc": (a, b) => b.p - a.p, "velikost-desc": (a, b) => b.a - a.a, cislo: (a, b) => a.id - b.id, doporucene: (a, b) => (FEATURED.includes(b.id) - FEATURED.includes(a.id)) || (b.ph || 0) - (a.ph || 0) || a.id - b.id };
       L.sort(srt[S.sort] || srt.doporucene);
-      count.textContent = `${L.length} ${L.length === 1 ? "model" : L.length < 5 && L.length ? "modely" : "modelů"}`;
-      grid.innerHTML = L.length ? L.map((h, i) => card(h, i > 5)).join("") : `<div class="empty"><p class="hand">Nic nesedí…</p><p>Zkuste povolit filtry, nebo nám napište – hrad vyrobíme i podle vašeho nápadu.</p></div>`;
+      $("#count").innerHTML = `<span>${L.length}</span> ${L.length === 1 ? "model" : L.length < 5 && L.length ? "modely" : "modelů"}`;
+      grid.innerHTML = L.length ? L.map((h, i) => card(h, i > 7).replace('<article class="card', `<article style="--i:${Math.min(i, 14)}" class="card`)).join("") : `<div class="empty"><p class="hand">Nic nesedí…</p><p>Zkuste povolit filtry, nebo nám napište – hrad vyrobíme i podle vašeho nápadu.</p></div>`;
+      $$("[data-f]").forEach((b) => b.setAttribute("aria-pressed", S[b.dataset.f].has(b.dataset.v)));
+      out.textContent = S.max && S.max < maxP ? kc(S.max) : "Bez limitu";
+      rng.style.setProperty("--pct", (((rng.value - minP) / (maxP - minP)) * 100).toFixed(1) + "%");
+      const chips = [];
+      ["typ", "th", "plocha"].forEach((f) => S[f].forEach((v) => chips.push(`<button type="button" class="kchip" data-rm="${f}:${v}">${LBL(f, v)} <span aria-hidden="true">✕</span></button>`)));
+      if (S.max && S.max < maxP) chips.push(`<button type="button" class="kchip" data-rm="max:">do ${kc(S.max)} <span aria-hidden="true">✕</span></button>`);
+      if (S.q) chips.push(`<button type="button" class="kchip" data-rm="q:">„${S.q.replace(/[<>]/g, "")}“ <span aria-hidden="true">✕</span></button>`);
+      if (chips.length > 1) chips.push(`<button type="button" class="kchip kchip--all" data-rm="all:">Zrušit vše</button>`);
+      $("#kchips").innerHTML = chips.join("");
       const U = new URLSearchParams();
       ["typ", "th", "plocha"].forEach((k) => S[k].size && U.set(k, [...S[k]].join(",")));
       if (S.max && S.max < maxP) U.set("max", S.max); if (S.q) U.set("q", S.q); if (S.sort !== "doporucene") U.set("sort", S.sort);
       history.replaceState(null, "", location.pathname + (U.toString() ? "?" + U : ""));
     }
-    const form = $("#filters-form");
-    form.addEventListener("input", (e) => {
-      const t = e.target;
-      if (t.type === "checkbox") t.checked ? S[t.name].add(t.value) : S[t.name].delete(t.value);
-      if (t.name === "max") { S.max = +t.value; $("#maxo").textContent = kc(S.max); }
-      if (t.name === "q") S.q = t.value;
-      run();
-    });
-    form.addEventListener("reset", () => setTimeout(() => { S.typ.clear(); S.th.clear(); S.plocha.clear(); S.max = 0; S.q = ""; $("#maxo").textContent = kc(maxP); run(); }));
+    const jump = () => { const k = $("#kbar"); if (k.getBoundingClientRect().top > innerHeight * 0.6) (window.__lenis ? window.__lenis.scrollTo(k, { offset: -10 }) : k.scrollIntoView({ behavior: "smooth" })); };
+    $("#chooser").addEventListener("click", (e) => { const b = e.target.closest("[data-f]"); if (!b) return; const set = S[b.dataset.f]; set.has(b.dataset.v) ? set.delete(b.dataset.v) : set.add(b.dataset.v); run(); });
+    rng.addEventListener("input", () => { S.max = +rng.value >= maxP ? 0 : +rng.value; run(); });
+    $("#q").addEventListener("input", (e) => { S.q = e.target.value; run(); });
     $("#sort").addEventListener("change", (e) => { S.sort = e.target.value; run(); });
-    const fl = $(".filters"), scrim = $(".scrim");
-    const tog = (on) => { fl.classList.toggle("open", on); scrim.classList.toggle("on", on); };
-    $(".filters__toggle")?.addEventListener("click", () => tog(true));
-    scrim?.addEventListener("click", () => tog(false));
-    $("#filters-close")?.addEventListener("click", () => tog(false));
+    $("#kchips").addEventListener("click", (e) => { const b = e.target.closest("[data-rm]"); if (!b) return; const [f, v] = b.dataset.rm.split(":");
+      if (f === "all") { S.typ.clear(); S.th.clear(); S.plocha.clear(); S.max = 0; S.q = ""; $("#q").value = ""; rng.value = maxP; } else if (f === "max") { S.max = 0; rng.value = maxP; } else if (f === "q") { S.q = ""; $("#q").value = ""; } else S[f].delete(v); run(); });
+    $("#ch-types").addEventListener("click", () => setTimeout(jump, 60), { once: true });
     run();
   }
 
@@ -581,7 +580,21 @@
     });
   }
 
-  badge(); navState(); seasonal(); cursor(); dotsBg();
+  /* nadpisy: slova gumově vyskočí při příjezdu */
+  function headWords() {
+    if (RM || !("IntersectionObserver" in window)) return;
+    $$("main h1:not(.hero__logo), main h2:not(.ch-t)").forEach((h) => {
+      let i = 0;
+      const walk = (n) => [...n.childNodes].forEach((c) => {
+        if (c.nodeType === 3) { const parts = c.textContent.split(/(\s+)/); const f = document.createDocumentFragment(); parts.forEach((p) => { if (!p) return; if (/^\s+$/.test(p)) f.append(p); else { const w = document.createElement("span"); w.className = "w"; w.style.setProperty("--i", i++); w.textContent = p; f.append(w); } }); c.replaceWith(f); }
+        else if (c.nodeType === 1 && !c.classList.contains("w")) walk(c);
+      });
+      walk(h); h.classList.add("words");
+    });
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { rootMargin: "0px 0px -12% 0px" });
+    $$(".words").forEach((h) => io.observe(h));
+  }
+  badge(); navState(); seasonal(); cursor(); dotsBg(); headWords();
   ({ home, katalog, detail, kosik })[PAGE]?.();
   reveal();
 })();
