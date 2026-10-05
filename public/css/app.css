@@ -948,3 +948,20 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-r
 .story__steps b{font-weight:700;color:#14203A}
 .checks li,.faq details p,.sec__head p,.hero__lede,.deal p,.custom p,.kat-hero__lede{color:#1F2D49;font-weight:500}
 .hero__facts li,.pill{font-weight:600;color:var(--ink)}
+
+/* ===== 6. 10. D: akcenty jako v logu (žlutá s obrysem), bílé na žlutých plochách, výraznější texty ===== */
+.ac{-webkit-text-stroke:.04em var(--ink);paint-order:stroke fill;text-shadow:.07em .07em 0 var(--ink)}
+.ac--o{color:var(--gold)}
+#poptavka .ac,#nejzadanejsi .ac{color:var(--card)}
+h1,h2{text-shadow:.035em .045em 0 color-mix(in srgb,var(--ink) 18%,transparent)}
+/* podtexty výrazněji */
+.deal p,.sec__head p,.custom p,.hero__lede,.kat-hero__lede,.checks li,.faq details p{color:#172440;font-weight:600}
+.story__steps span{color:#172440;font-weight:600;font-size:1rem}
+/* štítek 3D návrhu jako dřív */
+.custom__label{font:800 .8rem/1 "Baloo 2",system-ui,sans-serif;letter-spacing:.12em}
+/* katalog: čistší úvod uprostřed */
+.kat-hero{padding:clamp(36px,6vw,72px) 0 clamp(28px,4vw,48px)}
+.kat-hero>.wrap{text-align:center}
+.kat-hero h1{margin:14px auto 14px;max-width:14ch}
+.kat-hero__lede{margin:0 auto clamp(28px,4vw,44px)}
+.chooser{text-align:left}
