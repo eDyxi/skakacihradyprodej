@@ -1038,3 +1038,8 @@ h1,h2{text-shadow:.035em .045em 0 color-mix(in srgb,var(--ink) 18%,transparent)}
 .eyebrow{margin-top:22px}
 .eyebrow::before{width:46px;height:46px;top:-23px;left:20%}
 .eyebrow::after{width:34px;height:34px;top:-16px;right:17%}
+
+/* ===== pilulky = mráček z oblohy ===== */
+.eyebrow{background:none;border:0;filter:none;box-shadow:none;padding:8px 18px 9px;margin-top:30px;isolation:isolate;position:relative}
+.eyebrow::before,.eyebrow::after{display:none!important}
+.eyebrow>.cl{position:absolute;left:50%;translate:-50% 0;z-index:-1;overflow:visible;filter:drop-shadow(4px 4px 0 var(--ink));pointer-events:none}

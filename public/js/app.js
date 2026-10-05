@@ -604,7 +604,30 @@
     const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { rootMargin: "0px 0px -12% 0px" });
     $$(".words").forEach((h) => io.observe(h));
   }
-  badge(); navState(); seasonal(); cursor(); dotsBg(); headWords();
+  /* pilulky = přesně mráček z oblohy (stejné obláčky, jen rozšířený; kruhy se nedeformují) */
+  function cloudPills() {
+    const NS = "http://www.w3.org/2000/svg";
+    const draw = (el) => {
+      el.querySelector(":scope > .cl")?.remove();
+      const tw = el.offsetWidth, th = el.offsetHeight, H = Math.max(56, th + 30), s = H / 54, pad = 4;
+      /* obláčky podle mráčku z oblohy (viewBox 120×60): levý r16, velký r21, pravý r18, krajní r14 */
+      let C = [[22, 34, 16], [44, 27, 21], [78, 28, 18], [92, 36, 14]].map(([x, y, r]) => [x * s, y * s, r * s]);
+      const W0 = 106 * s, Wn = Math.max(W0, tw + 34);
+      const extra = Wn - W0;
+      if (extra > 0) { C[2][0] += extra; C[3][0] += extra; const n = Math.floor(extra / (34 * s)); for (let i = 1; i <= n; i++) C.splice(1 + i, 0, [44 * s + (extra * i) / (n + 1), (i % 2 ? 31 : 26) * s, (i % 2 ? 17 : 19) * s]); }
+      const minX = C[0][0] - C[0][2], maxX = C[C.length - 1][0] + C[C.length - 1][2], base = 50 * s;
+      const W = maxX - minX + pad * 2, top = Math.min(...C.map(([, y, r]) => y - r)), Hh = base - top + pad * 2;
+      const sh = (k) => C.map(([x, y, r]) => `<circle cx="${(x - minX + pad).toFixed(1)}" cy="${(y - top + pad).toFixed(1)}" r="${(r + k).toFixed(1)}"/>`).join("") + `<rect x="${(C[0][0] - minX + pad).toFixed(1)}" y="${(30 * s - top + pad).toFixed(1)}" width="${(C[C.length - 1][0] - C[0][0]).toFixed(1)}" height="${(base - 30 * s + k).toFixed(1)}"/>`;
+      const svg = document.createElementNS(NS, "svg");
+      svg.setAttribute("class", "cl"); svg.setAttribute("aria-hidden", "true"); svg.setAttribute("width", W.toFixed(0)); svg.setAttribute("height", Hh.toFixed(0)); svg.setAttribute("viewBox", `0 0 ${W.toFixed(1)} ${Hh.toFixed(1)}`);
+      svg.innerHTML = `<g fill="var(--ink)">${sh(3)}</g><g fill="var(--card)">${sh(0)}</g>`;
+      svg.style.bottom = (-(Hh - pad - (base - top) ) - 4).toFixed(0) + "px";
+      el.prepend(svg);
+    };
+    const all = () => $$(".eyebrow").forEach(draw);
+    all(); document.fonts?.ready.then(all); addEventListener("resize", all);
+  }
+  badge(); navState(); seasonal(); cursor(); dotsBg(); headWords(); cloudPills();
   ({ home, katalog, detail, kosik })[PAGE]?.();
   reveal();
 })();
