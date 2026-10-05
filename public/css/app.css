@@ -934,3 +934,17 @@ h1,h2,h3{font-weight:700;letter-spacing:-.025em}
 .kat-grid .card{animation:cardin .55s var(--bounce) both;animation-delay:calc(var(--i,0) * 35ms)}
 @keyframes cardin{from{opacity:0;transform:translateY(24px) scale(.94) rotate(-1deg)}}
 @media (max-width:960px){.ch-types{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(130px,1fr);overflow-x:auto;padding-bottom:6px}.ch-row{grid-template-columns:minmax(0,1fr)}.kbar__in{border-radius:22px}.kbar__q{flex:1}}
+
+/* ===== 6. 10. C: oranžová/modrá v nadpisech, ostřejší podtexty, tmavší pozadí ===== */
+:root{--orange:#FF8A1F;--ink-2:#26344F;--bg:#ADE5EC;--paper:#C2EEF2}
+body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
+.ac--o,#poptavka .ac{color:var(--orange)}
+/* ostřejší text v oddalovaných kartách (bez rastrování přes will-change) */
+.story__card,.depth,.custom__card{will-change:auto}
+/* podtexty výraznější */
+.certs span{font:600 .92rem/1 var(--f-d);color:var(--ink);background:var(--card);border:2px solid var(--ink);box-shadow:2px 2px 0 var(--ink)}
+.story__steps li{opacity:.62}
+.story__steps span{color:#26344F;font-weight:600}
+.story__steps b{font-weight:700;color:#14203A}
+.checks li,.faq details p,.sec__head p,.hero__lede,.deal p,.custom p,.kat-hero__lede{color:#1F2D49;font-weight:500}
+.hero__facts li,.pill{font-weight:600;color:var(--ink)}
