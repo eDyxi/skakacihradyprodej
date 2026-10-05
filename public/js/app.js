@@ -111,7 +111,6 @@
     let x = innerWidth / 2, y = innerHeight / 2, cx = x, cy = y;
     addEventListener("pointermove", (e) => { x = e.clientX; y = e.clientY; const t = e.target.closest("[data-cur]"); c.classList.toggle("big", !!t); c.textContent = t ? t.dataset.cur : ""; }, { passive: true });
     document.documentElement.classList.add("has-cur");
-    addEventListener("pointerdown", () => { c.classList.remove("press"); void c.offsetWidth; c.classList.add("press"); });
     document.addEventListener("mouseleave", () => c.classList.add("out")); document.addEventListener("mouseenter", () => c.classList.remove("out"));
     (function loop() { cx += (x - cx) * 0.5; cy += (y - cy) * 0.5; c.style.transform = `translate(${cx}px,${cy}px)`; requestAnimationFrame(loop); })();
   }
@@ -150,7 +149,7 @@
         const oy = d.oy; let tx = d.ox, ty = oy, heat = 0;
         const dx = d.x - mx, dy = d.y - my, dist = Math.hypot(dx, dy);
         if (dist < R) { const f = 1 - dist / R, push = f * f * 28; tx += (dx / (dist || 1)) * push; ty += (dy / (dist || 1)) * push; heat = f; }
-        for (const w of waves) { const wx = d.ox - w.x, wy = oy - w.y, wd = Math.hypot(wx, wy), band = Math.abs(wd - w.r); if (band < 40) { const f = (1 - band / 40) * w.a; tx += (wx / (wd || 1)) * f * 15; ty += (wy / (wd || 1)) * f * 15; heat = Math.max(heat, f); } }
+        for (const w of waves) { const wx = d.ox - w.x, wy = oy - w.y, wd = Math.hypot(wx, wy), band = Math.abs(wd - w.r); if (band < 40) { const f = (1 - band / 40) * w.a; tx += (wx / (wd || 1)) * f * 22; ty += (wy / (wd || 1)) * f * 22; heat = Math.max(heat, f); } }
         d.vx = (d.vx + (tx - d.x) * 0.14) * 0.8; d.vy = (d.vy + (ty - d.y) * 0.14) * 0.8; d.x += d.vx; d.y += d.vy; d.h += (heat - d.h) * 0.2;
         if (Math.abs(d.vx) + Math.abs(d.vy) > 0.02 || d.h > 0.01) moving = true;
       }
