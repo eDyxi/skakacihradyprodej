@@ -184,6 +184,11 @@
     ul.innerHTML = T.map(([k, [n, c]], i) => `<li><a class="bub" href="/katalog.html?th=${k}" style="--c:${c};--d:${(i * 0.055).toFixed(3)}s;--f:${(-i * 0.4).toFixed(1)}s" tabindex="-1"><span class="bal"><span class="bal__body"><img src="${img(byId[THEME_PIC[k]])}" alt="" width="122" height="139" loading="lazy"></span><i>${H.filter((h) => h.th === k).length}</i><span class="bal__knot"></span><svg class="bal__str" viewBox="0 0 20 34" aria-hidden="true"><path d="M10 0 C 5 9, 15 20, 10 34" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><animate attributeName="d" dur="${(2.2 + (i % 3) * 0.35).toFixed(2)}s" begin="-${(i * 0.3).toFixed(1)}s" repeatCount="indefinite" values="M10 0 C 5 9, 15 20, 10 34;M10 0 C 15 10, 5 22, 13 34;M10 0 C 6 8, 16 21, 8 34;M10 0 C 5 9, 15 20, 10 34"/></path></svg><b>${n}</b></span></a></li>`).join("");
     const place = () => {
       const row = !!b.closest(".themes-anim"), w = b.offsetWidth, hh = b.offsetHeight, n = T.length;
+      if (row && w < 640) {
+        const gap = (w * 0.94) / 4, sz = Math.min(86, gap * 0.82);
+        $$(".bub", ul).forEach((a, i) => { const r2 = i < n / 2 ? 0 : 1, c = i % (n / 2); a.style.setProperty("--x", Math.round((c - 1.5) * gap) + "px"); a.style.setProperty("--y", Math.round((r2 ? 1 : -1) * Math.min(hh * 0.27, 150) + (c % 2 ? 8 : -6)) + "px"); a.style.setProperty("--s", Math.round(sz) + "px"); a.style.setProperty("--lw", Math.round(gap - 4) + "px"); });
+        return;
+      }
       if (row) {
         /* rozkliknuté balónky v jedné řadě, střídavě o pár px výš/níž, uprostřed místo pro „Zavřít“ */
         const gap = Math.min((w * 0.94) / (n + 1), 200), sz = Math.min(122, gap * 0.82);
@@ -248,6 +253,17 @@
     run(); addEventListener("resize", run); addEventListener("load", run); window.ScrollTrigger?.addEventListener("refresh", run);
   }
 
+  const themesTL = (core, hint, pill, txt) => window.gsap.timeline({ paused: true })
+        .to(txt, { opacity: 0, y: -16, duration: 0.1, ease: "power1.in" }, 0)
+        .fromTo(core, { y: "52vh", x: 0, rotation: 0 }, { keyframes: { y: ["52vh", "37vh", "23vh", "11vh", "3vh", "-1vh", "0vh"], x: [0, -42, 30, -20, 10, -3, 0], rotation: [0, -10, 7, -5, 3, -1, 0], easeEach: "sine.inOut" }, duration: 0.82 }, 0)
+        .to(pill, { y: 6, duration: 0.2, ease: "power2.out" }, 0.55)
+        .fromTo(hint, { opacity: 0 }, { opacity: 1, duration: 0.08 }, 0.86)
+        .to(core, { keyframes: { y: ["0vh", "-18vh", "-40vh", "-65vh", "-95vh"], x: [0, 28, -22, 18, -10], rotation: [0, 7, -6, 5, -3], easeEach: "sine.inOut" }, duration: 1, ease: "power1.in" }, 1)
+        .to(hint, { opacity: 0, duration: 0.15 }, 1)
+        .to(pill, { y: 0, duration: 0.25 }, 1.5)
+        .to(txt, { opacity: 1, y: 0, duration: 0.3, stagger: 0.05 }, 1.6)
+        .to(core, { opacity: 0, duration: 0.2 }, 1.8);
+
   function home() {
     $$("[data-castle]").forEach((el) => (el.innerHTML = castle({ idle: el.dataset.castle === "idle", fan: el.dataset.castle === "story" })));
     const track = $("#rail-track");
@@ -307,8 +323,16 @@
           onUpdate: (s) => { depth(s.progress); secS.style.setProperty("--sfeed", (s.progress * 1800).toFixed(0) + "px"); dispatchEvent(new CustomEvent("story", { detail: s.progress })); const i = Math.min(steps.length - 1, Math.floor(s.progress * steps.length)); steps.forEach((li, k) => li.classList.toggle("on", k <= i)); if (gauge) gauge.textContent = Math.round(s.progress * 100) + " %"; } });
       });
       mm.add("(max-width: 860px)", () => {
-        steps.forEach((s) => s.classList.add("on"));
-        ST.create({ trigger: sc, start: "top 85%", end: "bottom 35%", scrub: 0.6, animation: tl, onUpdate: (s) => { dispatchEvent(new CustomEvent("story", { detail: s.progress })); if (gauge) gauge.textContent = Math.round(s.progress * 100) + " %"; } });
+        const card = $(".story__card"), secS = $(".story"), ol = $(".story__steps");
+        $(".story").classList.add("story--m");
+        const qsx = g.quickTo(card, "scaleX", { duration: 0.9, ease: "power3" }), qsy = g.quickTo(card, "scaleY", { duration: 0.9, ease: "power3" }), qk = g.quickTo(secS, "--k", { duration: 0.9, ease: "power3" });
+        const depth = (p) => { const k = p < 0.1 ? p / 0.1 : p > 0.9 ? (1 - p) / 0.1 : 1, e = k * k * (3 - 2 * k); qsx(1 - 0.08 * e); qsy(1 - 0.08 * e); qk(e); };
+        const dist = () => Math.max(0, ol.scrollWidth - $(".story__card").clientWidth + 40);
+        const qx = g.quickTo(ol, "x", { duration: 0.5, ease: "power3" });
+        const st = ST.create({ trigger: ".story__pin", start: "top top", end: "+=260%", pin: true, scrub: 0.6, animation: tl, invalidateOnRefresh: true,
+          onUpdate: (s) => { const p = s.progress; depth(p); secS.style.setProperty("--sfeed", (p * 1400).toFixed(0) + "px"); dispatchEvent(new CustomEvent("story", { detail: p }));
+            const t = g.utils.clamp(0, 1, (p - 0.08) / 0.82), i = Math.min(steps.length - 1, Math.floor(t * steps.length * 0.999)); steps.forEach((li, k) => li.classList.toggle("on", k <= i)); qx(-dist() * t); if (gauge) gauge.textContent = Math.round(p * 100) + " %"; } });
+        return () => { st.kill(); $(".story").classList.remove("story--m"); g.set(ol, { clearProps: "x" }); };
       });
     }
 
@@ -336,16 +360,7 @@
       const setCY = () => { const r = sec.getBoundingClientRect(), a = txt[0].getBoundingClientRect(), b = txt[txt.length - 1].getBoundingClientRect(); cyN = Math.round((a.top + b.bottom) / 2 - r.top); sec.style.setProperty("--cy", cyN + "px"); dispatchEvent(new Event("burst-place")); };
       setCY();
       const lockY = () => Math.round(sec.getBoundingClientRect().top + scrollY - innerHeight * 0.336);
-      const M = g.timeline({ paused: true })
-        .to(txt, { opacity: 0, y: -16, duration: 0.1, ease: "power1.in" }, 0)
-        .fromTo(core, { y: "52vh", x: 0, rotation: 0 }, { keyframes: { y: ["52vh", "37vh", "23vh", "11vh", "3vh", "-1vh", "0vh"], x: [0, -42, 30, -20, 10, -3, 0], rotation: [0, -10, 7, -5, 3, -1, 0], easeEach: "sine.inOut" }, duration: 0.82 }, 0)
-        .to(pill, { y: 6, duration: 0.2, ease: "power2.out" }, 0.55)
-        .fromTo(hint, { opacity: 0 }, { opacity: 1, duration: 0.08 }, 0.86)
-        .to(core, { keyframes: { y: ["0vh", "-18vh", "-40vh", "-65vh", "-95vh"], x: [0, 28, -22, 18, -10], rotation: [0, 7, -6, 5, -3], easeEach: "sine.inOut" }, duration: 1, ease: "power1.in" }, 1)
-        .to(hint, { opacity: 0, duration: 0.15 }, 1)
-        .to(pill, { y: 0, duration: 0.25 }, 1.5)
-        .to(txt, { opacity: 1, y: 0, duration: 0.3, stagger: 0.05 }, 1.6)
-        .to(core, { opacity: 0, duration: 0.2 }, 1.8);
+      const M = themesTL(core, hint, pill, txt);
       M.time(0);
       const apply = () => { if (!open) g.to(M, { time: Math.min(prog, 1) + (prog >= 1 ? pOut : 0), duration: 0.5, ease: "power2.out", overwrite: true }); };
       const L = () => window.__lenis;
@@ -377,6 +392,23 @@
       return () => { if (locked) unlock(); s2.kill(); M.kill(); removeEventListener("wheel", onWheel); removeEventListener("keydown", onKey); removeEventListener("scroll", onScroll); sec.classList.remove("themes-anim"); sec.style.removeProperty("--cy"); removeEventListener("burst-open", onOpen); removeEventListener("burst-close", onClose); g.set([core, hint, pill, ...txt], { clearProps: "all" }); };
     });
 
+    mm.add("(max-width: 860px)", () => {
+      const sec = $("#temata"), core = $(".burst__core"), hint = $(".burst__hint"), pill = $("#temata .eyebrow"); if (!sec || !core) return;
+      sec.classList.add("themes-anim", "themes-m");
+      g.set(core, { xPercent: -50, yPercent: -50 });
+      const txt = $$("#temata .sec__head h2, #temata .sec__head p");
+      const setCY = () => { const r = sec.getBoundingClientRect(), a = txt[0].getBoundingClientRect(), b = txt[txt.length - 1].getBoundingClientRect(); sec.style.setProperty("--cy", Math.round((a.top + b.bottom) / 2 - r.top) + "px"); dispatchEvent(new Event("burst-place")); };
+      setCY();
+      const M = themesTL(core, hint, pill, txt); M.time(0);
+      let open = false, pIn = 0, pOut = 0;
+      const apply = () => { if (!open) g.to(M, { time: pIn + (pIn >= 0.999 ? pOut : 0), duration: 0.45, ease: "power2.out", overwrite: true }); };
+      const s1 = ST.create({ trigger: sec, start: "center center", end: "+=110%", pin: true, scrub: true, onRefreshInit: setCY, onUpdate: (s) => { pIn = s.progress; apply(); } });
+      const s2 = ST.create({ trigger: sec, start: () => s1.end, end: () => s1.end + innerHeight * 0.45, onUpdate: (s) => { pOut = s.progress; apply(); } });
+      const onOpen = () => (open = true), onClose = () => { open = false; apply(); };
+      addEventListener("burst-open", onOpen); addEventListener("burst-close", onClose);
+      return () => { s1.kill(); s2.kill(); M.kill(); sec.classList.remove("themes-anim", "themes-m"); sec.style.removeProperty("--cy"); removeEventListener("burst-open", onOpen); removeEventListener("burst-close", onClose); g.set([core, hint, pill, ...txt], { clearProps: "all" }); };
+    });
+
     /* účtenka: zamknout scroll a tisknout; karta se oddálí jako u nafukování */
     if (printAt) {
       mm.add("(min-width: 861px)", () => {
@@ -386,13 +418,16 @@
           onUpdate: (s) => { const p = s.progress, k = p < 0.1 ? p / 0.1 : p > 0.9 ? (1 - p) / 0.1 : 1, e = k * k * (3 - 2 * k); qx(1 - 0.1 * e); qy2(1 - 0.1 * e); qk(e); printAt(p); } });
       });
       mm.add("(max-width: 860px)", () => {
-        ST.create({ trigger: ".printer", start: "top 75%", once: true, onEnter: () => { const o = { p: 0 }; g.to(o, { p: 1, duration: 2.6, ease: "none", onUpdate: () => printAt(o.p) }); } });
+        const card = $(".receipt__card"), secR = $(".receipt");
+        const qx = g.quickTo(card, "scaleX", { duration: 0.9, ease: "power3" }), qy2 = g.quickTo(card, "scaleY", { duration: 0.9, ease: "power3" }), qk = g.quickTo(secR, "--k", { duration: 0.9, ease: "power3" });
+        ST.create({ trigger: ".receipt__pin", start: "top top", end: "+=170%", pin: true, scrub: 0.4,
+          onUpdate: (s) => { const p = s.progress, k = p < 0.1 ? p / 0.1 : p > 0.9 ? (1 - p) / 0.1 : 1, e = k * k * (3 - 2 * k); qx(1 - 0.08 * e); qy2(1 - 0.08 * e); qk(e); printAt(p); } });
       });
     }
     /* na míru: až PO účtence (pořadí pinů = pořadí v DOM) */
     const custP = (s) => { window.__customP = s.progress; dispatchEvent(new CustomEvent("custom", { detail: s.progress })); };
     mm.add("(min-width: 861px)", () => { ST.create({ trigger: "#na-miru", start: "center center", end: "+=170%", pin: true, scrub: 0.5, onUpdate: custP, onToggle: (t) => document.documentElement.classList.toggle("cpin", t.isActive) }); });
-    mm.add("(max-width: 860px)", () => { ST.create({ trigger: ".custom__art", start: "top 80%", end: "bottom 30%", scrub: 0.5, onUpdate: custP }); });
+    mm.add("(max-width: 860px)", () => { ST.create({ trigger: "#na-miru", start: "top top", end: "+=150%", pin: true, scrub: 0.5, onUpdate: custP }); });
     addEventListener("load", () => ST.refresh());
   }
 
@@ -603,6 +638,8 @@
     });
     const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { rootMargin: "0px 0px -12% 0px" });
     $$(".words").forEach((h) => io.observe(h));
+    /* záloha přes ScrollTrigger (spolehlivá i uvnitř zamčených sekcí na mobilu) */
+    setTimeout(() => { const ST = window.ScrollTrigger; if (ST) $$(".words:not(.in)").forEach((h) => ST.create({ trigger: h, start: "top 92%", once: true, onEnter: () => h.classList.add("in") })); }, 300);
   }
   /* pilulky = přesně mráček z oblohy (stejné obláčky, jen rozšířený; kruhy se nedeformují) */
   function cloudPills() {

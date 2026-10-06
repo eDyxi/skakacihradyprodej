@@ -1142,3 +1142,143 @@ h1,h2{text-shadow:.035em .045em 0 color-mix(in srgb,var(--ink) 18%,transparent)}
 /* ===== mráčky o 50 % menší, text jako dřív (velká písmena s rozestupy) ===== */
 .eyebrow,#faq .eyebrow,.story .eyebrow{font:800 .8rem/1 var(--f-d);letter-spacing:.11em;text-transform:uppercase;padding:6px 12px 5px;margin-top:16px}
 .story .eyebrow{font-size:.88rem}
+
+/* =====================================================================
+   MOBIL – kompletní průchod (≤ 860 px)
+   ===================================================================== */
+@media (max-width:860px){
+  /* úvod: logo → velký 3D hrad → text → tlačítka vedle sebe → fakta 2×2 */
+  .hero{padding:4px 0 26px}
+  .hero__grid{grid-template-columns:minmax(0,1fr)!important;gap:0;text-align:center}
+  .hero__grid>div:first-child{display:contents}
+  .hero__brand{order:1;width:min(84%,340px);margin:4px auto 0}
+  .hero__art{order:2;width:100%;max-width:440px;margin:-18px auto -26px!important;aspect-ratio:1/.86}
+  .hero__lede{order:3;margin:0 auto 16px;max-width:32ch;font-size:1.02rem;text-align:center}
+  .hero__cta{order:4;display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
+  .hero__cta .btn{width:100%;justify-content:center;padding:0 10px;font-size:.95rem;min-height:48px}
+  .hero__facts{order:5;display:grid!important;grid-template-columns:1fr 1fr;gap:8px;width:100%!important;margin:16px 0 0;padding:0}
+  .hero__facts li{justify-content:center;text-align:center;white-space:normal!important;font-size:.78rem!important}
+  .tape{margin-top:6px}
+
+  /* Jak to probíhá: zamčená karta – nadpis, 3D hrad, kroky jako posuvný pás */
+  .story--m .story__pin,.story--m .story__card{min-height:100svh}
+  .story--m .story__card{padding:calc(var(--nav-h) + 4px) 0 100px;overflow:hidden;border-radius:calc(var(--k,0) * 26px)}
+  .story--m .story__grid{display:flex;flex-direction:column;gap:4px;min-height:auto;padding-top:0}
+  .story--m .story__grid>div:first-child{display:contents}
+  .story--m .eyebrow{order:1;align-self:flex-start}
+  .story--m h2{order:2;font-size:clamp(1.8rem,8vw,2.3rem)}
+  .story--m .story__art{order:3;max-width:330px;width:100%;margin:0 auto;height:30svh;min-height:200px}
+  .story--m .story__steps{order:4;display:flex;flex-wrap:nowrap;gap:12px;width:max-content;margin:6px 0 0;padding:0}
+  .story--m .story__steps li{flex:none;width:min(74vw,290px);opacity:.5;transition:opacity .3s}
+  .story--m .story__steps li.on{opacity:1}
+  .story--m .story__gauge{bottom:-4px}
+
+  /* Na rovinu: zamčená, oddálí se, účtenka se tiskne */
+  .receipt__pin,.receipt .depth{min-height:100svh!important}
+  .receipt .deal{padding:calc(var(--nav-h) + 2px) 0 96px!important;gap:12px;align-content:center;align-items:center}
+  .receipt h2{font-size:clamp(1.8rem,8vw,2.3rem)}
+  .receipt .deal p{font-size:.95rem;margin:6px 0 8px}
+  .certs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:4px;margin-right:-16px}
+  .certs::-webkit-scrollbar{display:none}
+  .certs span{flex:none}
+  .printer{width:min(86vw,300px);margin:0 auto}
+  .rc{font-size:.7rem;padding:16px 12px 16px}
+  .printer__body{height:62px}
+
+  /* Podle témat: zamčená sekce, balónky ve 2 řadách */
+  .themes-m{height:max(560px,78svh)!important;padding:0!important}
+  .themes-m .sec__head{padding:0 6px}
+  .themes-m h2{font-size:clamp(1.8rem,8vw,2.3rem)}
+  .themes-m .burst__hint{font-size:1.05rem}
+
+  /* Na míru: zamčená, skica se kreslí */
+  #na-miru.custom-sec{margin-top:0!important}
+  .custom__card{padding:calc(var(--nav-h) + 4px) 0 60px}
+  .custom{gap:14px}
+  .custom__art{max-height:46svh;aspect-ratio:1/.82}
+  .custom h2{font-size:clamp(1.8rem,8vw,2.3rem)}
+  .checks{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px}
+  .checks li{font-size:.85rem}
+  #na-miru::before{top:10px}#na-miru::after{bottom:10px}
+
+  /* nejžádanější: karty se swipují */
+  .rail--native .rail__track{scroll-snap-type:x mandatory;padding:6px 16px 18px;gap:14px}
+  .rail--native .card,.rail--native .rail__end{width:72vw!important;max-width:290px;scroll-snap-align:center}
+
+  /* poptávka */
+  .ask__row{grid-template-columns:1fr 1fr!important}
+  .cta__who{overflow-wrap:anywhere}
+  .cta__who a{font-size:1rem}
+
+  /* spodní menu */
+  .nav__pill{gap:0}
+  .nav__pill a{font-size:.8rem;padding:0 9px}
+
+  /* nadpisy menší */
+  h2{font-size:clamp(1.8rem,8vw,2.4rem)}
+  .sec{padding:36px 0}
+}
+@media (max-width:860px){
+  .story--m .story__grid{align-items:stretch}
+  .story--m h2{max-width:100%}
+  .hero__brand{margin:6px auto 10px}
+  .hero__art{margin:0 auto -14px!important;aspect-ratio:1/.8}
+}
+@media (max-width:860px){
+  .story--m .story__grid{width:calc(100vw - 32px)!important;max-width:none;min-width:0}
+  .story--m .story__card{display:block}
+}
+@media (max-width:860px){
+  .story .eyebrow,.receipt .eyebrow,#na-miru .eyebrow,#faq .eyebrow,#poptavka .eyebrow,#nejzadanejsi .eyebrow{margin-left:30px}
+  .story__gauge{white-space:nowrap}
+}
+@media (max-width:860px){
+  /* katalog: výběr kompaktně, vše swipe; karty 2 vedle sebe */
+  .kat-hero{padding:18px 0 22px}
+  .kat-hero h1{font-size:clamp(2.2rem,10vw,3rem)}
+  .chooser{padding:10px 12px;border-radius:24px}
+  .ch-step{padding:10px 0;gap:8px}
+  .ch-types{display:flex!important;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -12px;padding:4px 12px 8px;scrollbar-width:none}
+  .ch-types::-webkit-scrollbar,.ch-themes::-webkit-scrollbar{display:none}
+  .ty{flex:none;width:118px;scroll-snap-align:start;padding:10px 8px 12px}
+  .ty img{width:76px}
+  .ty b{font-size:.86rem}
+  .ch-themes{flex-wrap:nowrap;overflow-x:auto;margin:0 -12px;padding:2px 12px 8px;scrollbar-width:none}
+  .thm{flex:none}
+  .ch-size{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .sz{min-width:0;padding:8px 4px}
+  .sz b{font-size:.8rem}
+  .ch-budget output{font-size:1.2rem;min-width:0}
+  .kbar__in{gap:8px;padding:8px 10px;border-radius:20px}
+  .kbar__q{flex:1 1 140px;width:auto}
+  .kbar__sort{flex:0 0 auto}
+  .kat-grid .grid,.grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px}
+  .grid .card__body{padding:8px 10px 10px}
+  .grid .card__body h3{font-size:.92rem;line-height:1.1}
+  .grid .card__price{font-size:1rem}
+  .grid .card__row{gap:6px}
+  .grid .card__add{min-height:36px;padding:0 9px;font-size:0}
+  .grid .card__add svg{width:18px;height:18px}
+  .grid .card__dims{font-size:.62rem;padding:3px 6px}
+  .grid .card__3d{font-size:.6rem}
+  /* studio: 3D náhled přilepený nahoře, panel se posouvá pod ním */
+  .studio__head{padding:16px 0 12px}
+  .studio__head h1{font-size:clamp(2rem,9vw,2.6rem)}
+  .studio__lede{font-size:.92rem}
+  .studio__grid{gap:12px}
+  .st-stage{position:sticky!important;top:calc(var(--nav-h) - 6px);z-index:20}
+  .st-3d{aspect-ratio:auto;height:36svh;border-radius:22px}
+  .st-price{margin-top:8px;padding:8px 12px;border-radius:14px}
+  .st-price b{font-size:1.2rem}
+  .st-price small{display:none}
+  .st-hint{display:none}
+  .st-panel{padding:4px 12px 14px}
+}
+@media (max-width:860px){
+  .kbar__count{order:1}
+  .kbar__sort{order:2;margin-left:auto}
+  .kbar__q{order:3;flex:1 1 100%}
+  .kbar__chips{order:4;flex:1 1 100%}
+  .kbar__chips:empty{display:none}
+}
+@media (max-width:860px){.hero__art{margin:8px auto -10px!important}}
