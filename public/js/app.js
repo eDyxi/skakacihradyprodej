@@ -620,7 +620,7 @@
       const svg = document.createElementNS(NS, "svg");
       svg.setAttribute("class", "cl"); svg.setAttribute("aria-hidden", "true"); svg.setAttribute("width", W.toFixed(0)); svg.setAttribute("height", Hh.toFixed(0)); svg.setAttribute("viewBox", `0 0 ${W.toFixed(1)} ${Hh.toFixed(1)}`);
       svg.innerHTML = `<g fill="var(--ink)">${sh(3)}</g><g fill="var(--card)">${sh(0)}</g>`;
-      svg.style.bottom = "-3px";
+      svg.style.bottom = big ? "-10px" : "-3px";
       el.prepend(svg);
     };
     const all = () => $$(".eyebrow").forEach(draw);
