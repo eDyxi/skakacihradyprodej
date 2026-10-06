@@ -1292,3 +1292,9 @@ h1,h2{text-shadow:.035em .045em 0 color-mix(in srgb,var(--ink) 18%,transparent)}
   radial-gradient(34% 30% at 30% 98%,color-mix(in srgb,#2fd3b4 40%,transparent),transparent 72%),
   radial-gradient(20% 18% at 56% 30%,color-mix(in srgb,#FF8A1F 16%,transparent),transparent 72%)}
 .eyebrow>.cl{filter:drop-shadow(3px 4px 0 var(--ink)) drop-shadow(0 8px 14px color-mix(in srgb,var(--ink) 18%,transparent))}
+@media (max-width:860px){
+  .hero .cloud--fly{z-index:-2;opacity:.75}
+  .hero__lede,.hero__cta,.hero__facts,.hero__brand{position:relative;z-index:1}
+  .hero__art{aspect-ratio:1/.72!important;max-width:380px}
+  .hero__lede{margin-bottom:12px}
+}
