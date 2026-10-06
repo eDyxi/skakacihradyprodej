@@ -612,7 +612,7 @@
       const tw = el.offsetWidth, th = el.offsetHeight, pad = 4;
       /* přesně mráček z oblohy (4 laloky): mírně roztažený do šířky (max 1,55×) a zvětšený, kruhy → jemné elipsy */
       /* text sedí v plné části mráčku (x 30–95 z 109), mráček ho těsně obejme */
-      const big = !el.closest("#faq, .story"), s0 = big ? Math.max(1.05, th / 29.5) : Math.max(58, th + 30) / 54, MX = big ? 2.1 : 1.55, ratio = big ? (tw + 8) / (65 * s0) : (tw + 30) / (109 * s0), sx = Math.min(MX, Math.max(1, ratio)), s = s0 * Math.max(1, ratio / MX);
+      const big = true, s0 = Math.max(0.8, th / 29.5), MX = 2.1, ratio = (tw + 6) / (76 * s0), sx = Math.min(MX, Math.max(1, ratio)), s = s0 * Math.max(1, ratio / MX);
       const C = [[21, 36, 14], [41, 24, 21], [66, 28, 16], [86, 26, 18], [104, 37, 12]].map(([x, y, r]) => [x * s * sx, y * s, r * s * sx, r * s]);
       const L = C.length - 1, minX = C[0][0] - C[0][2], maxX = C[L][0] + C[L][2], base = 50 * s, top = Math.min(...C.map(([, y, , ry]) => y - ry)), cyMin = Math.min(...C.map((c) => c[1]));
       const W = maxX - minX + pad * 2, Hh = base - top + pad * 2;
@@ -620,7 +620,7 @@
       const svg = document.createElementNS(NS, "svg");
       svg.setAttribute("class", "cl"); svg.setAttribute("aria-hidden", "true"); svg.setAttribute("width", W.toFixed(0)); svg.setAttribute("height", Hh.toFixed(0)); svg.setAttribute("viewBox", `0 0 ${W.toFixed(1)} ${Hh.toFixed(1)}`);
       svg.innerHTML = `<g fill="var(--ink)">${sh(3)}</g><g fill="var(--card)">${sh(0)}</g>`;
-      svg.style.bottom = big ? "-10px" : "-3px";
+      svg.style.bottom = "-6px";
       el.prepend(svg);
     };
     const all = () => $$(".eyebrow").forEach(draw);
