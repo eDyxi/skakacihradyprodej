@@ -1133,3 +1133,8 @@ h1,h2{text-shadow:.035em .045em 0 color-mix(in srgb,var(--ink) 18%,transparent)}
 .studio__grid{padding-bottom:28px}
 /* mráčkové pilulky: větší text */
 .eyebrow{font-size:clamp(.95rem,1.1vw,1.08rem);letter-spacing:.1em;padding:10px 20px 11px}
+
+/* ===== mráčky: menší, text výrazně větší (Otázky a Jak to probíhá ve vlastní velikosti) ===== */
+.eyebrow{font:700 clamp(1.3rem,1.8vw,1.6rem)/1 var(--f-d);letter-spacing:.01em;text-transform:none;padding:7px 14px 6px}
+#faq .eyebrow,.story .eyebrow{font:800 clamp(.95rem,1.1vw,1.08rem)/1 var(--f-d);letter-spacing:.1em;text-transform:uppercase;padding:10px 20px 11px}
+.story .eyebrow{font-size:clamp(1.05rem,1.21vw,1.19rem)}
