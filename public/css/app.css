@@ -1131,3 +1131,5 @@ h1,h2{text-shadow:.035em .045em 0 color-mix(in srgb,var(--ink) 18%,transparent)}
 .st-bot{padding-bottom:90px}
 .st-bot .bot{max-width:none;margin:0}
 .studio__grid{padding-bottom:28px}
+/* mráčkové pilulky: větší text */
+.eyebrow{font-size:clamp(.95rem,1.1vw,1.08rem);letter-spacing:.1em;padding:10px 20px 11px}

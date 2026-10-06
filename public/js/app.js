@@ -339,7 +339,7 @@
       const M = g.timeline({ paused: true })
         .to(txt, { opacity: 0, y: -16, duration: 0.1, ease: "power1.in" }, 0)
         .fromTo(core, { y: "52vh", x: 0, rotation: 0 }, { keyframes: { y: ["52vh", "37vh", "23vh", "11vh", "3vh", "-1vh", "0vh"], x: [0, -42, 30, -20, 10, -3, 0], rotation: [0, -10, 7, -5, 3, -1, 0], easeEach: "sine.inOut" }, duration: 0.82 }, 0)
-        .to(pill, { y: -10, duration: 0.2, ease: "power2.out" }, 0.55)
+        .to(pill, { y: 6, duration: 0.2, ease: "power2.out" }, 0.55)
         .fromTo(hint, { opacity: 0 }, { opacity: 1, duration: 0.08 }, 0.86)
         .to(core, { keyframes: { y: ["0vh", "-18vh", "-40vh", "-65vh", "-95vh"], x: [0, 28, -22, 18, -10], rotation: [0, 7, -6, 5, -3], easeEach: "sine.inOut" }, duration: 1, ease: "power1.in" }, 1)
         .to(hint, { opacity: 0, duration: 0.15 }, 1)
@@ -611,11 +611,11 @@
       el.querySelector(":scope > .cl")?.remove();
       const tw = el.offsetWidth, th = el.offsetHeight, pad = 4;
       /* přesně mráček z oblohy (4 laloky): mírně roztažený do šířky (max 1,55×) a zvětšený, kruhy → jemné elipsy */
-      const s0 = Math.max(60, th + 34) / 54, ratio = (tw + 34) / (104 * s0), sx = Math.min(1.55, Math.max(1, ratio)), s = s0 * Math.max(1, ratio / 1.55);
-      const C = [[23, 34, 16], [45.3, 23.6, 22], [78.1, 23.2, 18], [97, 36, 14]].map(([x, y, r]) => [x * s * sx, y * s, r * s * sx, r * s]);
-      const minX = C[0][0] - C[0][2], maxX = C[3][0] + C[3][2], base = 50 * s, top = Math.min(...C.map(([, y, , ry]) => y - ry)), cyMin = Math.min(...C.map((c) => c[1]));
+      const s0 = Math.max(58, th + 30) / 54, ratio = (tw + 30) / (109 * s0), sx = Math.min(1.55, Math.max(1, ratio)), s = s0 * Math.max(1, ratio / 1.55);
+      const C = [[21, 36, 14], [41, 24, 21], [66, 28, 16], [86, 26, 18], [104, 37, 12]].map(([x, y, r]) => [x * s * sx, y * s, r * s * sx, r * s]);
+      const L = C.length - 1, minX = C[0][0] - C[0][2], maxX = C[L][0] + C[L][2], base = 50 * s, top = Math.min(...C.map(([, y, , ry]) => y - ry)), cyMin = Math.min(...C.map((c) => c[1]));
       const W = maxX - minX + pad * 2, Hh = base - top + pad * 2;
-      const sh = (k) => C.map(([x, y, rx, ry]) => `<ellipse cx="${(x - minX + pad).toFixed(1)}" cy="${(y - top + pad).toFixed(1)}" rx="${(rx + k).toFixed(1)}" ry="${(ry + k).toFixed(1)}"/>`).join("") + `<rect x="${(C[0][0] - minX + pad).toFixed(1)}" y="${(cyMin - top + pad - k).toFixed(1)}" width="${(C[3][0] - C[0][0]).toFixed(1)}" height="${(base - cyMin + 2 * k).toFixed(1)}"/>`;
+      const sh = (k) => C.map(([x, y, rx, ry]) => `<ellipse cx="${(x - minX + pad).toFixed(1)}" cy="${(y - top + pad).toFixed(1)}" rx="${(rx + k).toFixed(1)}" ry="${(ry + k).toFixed(1)}"/>`).join("") + `<rect x="${(C[0][0] - minX + pad).toFixed(1)}" y="${(cyMin - top + pad - k).toFixed(1)}" width="${(C[L][0] - C[0][0]).toFixed(1)}" height="${(base - cyMin + 2 * k).toFixed(1)}"/>`;
       const svg = document.createElementNS(NS, "svg");
       svg.setAttribute("class", "cl"); svg.setAttribute("aria-hidden", "true"); svg.setAttribute("width", W.toFixed(0)); svg.setAttribute("height", Hh.toFixed(0)); svg.setAttribute("viewBox", `0 0 ${W.toFixed(1)} ${Hh.toFixed(1)}`);
       svg.innerHTML = `<g fill="var(--ink)">${sh(3)}</g><g fill="var(--card)">${sh(0)}</g>`;
