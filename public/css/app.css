@@ -1282,3 +1282,13 @@ h1,h2{text-shadow:.035em .045em 0 color-mix(in srgb,var(--ink) 18%,transparent)}
   .kbar__chips:empty{display:none}
 }
 @media (max-width:860px){.hero__art{margin:8px auto -10px!important}}
+
+/* ===== pozadí: víc barev (tyrkys, zlatá, modrá, růžová, fialová, máta, oranžová) ===== */
+:root{--glow:radial-gradient(40% 36% at 4% 10%,color-mix(in srgb,var(--teal) 55%,transparent),transparent 70%),
+  radial-gradient(30% 26% at 88% 6%,color-mix(in srgb,var(--gold) 50%,transparent),transparent 72%),
+  radial-gradient(38% 34% at 98% 48%,color-mix(in srgb,var(--sky) 48%,transparent),transparent 70%),
+  radial-gradient(28% 26% at 12% 56%,color-mix(in srgb,#FF7DB8 26%,transparent),transparent 72%),
+  radial-gradient(30% 28% at 78% 92%,color-mix(in srgb,#7E5BD6 22%,transparent),transparent 72%),
+  radial-gradient(34% 30% at 30% 98%,color-mix(in srgb,#2fd3b4 40%,transparent),transparent 72%),
+  radial-gradient(20% 18% at 56% 30%,color-mix(in srgb,#FF8A1F 16%,transparent),transparent 72%)}
+.eyebrow>.cl{filter:drop-shadow(3px 4px 0 var(--ink)) drop-shadow(0 8px 14px color-mix(in srgb,var(--ink) 18%,transparent))}
