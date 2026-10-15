@@ -94,11 +94,13 @@ async function hero() {
   host.classList.add("is3d");
 
   const G = size.y * 14, j = jelly();
-  let phase = RM ? "idle" : "fall", clock = 0, hy = 0, hv = 0, nextHop = 0, yaw = -0.35, drag = null, spin = 0;
+  /* CALM = poster už stojí na místě (mobil / slabší zařízení) → bez pádu, jen plynulé prolnutí */
+  const CALM = RM || !!window.__3dCalm;
+  let phase = CALM ? "idle" : "fall", clock = 0, hy = 0, hv = 0, nextHop = 0, yaw = -0.35, drag = null, spin = 0;
   const startY = -(host.getBoundingClientRect().bottom + 120);
   const FALL = 0.95;
   S.r.compile(S.scene, S.cam);
-  if (!RM) { host.style.transform = `translateY(${startY}px)`; S.force = true; }
+  if (CALM) nextHop = 1.6; else { host.style.transform = `translateY(${startY}px)`; S.force = true; }
 
   const cv = host.querySelector(".c3d");
   cv.addEventListener("pointerdown", (e) => { drag = e.clientX; cv.setPointerCapture(e.pointerId); cv.classList.add("grab"); });
@@ -278,8 +280,9 @@ diffuseColor.rgb = mix(paper, diffuseColor.rgb, paint);`);
   S.kick();
 }
 
-hero().catch((e) => { console.warn("3D hero:", e); fail(document.querySelector(".hero__art")); });
-const st = document.querySelector(".story");
-if (st) new IntersectionObserver(([e], o) => { if (e.isIntersecting) { o.disconnect(); story().catch((x) => { console.warn("3D story:", x); fail(document.querySelector(".story__art")); }); } }, { rootMargin: "700px" }).observe(st);
-const cu = document.querySelector(".custom__art");
-if (cu) new IntersectionObserver(([e], o) => { if (e.isIntersecting) { o.disconnect(); custom().catch((x) => { console.warn("3D návrh:", x); }); } }, { rootMargin: "600px" }).observe(cu);
+/* další scény: při přiblížení, nebo dřív v nečinnosti po hero (žádné záseky při prvním scrollu) */
+const once = (el, margin, run) => { if (!el) return () => {}; let done = false; const go = () => { if (done) return; done = true; io.disconnect(); run(); }; const io = new IntersectionObserver(([e]) => e.isIntersecting && go(), { rootMargin: margin }); io.observe(el); return go; };
+const idle = (f, t) => (window.requestIdleCallback ? requestIdleCallback(f, { timeout: t }) : setTimeout(f, t));
+const goStory = once(document.querySelector(".story"), "700px", () => story().catch((x) => { console.warn("3D story:", x); fail(document.querySelector(".story__art")); }));
+const goCustom = once(document.querySelector(".custom__art"), "600px", () => custom().catch((x) => { console.warn("3D návrh:", x); }));
+hero().catch((e) => { console.warn("3D hero:", e); fail(document.querySelector(".hero__art")); }).finally(() => idle(() => { goStory(); idle(goCustom, 3000); }, 2000));

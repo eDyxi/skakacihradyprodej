@@ -107,9 +107,9 @@
   }
   function cursor() {
     if (!matchMedia("(hover:hover) and (pointer:fine)").matches || RM) return;
-    const c = document.createElement("div"); c.className = "cur"; c.setAttribute("aria-hidden", "true"); document.body.append(c);
+    const c = document.createElement("div"); c.className = "cur out"; c.setAttribute("aria-hidden", "true"); c.innerHTML = "<i></i><b></b>"; document.body.append(c); const lbl = c.lastChild;
     let x = innerWidth / 2, y = innerHeight / 2, cx = x, cy = y;
-    addEventListener("pointermove", (e) => { x = e.clientX; y = e.clientY; const t = e.target.closest("[data-cur]"); c.classList.toggle("big", !!t); c.textContent = t ? t.dataset.cur : ""; }, { passive: true });
+    addEventListener("pointermove", (e) => { x = e.clientX; y = e.clientY; const t = e.target.closest("[data-cur]"); c.classList.remove("out"); c.classList.toggle("big", !!t); if (t) lbl.textContent = t.dataset.cur; }, { passive: true });
     document.documentElement.classList.add("has-cur");
     document.addEventListener("mouseleave", () => c.classList.add("out")); document.addEventListener("mouseenter", () => c.classList.remove("out"));
     (function loop() { cx += (x - cx) * 0.5; cy += (y - cy) * 0.5; c.style.transform = `translate(${cx}px,${cy}px)`; requestAnimationFrame(loop); })();
@@ -274,27 +274,37 @@
     bindForm(() => { const a = $("[data-ask-cart]"); if (a) a.hidden = true; });
     const ask = $("[data-ask-cart]"), inC = cart.get().filter((i) => byId[i.id]);
     if (ask && inC.length) { ask.hidden = false; ask.innerHTML = `<span class="ask__lbl">V poptávce</span><span class="ask__items">${inC.map((i) => `<a class="ask__it" href="/hrad.html?id=${i.id}"><img src="${img(byId[i.id])}" alt="" width="44" height="44" loading="lazy"><span>${byId[i.id].n}</span></a>`).join("")}</span><a class="ask__edit" href="/kosik.html">Upravit</a>`; }
-    setTimeout(() => { if (!window.__3d) $$(".hero__art, .story__art").forEach((e) => e.classList.add("no3d")); }, 6000);
+    setTimeout(() => { if (!window.__3d && !window.__3dWait) $$(".hero__art, .story__art").forEach((e) => e.classList.add("no3d")); }, 6000);
     const cnt = $("[data-count]"); if (cnt) cnt.textContent = H.length;
     const minP = $("[data-min-price]"); if (minP) minP.textContent = kc(Math.min(...H.map((h) => h.p)));
 
     const g = window.gsap, ST = window.ScrollTrigger;
     const steps = $$(".story__steps li");
-    if (!g || !ST || RM) { steps.forEach((s) => s.classList.add("on")); $("#rail")?.classList.add("rail--native"); printAt?.(1); window.__customP = 1; return; }
+    if (!g || !ST || RM) { document.documentElement.classList.remove("intro"); steps.forEach((s) => s.classList.add("on")); $("#rail")?.classList.add("rail--native"); printAt?.(1); window.__customP = 1; return; }
     g.registerPlugin(ST);
     if (window.Lenis) {
       const l = (window.__lenis = new Lenis({ lerp: 0.085, wheelMultiplier: 0.9, smoothWheel: true }));
       document.documentElement.classList.add("lenis", "lenis-smooth");
       l.on("scroll", ST.update); g.ticker.add((t) => l.raf(t * 1000)); g.ticker.lagSmoothing(0);
       document.addEventListener("click", (e) => { const a = e.target.closest('a[href^="#"], a[href^="/#"]'); if (!a) return; const id = a.getAttribute("href").split("#")[1]; const t = id && document.getElementById(id); if (t) { e.preventDefault(); window.__skipLock = true; l.scrollTo(t, { offset: -70, duration: 1.4, onComplete: () => setTimeout(() => (window.__skipLock = false), 120) }); } });
-      if (location.hash) { const t = document.getElementById(location.hash.slice(1)); if (t) setTimeout(() => { window.__skipLock = true; ST.refresh(); l.scrollTo(t, { offset: -70, immediate: true, force: true }); setTimeout(() => (window.__skipLock = false), 400); }, 700); }
+      if (location.hash) { const t = document.getElementById(location.hash.slice(1)); if (t) addEventListener("pins-ready", () => setTimeout(() => { window.__skipLock = true; ST.refresh(); l.scrollTo(t, { offset: -70, immediate: true, force: true }); setTimeout(() => (window.__skipLock = false), 400); }, 120), { once: true }); }
     }
 
     /* hero intro: slova vyskočí, hrad dopadne */
-    g.timeline()
+    const intro = document.documentElement.classList.contains("intro"); document.documentElement.classList.remove("intro");
+    if (intro) g.timeline()
       .from(".hero__logo .hl1, .hero__logo .hl2", { y: -160, scaleY: 1.35, scaleX: 0.8, opacity: 0, transformOrigin: "50% 100%", duration: 1.3, ease: "elastic.out(1, 0.4)", stagger: 0.16 })
       .from(".hero__lede, .hero__cta, .hero__facts li", { y: 24, opacity: 0, duration: 0.6, stagger: 0.05, ease: "back.out(1.8)" }, "-=.8");
 
+    /* zamčené scény až po prvním vykreslení a po kouscích (krátké úlohy = plynulý start i na mobilu) */
+    const later = () => new Promise((r) => requestAnimationFrame(() => setTimeout(r, 0)));
+    /* dotyk: scény se připraví při prvním doteku/scrollu (nebo po 6 s), desktop hned */
+    const ready = matchMedia("(hover:hover) and (pointer:fine)").matches ? Promise.resolve() : new Promise((r) => {
+      const ev = ["touchstart", "pointerdown", "scroll", "wheel", "keydown"], go = () => { ev.forEach((e) => removeEventListener(e, go)); clearTimeout(t); r(); };
+      const t = setTimeout(go, 6000); ev.forEach((e) => addEventListener(e, go, { passive: true }));
+      if (location.hash || scrollY > 0) go();
+    });
+    (async () => { await ready; await later();
     /* příběh: hrad se nafukuje se scrollem */
     const mm = g.matchMedia();
     const sc = $(".story .castle");
@@ -335,6 +345,7 @@
         return () => { st.kill(); $(".story").classList.remove("story--m"); g.set(ol, { clearProps: "x" }); };
       });
     }
+    await later();
 
     /* carousel: horizontální jízda + prohnutí podle rychlosti */
     const rail = $("#rail");
@@ -347,6 +358,7 @@
       return () => tw.kill();
     });
     mm.add("(max-width: 899px)", () => { rail.classList.add("rail--native"); return () => rail.classList.remove("rail--native"); });
+    await later();
 
     /* témata a cenovka */
     /* témata (desktop): skutečné zamčení CELÉ stránky (nic se nehýbe, ani žlutý pruh nahoře).
@@ -408,6 +420,7 @@
       addEventListener("burst-open", onOpen); addEventListener("burst-close", onClose);
       return () => { s1.kill(); s2.kill(); M.kill(); sec.classList.remove("themes-anim", "themes-m"); sec.style.removeProperty("--cy"); removeEventListener("burst-open", onOpen); removeEventListener("burst-close", onClose); g.set([core, hint, pill, ...txt], { clearProps: "all" }); };
     });
+    await later();
 
     /* účtenka: zamknout scroll a tisknout; karta se oddálí jako u nafukování */
     if (printAt) {
@@ -424,11 +437,12 @@
           onUpdate: (s) => { const p = s.progress, k = p < 0.1 ? p / 0.1 : p > 0.9 ? (1 - p) / 0.1 : 1, e = k * k * (3 - 2 * k); qx(1 - 0.08 * e); qy2(1 - 0.08 * e); qk(e); printAt(p); } });
       });
     }
+    await later();
     /* na míru: až PO účtence (pořadí pinů = pořadí v DOM) */
     const custP = (s) => { window.__customP = s.progress; dispatchEvent(new CustomEvent("custom", { detail: s.progress })); };
     mm.add("(min-width: 861px)", () => { ST.create({ trigger: "#na-miru", start: "center center", end: "+=170%", pin: true, scrub: 0.5, onUpdate: custP, onToggle: (t) => document.documentElement.classList.toggle("cpin", t.isActive) }); });
     mm.add("(max-width: 860px)", () => { ST.create({ trigger: "#na-miru", start: "top top", end: "+=150%", pin: true, scrub: 0.5, onUpdate: custP }); });
-    addEventListener("load", () => ST.refresh());
+    ST.refresh(); dispatchEvent(new Event("pins-ready")); addEventListener("load", () => ST.refresh()); })();
   }
 
   /* ---------- mini košík (bublina u ikonky) ---------- */
@@ -526,7 +540,7 @@
     const fans = h.fi ? `<p class="pill pill--y">Fukar je v ceně</p>` : `<div class="fans" role="radiogroup" aria-label="Fukar">${[0, 950, 1500].map((f) =>
       `<label class="fan"><input type="radio" name="fan" value="${f}" ${f === fan ? "checked" : ""}><span>${FAN[f][0]}${f === h.fan ? "<em>doporučený</em>" : ""}</span><b>${f ? "+ " + kc(FAN[f][1]) : "—"}</b></label>`).join("")}</div>`;
     root.innerHTML = `
-    <div><div class="pd__stage"><button class="pd__img" type="button" data-cur="Zvětšit" aria-label="Zvětšit fotku"><img id="pd-main" src="${img(h, false)}" alt="${h.n} – ${TYP[h.t].toLowerCase()}" width="1200" height="900"></button></div>
+    <div><div class="pd__stage"><button class="pd__img" type="button" data-cur="Zvětšit" aria-label="Zvětšit fotku"><img id="pd-main" src="${img(h, false)}" alt="${h.n} – ${TYP[h.t].toLowerCase()}" width="1200" height="900" fetchpriority="high"></button></div>
     ${h.ph ? `<div class="pd__thumbs">${[img(h, false), img(h, false, true)].map((src, i) => `<button type="button" data-src="${src}" aria-pressed="${!i}" aria-label="${i ? "Původní fotka" : "Studiová fotka"}"><img src="${src.replace(".webp", "-sm.webp")}" alt="" width="84" height="84" loading="lazy"></button>`).join("")}</div>` : ""}
     ${h.m3d ? `<button class="btn btn--sky pd__3dbtn" id="v3d-btn" type="button" aria-pressed="false">Prohlédnout ve 3D ↻</button>` : ""}</div>
     <div>
@@ -535,9 +549,8 @@
       ${h.note ? `<p><strong>${h.note}</strong></p>` : ""}
       <div class="price"><b>${kc(h.p)}</b><small>konečná cena, bez dopravy · nejsme plátci DPH</small></div>
       <p class="season" data-season hidden>Mimo sezónu cca ${kc(Math.round(h.p * 0.85 / 100) * 100)} – ${kc(Math.round(h.p * 0.9 / 100) * 100)} (sleva 10–15 %)</p>
-      <h2 class="sr">Fukar</h2>${fans}
-      <div class="pd__actions"><button class="btn" type="button" id="add">${inCart ? "Upravit v poptávce" : "Přidat do poptávky"} ${I.plus}</button>
-      <button class="btn btn--ghost" type="button" disabled title="Připravujeme">Koupit online – brzy</button></div>
+      <h2 class="pd__lbl">Fukar (dmychadlo)</h2>${h.fi ? "" : `<p class="fan-note">Fukar není v ceně hradu, doplácí se: 950 W za ${kc(7000)}, 1500 W za ${kc(10000)}. Doporučený výkon je označený.</p>`}${fans}
+      <div class="pd__actions"><button class="btn" type="button" id="add">${inCart ? "Upravit v poptávce" : "Přidat do poptávky"} ${I.plus}</button></div>
       <table class="specs"><caption class="sr">Parametry</caption><tbody>
         <tr><th>Rozměr (d × š)</th><td>${size(h)}</td></tr>
         <tr><th>Výška</th><td>${num(h.h)} m${est}</td></tr>
@@ -548,7 +561,7 @@
         <tr><th>Certifikace</th><td>CE &amp; SGS, EN 14960:2013, EN 15649:2013</td></tr>
         <tr><th>Výroba</th><td>cca 8 týdnů, některé modely skladem</td></tr>
       </tbody></table>
-      <div class="pd__box"><h3>V balení</h3><ul class="checks"><li>Hrad a přepravní obal</li><li>Opravná sada podle dohody</li><li>Záruka 1 rok, opravy podle příčiny poškození</li></ul>
+      <div class="pd__box"><h3>V balení</h3><ul class="checks"><li>Hrad a přepravní obal</li><li>${h.fi ? "Fukar v ceně" : "Fukar jako doplatek (viz výše)"}</li><li>Opravná sada podle dohody</li><li>Záruka 1 rok, opravy i po záruce</li></ul>
       <p>Rozměr, barvy i nápisy upravíme. Jednoduché logo je v ceně.</p></div>
     </div>`;
     root.addEventListener("change", (e) => { if (e.target.name === "fan") { fan = +e.target.value; if (cart.has(h.id)) cart.fan(h.id, fan); } });
@@ -615,12 +628,14 @@
       const btn = f.querySelector("button[type=submit]"); btn.disabled = true; hint.textContent = "Odesílám…";
       try {
         const r = await fetch("/api/poptavka", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(d) });
-        if (r.ok) { localStorage.removeItem("shp-design"); f.innerHTML = `<p class="ok">Díky, poptávka odešla. Ozveme se nejpozději další pracovní den.</p>`; cart.set([]); onSent?.(); return; }
+        const j = r.ok ? await r.json().catch(() => ({})) : {};
+        if (j.ok) { localStorage.removeItem("shp-design"); f.innerHTML = `<p class="ok">Díky, poptávka odešla. Ozveme se nejpozději další pracovní den.</p>`; cart.set([]); onSent?.(); return; }
         throw new Error(r.status);
       } catch {
         const body = [`Jméno: ${d.jmeno}`, `E-mail: ${d.email}`, `Telefon: ${d.telefon}`, `Město/obec: ${d.mesto}`, "", ...d.kosik.map((i) => `č. ${i.id} ${i.nazev} – ${i.fukar} – ${kc(i.cena)}`), "", d.zprava].join("\n");
-        location.href = `mailto:${MAIL}?subject=${encodeURIComponent("Poptávka – skákací hrady")}&body=${encodeURIComponent(body)}`;
-        hint.textContent = "Otevřel se váš e-mail s připravenou poptávkou – stačí ji odeslat."; btn.disabled = false;
+        const href = `mailto:${MAIL}?subject=${encodeURIComponent("Poptávka – skákací hrady")}&body=${encodeURIComponent(body)}`;
+        location.href = href;
+        f.innerHTML = `<div class="ok ok--mail" role="status"><b>Poptávka je připravená v e-mailu</b><p>Otevřel se váš e-mailový program s vyplněnou zprávou pro ${MAIL}. Stačí ji odeslat a ozveme se nejpozději další pracovní den.</p><div class="hero__cta"><a class="btn" href="${href}">Otevřít e-mail znovu</a><a class="btn btn--ghost" href="tel:+420736214975">Zavolat 736 214 975</a></div></div>`;
       }
     });
   }
