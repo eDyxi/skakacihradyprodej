@@ -287,7 +287,7 @@
       document.documentElement.classList.add("lenis", "lenis-smooth");
       l.on("scroll", ST.update); g.ticker.add((t) => l.raf(t * 1000)); g.ticker.lagSmoothing(0);
       document.addEventListener("click", (e) => { const a = e.target.closest('a[href^="#"], a[href^="/#"]'); if (!a) return; const id = a.getAttribute("href").split("#")[1]; const t = id && document.getElementById(id); if (t) { e.preventDefault(); window.__skipLock = true; l.scrollTo(t, { offset: -70, duration: 1.4, onComplete: () => setTimeout(() => (window.__skipLock = false), 120) }); } });
-      if (location.hash) { const t = document.getElementById(location.hash.slice(1)); if (t) setTimeout(() => { window.__skipLock = true; ST.refresh(); l.scrollTo(t, { offset: -70, immediate: true, force: true }); setTimeout(() => (window.__skipLock = false), 400); }, 700); }
+      if (location.hash) { const t = document.getElementById(location.hash.slice(1)); if (t) addEventListener("pins-ready", () => setTimeout(() => { window.__skipLock = true; ST.refresh(); l.scrollTo(t, { offset: -70, immediate: true, force: true }); setTimeout(() => (window.__skipLock = false), 400); }, 120), { once: true }); }
     }
 
     /* hero intro: slova vyskočí, hrad dopadne */
@@ -295,6 +295,9 @@
       .from(".hero__logo .hl1, .hero__logo .hl2", { y: -160, scaleY: 1.35, scaleX: 0.8, opacity: 0, transformOrigin: "50% 100%", duration: 1.3, ease: "elastic.out(1, 0.4)", stagger: 0.16 })
       .from(".hero__lede, .hero__cta, .hero__facts li", { y: 24, opacity: 0, duration: 0.6, stagger: 0.05, ease: "back.out(1.8)" }, "-=.8");
 
+    /* zamčené scény až po prvním vykreslení a po kouscích (krátké úlohy = plynulý start i na mobilu) */
+    const later = () => new Promise((r) => requestAnimationFrame(() => setTimeout(r, 0)));
+    (async () => { await later();
     /* příběh: hrad se nafukuje se scrollem */
     const mm = g.matchMedia();
     const sc = $(".story .castle");
@@ -335,6 +338,7 @@
         return () => { st.kill(); $(".story").classList.remove("story--m"); g.set(ol, { clearProps: "x" }); };
       });
     }
+    await later();
 
     /* carousel: horizontální jízda + prohnutí podle rychlosti */
     const rail = $("#rail");
@@ -347,6 +351,7 @@
       return () => tw.kill();
     });
     mm.add("(max-width: 899px)", () => { rail.classList.add("rail--native"); return () => rail.classList.remove("rail--native"); });
+    await later();
 
     /* témata a cenovka */
     /* témata (desktop): skutečné zamčení CELÉ stránky (nic se nehýbe, ani žlutý pruh nahoře).
@@ -408,6 +413,7 @@
       addEventListener("burst-open", onOpen); addEventListener("burst-close", onClose);
       return () => { s1.kill(); s2.kill(); M.kill(); sec.classList.remove("themes-anim", "themes-m"); sec.style.removeProperty("--cy"); removeEventListener("burst-open", onOpen); removeEventListener("burst-close", onClose); g.set([core, hint, pill, ...txt], { clearProps: "all" }); };
     });
+    await later();
 
     /* účtenka: zamknout scroll a tisknout; karta se oddálí jako u nafukování */
     if (printAt) {
@@ -424,11 +430,12 @@
           onUpdate: (s) => { const p = s.progress, k = p < 0.1 ? p / 0.1 : p > 0.9 ? (1 - p) / 0.1 : 1, e = k * k * (3 - 2 * k); qx(1 - 0.08 * e); qy2(1 - 0.08 * e); qk(e); printAt(p); } });
       });
     }
+    await later();
     /* na míru: až PO účtence (pořadí pinů = pořadí v DOM) */
     const custP = (s) => { window.__customP = s.progress; dispatchEvent(new CustomEvent("custom", { detail: s.progress })); };
     mm.add("(min-width: 861px)", () => { ST.create({ trigger: "#na-miru", start: "center center", end: "+=170%", pin: true, scrub: 0.5, onUpdate: custP, onToggle: (t) => document.documentElement.classList.toggle("cpin", t.isActive) }); });
     mm.add("(max-width: 860px)", () => { ST.create({ trigger: "#na-miru", start: "top top", end: "+=150%", pin: true, scrub: 0.5, onUpdate: custP }); });
-    addEventListener("load", () => ST.refresh());
+    ST.refresh(); dispatchEvent(new Event("pins-ready")); addEventListener("load", () => ST.refresh()); })();
   }
 
   /* ---------- mini košík (bublina u ikonky) ---------- */
