@@ -1387,3 +1387,6 @@ main p:has(+:is(.hero__cta,.btn,.cta-row)){margin-bottom:0}
 .is3d .hero__poster{opacity:0}
 @media (hover:hover) and (pointer:fine){.hero__poster{display:none}}
 #pd:empty,#grid:empty{min-height:100svh}
+/* desktop intro: hero čeká na animaci (pojistka: po 2,5 s se ukáže i bez JS) */
+html.intro .hero__logo .hl1,html.intro .hero__logo .hl2,html.intro .hero__lede,html.intro .hero__cta,html.intro .hero__facts li{opacity:0;animation:introSafe .3s 2.5s forwards}
+@keyframes introSafe{to{opacity:1}}

@@ -280,7 +280,7 @@
 
     const g = window.gsap, ST = window.ScrollTrigger;
     const steps = $$(".story__steps li");
-    if (!g || !ST || RM) { steps.forEach((s) => s.classList.add("on")); $("#rail")?.classList.add("rail--native"); printAt?.(1); window.__customP = 1; return; }
+    if (!g || !ST || RM) { document.documentElement.classList.remove("intro"); steps.forEach((s) => s.classList.add("on")); $("#rail")?.classList.add("rail--native"); printAt?.(1); window.__customP = 1; return; }
     g.registerPlugin(ST);
     if (window.Lenis) {
       const l = (window.__lenis = new Lenis({ lerp: 0.085, wheelMultiplier: 0.9, smoothWheel: true }));
@@ -291,7 +291,8 @@
     }
 
     /* hero intro: slova vyskočí, hrad dopadne */
-    g.timeline()
+    const intro = document.documentElement.classList.contains("intro"); document.documentElement.classList.remove("intro");
+    if (intro) g.timeline()
       .from(".hero__logo .hl1, .hero__logo .hl2", { y: -160, scaleY: 1.35, scaleX: 0.8, opacity: 0, transformOrigin: "50% 100%", duration: 1.3, ease: "elastic.out(1, 0.4)", stagger: 0.16 })
       .from(".hero__lede, .hero__cta, .hero__facts li", { y: 24, opacity: 0, duration: 0.6, stagger: 0.05, ease: "back.out(1.8)" }, "-=.8");
 
