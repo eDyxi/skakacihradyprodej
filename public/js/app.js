@@ -540,7 +540,7 @@
     const fans = h.fi ? `<p class="pill pill--y">Fukar je v ceně</p>` : `<div class="fans" role="radiogroup" aria-label="Fukar">${[0, 950, 1500].map((f) =>
       `<label class="fan"><input type="radio" name="fan" value="${f}" ${f === fan ? "checked" : ""}><span>${FAN[f][0]}${f === h.fan ? "<em>doporučený</em>" : ""}</span><b>${f ? "+ " + kc(FAN[f][1]) : "—"}</b></label>`).join("")}</div>`;
     root.innerHTML = `
-    <div><div class="pd__stage"><button class="pd__img" type="button" data-cur="Zvětšit" aria-label="Zvětšit fotku"><img id="pd-main" src="${img(h, false)}" alt="${h.n} – ${TYP[h.t].toLowerCase()}" width="1200" height="900"></button></div>
+    <div><div class="pd__stage"><button class="pd__img" type="button" data-cur="Zvětšit" aria-label="Zvětšit fotku"><img id="pd-main" src="${img(h, false)}" alt="${h.n} – ${TYP[h.t].toLowerCase()}" width="1200" height="900" fetchpriority="high"></button></div>
     ${h.ph ? `<div class="pd__thumbs">${[img(h, false), img(h, false, true)].map((src, i) => `<button type="button" data-src="${src}" aria-pressed="${!i}" aria-label="${i ? "Původní fotka" : "Studiová fotka"}"><img src="${src.replace(".webp", "-sm.webp")}" alt="" width="84" height="84" loading="lazy"></button>`).join("")}</div>` : ""}
     ${h.m3d ? `<button class="btn btn--sky pd__3dbtn" id="v3d-btn" type="button" aria-pressed="false">Prohlédnout ve 3D ↻</button>` : ""}</div>
     <div>
