@@ -1329,7 +1329,7 @@ main :is(h1,h2)+p{margin-top:var(--s-head)!important}
 /* text → CTA */
 .hero__lede{margin-bottom:var(--s-cta)!important}
 main p+:is(.hero__cta,.btn,.cta-row){margin-top:var(--s-cta)!important}
-main p:has(+:is(.hero__cta,.btn,.cta-row)){margin-bottom:0}
+.nf p{margin-bottom:0}
 /* mřížky – jeden gap */
 .grid,.kat-grid .grid,.rail__track,.rail--native .rail__track{gap:var(--gap)!important}
 /* hlavičky podstránek */

@@ -298,7 +298,13 @@
 
     /* zamčené scény až po prvním vykreslení a po kouscích (krátké úlohy = plynulý start i na mobilu) */
     const later = () => new Promise((r) => requestAnimationFrame(() => setTimeout(r, 0)));
-    (async () => { await later();
+    /* dotyk: scény se připraví při prvním doteku/scrollu (nebo po 6 s), desktop hned */
+    const ready = matchMedia("(hover:hover) and (pointer:fine)").matches ? Promise.resolve() : new Promise((r) => {
+      const ev = ["touchstart", "pointerdown", "scroll", "wheel", "keydown"], go = () => { ev.forEach((e) => removeEventListener(e, go)); clearTimeout(t); r(); };
+      const t = setTimeout(go, 6000); ev.forEach((e) => addEventListener(e, go, { passive: true }));
+      if (location.hash || scrollY > 0) go();
+    });
+    (async () => { await ready; await later();
     /* příběh: hrad se nafukuje se scrollem */
     const mm = g.matchMedia();
     const sc = $(".story .castle");
