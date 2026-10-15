@@ -1373,3 +1373,8 @@ main p:has(+:is(.hero__cta,.btn,.cta-row)){margin-bottom:0}
   #faq .bot{margin-top:0;max-width:none;position:sticky;top:calc(var(--nav-h) + 24px)}
 }
 .form .ok--mail{display:grid;gap:12px;background:var(--card);padding:20px;font-weight:600}.ok--mail b{font:700 1.3rem/1.1 var(--f-d)}.ok--mail p{margin:0;max-width:var(--measure)}.ok--mail .hero__cta{margin-top:8px}
+/* hero poster (mobil): okamžitý obrázek 3D hradu, 3D se prolne až po interakci */
+.hero__poster{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none;transition:opacity .6s var(--ease)}
+.is3d .hero__poster{opacity:0}
+@media (hover:hover) and (pointer:fine){.hero__poster{display:none}}
+#pd:empty,#grid:empty{min-height:100svh}

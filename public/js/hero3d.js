@@ -94,11 +94,13 @@ async function hero() {
   host.classList.add("is3d");
 
   const G = size.y * 14, j = jelly();
-  let phase = RM ? "idle" : "fall", clock = 0, hy = 0, hv = 0, nextHop = 0, yaw = -0.35, drag = null, spin = 0;
+  /* CALM = poster už stojí na místě (mobil / slabší zařízení) → bez pádu, jen plynulé prolnutí */
+  const CALM = RM || !!window.__3dCalm;
+  let phase = CALM ? "idle" : "fall", clock = 0, hy = 0, hv = 0, nextHop = 0, yaw = -0.35, drag = null, spin = 0;
   const startY = -(host.getBoundingClientRect().bottom + 120);
   const FALL = 0.95;
   S.r.compile(S.scene, S.cam);
-  if (!RM) { host.style.transform = `translateY(${startY}px)`; S.force = true; }
+  if (CALM) nextHop = 1.6; else { host.style.transform = `translateY(${startY}px)`; S.force = true; }
 
   const cv = host.querySelector(".c3d");
   cv.addEventListener("pointerdown", (e) => { drag = e.clientX; cv.setPointerCapture(e.pointerId); cv.classList.add("grab"); });
