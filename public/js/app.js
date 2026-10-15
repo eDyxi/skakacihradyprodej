@@ -107,9 +107,9 @@
   }
   function cursor() {
     if (!matchMedia("(hover:hover) and (pointer:fine)").matches || RM) return;
-    const c = document.createElement("div"); c.className = "cur"; c.setAttribute("aria-hidden", "true"); document.body.append(c);
+    const c = document.createElement("div"); c.className = "cur out"; c.setAttribute("aria-hidden", "true"); c.innerHTML = "<i></i><b></b>"; document.body.append(c); const lbl = c.lastChild;
     let x = innerWidth / 2, y = innerHeight / 2, cx = x, cy = y;
-    addEventListener("pointermove", (e) => { x = e.clientX; y = e.clientY; const t = e.target.closest("[data-cur]"); c.classList.toggle("big", !!t); c.textContent = t ? t.dataset.cur : ""; }, { passive: true });
+    addEventListener("pointermove", (e) => { x = e.clientX; y = e.clientY; const t = e.target.closest("[data-cur]"); c.classList.remove("out"); c.classList.toggle("big", !!t); if (t) lbl.textContent = t.dataset.cur; }, { passive: true });
     document.documentElement.classList.add("has-cur");
     document.addEventListener("mouseleave", () => c.classList.add("out")); document.addEventListener("mouseenter", () => c.classList.remove("out"));
     (function loop() { cx += (x - cx) * 0.5; cy += (y - cy) * 0.5; c.style.transform = `translate(${cx}px,${cy}px)`; requestAnimationFrame(loop); })();
@@ -535,7 +535,7 @@
       ${h.note ? `<p><strong>${h.note}</strong></p>` : ""}
       <div class="price"><b>${kc(h.p)}</b><small>konečná cena, bez dopravy · nejsme plátci DPH</small></div>
       <p class="season" data-season hidden>Mimo sezónu cca ${kc(Math.round(h.p * 0.85 / 100) * 100)} – ${kc(Math.round(h.p * 0.9 / 100) * 100)} (sleva 10–15 %)</p>
-      <h2 class="sr">Fukar</h2>${fans}
+      <h2 class="pd__lbl">Fukar (dmychadlo)</h2>${h.fi ? "" : `<p class="fan-note">Fukar není v ceně hradu, doplácí se: 950 W za ${kc(7000)}, 1500 W za ${kc(10000)}. Doporučený výkon je označený.</p>`}${fans}
       <div class="pd__actions"><button class="btn" type="button" id="add">${inCart ? "Upravit v poptávce" : "Přidat do poptávky"} ${I.plus}</button>
       <button class="btn btn--ghost" type="button" disabled title="Připravujeme">Koupit online – brzy</button></div>
       <table class="specs"><caption class="sr">Parametry</caption><tbody>
@@ -548,7 +548,7 @@
         <tr><th>Certifikace</th><td>CE &amp; SGS, EN 14960:2013, EN 15649:2013</td></tr>
         <tr><th>Výroba</th><td>cca 8 týdnů, některé modely skladem</td></tr>
       </tbody></table>
-      <div class="pd__box"><h3>V balení</h3><ul class="checks"><li>Hrad a přepravní obal</li><li>Opravná sada podle dohody</li><li>Záruka 1 rok, opravy podle příčiny poškození</li></ul>
+      <div class="pd__box"><h3>V balení</h3><ul class="checks"><li>Hrad a přepravní obal</li><li>${h.fi ? "Fukar v ceně" : "Fukar jako doplatek (viz výše)"}</li><li>Opravná sada podle dohody</li><li>Záruka 1 rok, opravy i po záruce</li></ul>
       <p>Rozměr, barvy i nápisy upravíme. Jednoduché logo je v ceně.</p></div>
     </div>`;
     root.addEventListener("change", (e) => { if (e.target.name === "fan") { fan = +e.target.value; if (cart.has(h.id)) cart.fan(h.id, fan); } });
@@ -615,12 +615,14 @@
       const btn = f.querySelector("button[type=submit]"); btn.disabled = true; hint.textContent = "Odesílám…";
       try {
         const r = await fetch("/api/poptavka", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(d) });
-        if (r.ok) { localStorage.removeItem("shp-design"); f.innerHTML = `<p class="ok">Díky, poptávka odešla. Ozveme se nejpozději další pracovní den.</p>`; cart.set([]); onSent?.(); return; }
+        const j = r.ok ? await r.json().catch(() => ({})) : {};
+        if (j.ok) { localStorage.removeItem("shp-design"); f.innerHTML = `<p class="ok">Díky, poptávka odešla. Ozveme se nejpozději další pracovní den.</p>`; cart.set([]); onSent?.(); return; }
         throw new Error(r.status);
       } catch {
         const body = [`Jméno: ${d.jmeno}`, `E-mail: ${d.email}`, `Telefon: ${d.telefon}`, `Město/obec: ${d.mesto}`, "", ...d.kosik.map((i) => `č. ${i.id} ${i.nazev} – ${i.fukar} – ${kc(i.cena)}`), "", d.zprava].join("\n");
-        location.href = `mailto:${MAIL}?subject=${encodeURIComponent("Poptávka – skákací hrady")}&body=${encodeURIComponent(body)}`;
-        hint.textContent = "Otevřel se váš e-mail s připravenou poptávkou – stačí ji odeslat."; btn.disabled = false;
+        const href = `mailto:${MAIL}?subject=${encodeURIComponent("Poptávka – skákací hrady")}&body=${encodeURIComponent(body)}`;
+        location.href = href;
+        f.innerHTML = `<div class="ok ok--mail" role="status"><b>Poptávka je připravená v e-mailu</b><p>Otevřel se váš e-mailový program s vyplněnou zprávou pro ${MAIL}. Stačí ji odeslat a ozveme se nejpozději další pracovní den.</p><div class="hero__cta"><a class="btn" href="${href}">Otevřít e-mail znovu</a><a class="btn btn--ghost" href="tel:+420736214975">Zavolat 736 214 975</a></div></div>`;
       }
     });
   }

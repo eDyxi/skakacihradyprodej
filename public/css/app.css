@@ -1298,3 +1298,78 @@ h1,h2{text-shadow:.035em .045em 0 color-mix(in srgb,var(--ink) 18%,transparent)}
   .hero__art{aspect-ratio:1/.72!important;max-width:380px}
   .hero__lede{margin-bottom:12px}
 }
+
+/* =====================================================================
+   FINALIZACE 10/2026 – tokeny rozložení (Weby/_layout-system.md)
+   sekce: --sec-y nahoře i dole · eyebrow→nadpis 12 · nadpis→text 20 · text→CTA 32 · gap mřížek --gap
+   výjimky s vlastním rytmem: hero, zamčené scény (Jak to probíhá, Na rovinu, Na míru), balónková Témata
+   ===================================================================== */
+:root{--sec-y:clamp(72px,9vw,144px);--wrap:1200px;--gutter:clamp(16px,4vw,32px);--s-eyebrow:12px;--s-head:20px;--s-cta:32px;--s-block:clamp(40px,5vw,64px);--gap:clamp(16px,2vw,24px);--measure:32em}
+[hidden]{display:none!important}
+.wrap,.themes-anim>.wrap{width:min(100% - 2 * var(--gutter),var(--wrap))}
+@media (max-width:860px){.story--m .story__grid{width:calc(100vw - 2 * var(--gutter))!important}}
+/* sekce */
+main>section.sec:not(.themes-sec):not(.custom-sec),.sec-rel{padding-block:var(--sec-y)!important;margin-block:0!important}
+/* eyebrow → nadpis */
+.eyebrow{display:table;margin-bottom:var(--s-eyebrow)!important}
+.eyebrow+h1,.eyebrow+h2{margin-top:0!important}
+.kat-hero .eyebrow,.themes-sec .eyebrow,.page-head--c .eyebrow{margin-inline:auto}
+/* nadpis → text */
+main :is(h1,h2)+p{margin-top:var(--s-head)!important}
+.sec__head p,.hero__lede,.page-head p,.kat-hero__lede,.studio__lede,.faq p,.ask p{max-width:var(--measure)}
+/* text → CTA */
+.hero__lede{margin-bottom:var(--s-cta)!important}
+main p+:is(.hero__cta,.btn,.cta-row){margin-top:var(--s-cta)!important}
+main p:has(+:is(.hero__cta,.btn,.cta-row)){margin-bottom:0}
+/* mřížky – jeden gap */
+.grid,.kat-grid .grid,.rail__track,.rail--native .rail__track{gap:var(--gap)!important}
+/* hlavičky podstránek */
+.page-head{padding:var(--s-block) 0!important}
+.kat-grid{padding:var(--s-block) 0 var(--sec-y)!important}
+.cart{padding-bottom:var(--sec-y)}
+/* nav: při scrollu jemné matné pozadí, ať logo nejede přes obsah */
+.nav::before{content:"";position:absolute;inset:0 0 -12px;z-index:-1;pointer-events:none;background:color-mix(in srgb,var(--paper) 80%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);-webkit-mask:linear-gradient(#000 72%,transparent);mask:linear-gradient(#000 72%,transparent);opacity:0;transition:opacity .25s var(--ease)}
+.nav.is-scrolled::before{opacity:1}
+/* animace jen transform/opacity: kurzor roste přes scale, záře balónku přes scale+opacity, slunce bez repaintu */
+.cur,.cur.big{width:16px;height:16px;margin:-8px 0 0 -8px;transition:opacity .2s}
+.cur>i{position:absolute;inset:0;border-radius:50%;background:var(--gold);border:2px solid var(--ink);box-shadow:0 0 16px 5px rgba(255,210,63,.6);transition:transform .25s var(--bounce)}
+.cur{background:none;border:0;box-shadow:none}
+.cur.big>i{transform:scale(2.95)}
+.cur>b{position:relative;font:800 .62rem/1 var(--f-d);color:var(--ink);white-space:nowrap;opacity:0;transition:opacity .15s}
+.cur.big>b{opacity:1}
+#nejzadanejsi.sec--sun::before,.chooser::before{animation:none!important}
+.core__ball::after{box-shadow:0 0 0 4px rgba(255,210,63,.75),0 0 26px 8px rgba(255,210,63,.6);animation:callme2 1.9s ease-out infinite}
+@keyframes callme2{0%{transform:scale(1);opacity:1}70%,100%{transform:scale(1.3);opacity:0}}
+.burst.open .core__ball::after{animation:none;opacity:0}
+@media (prefers-reduced-motion:reduce){.core__ball::after{animation:none;opacity:.6;transform:none}}
+.core__ball{transition:transform .5s var(--bounce)}
+.rc__lines li{clip-path:none;opacity:0;transform:translateX(-6px);transition:opacity .2s steps(4),transform .2s var(--ease)}
+.rc__lines li.on{opacity:1;transform:none}
+.faq details{transition:transform .35s var(--bounce)}
+.card{transition:transform .25s var(--bounce)}
+.nf{min-height:calc(100svh - var(--nav-h) - 220px);display:flex;flex-direction:column;align-items:flex-start;justify-content:center}
+.sec__head p,.deal p,.custom p,.themes-sec p{max-width:var(--measure)!important}
+.themes-sec .sec__head p{margin-inline:auto}
+.hero__lede+.hero__cta{margin-top:0!important}
+@media (max-width:860px){.story--m .story__grid>div:first-child .eyebrow{margin-bottom:8px!important}}
+/* detail: sezóna bez červeného poplachu (kontrast AA), poznámka k fukaru */
+.season{background:var(--gold);color:var(--ink)}
+.pd__lbl{font:700 1.15rem/1.1 var(--f-d);margin:8px 0 8px}
+.fan-note{font-size:.95rem;color:var(--ink-2);margin:0 0 12px;max-width:var(--measure)}
+/* patička: odkazy + kontakt pod logem, na ose */
+.foot{padding:var(--s-block) 0 calc(var(--s-block) * .75)}
+.foot__meta{display:grid;justify-items:center;gap:12px;margin-top:20px;text-align:center;font-size:.92rem;color:var(--ink-2)}
+.foot__meta nav{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 8px}
+.foot__meta nav a{font:700 1rem/1 var(--f-d);text-decoration:none;padding:10px 12px;border-radius:99px}
+.foot__meta nav a:hover{background:var(--paper-2)}
+.foot__meta p{margin:0;line-height:1.6}
+.foot__meta p a{color:var(--ink);font-weight:700;text-decoration:none}
+.foot__meta p a:hover{text-decoration:underline}
+/* otázky: na desktopu otázky a asistent vedle sebe */
+@media (min-width:1024px){
+  #faq>.wrap{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);column-gap:clamp(32px,4vw,56px);align-items:start}
+  #faq .sec__head{grid-column:1/-1}
+  #faq .faq{max-width:none}
+  #faq .bot{margin-top:0;max-width:none;position:sticky;top:calc(var(--nav-h) + 24px)}
+}
+.form .ok--mail{display:grid;gap:12px;background:var(--card);padding:20px;font-weight:600}.ok--mail b{font:700 1.3rem/1.1 var(--f-d)}.ok--mail p{margin:0;max-width:var(--measure)}.ok--mail .hero__cta{margin-top:8px}
