@@ -1397,3 +1397,6 @@ html.intro .hero__logo .hl1,html.intro .hero__logo .hl2,html.intro .hero__lede,h
 .st-go .st-tap,.st-3d.ready .st-tap{display:none}
 html:not(.st-go) .st-load{display:none}
 @media (hover:hover) and (pointer:fine){.st-poster,.st-tap{display:none}}
+@media (max-width:480px){.foot__meta nav{gap:0}.foot__meta nav a{padding:10px 8px;font-size:.92rem}}
+.empty p:last-of-type{margin-bottom:0}
+.hero .cloud--fly{z-index:0}.hero__lede,.hero__cta,.hero__facts,.hero__brand{position:relative;z-index:1}

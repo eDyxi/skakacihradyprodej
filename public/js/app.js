@@ -550,8 +550,7 @@
       <div class="price"><b>${kc(h.p)}</b><small>konečná cena, bez dopravy · nejsme plátci DPH</small></div>
       <p class="season" data-season hidden>Mimo sezónu cca ${kc(Math.round(h.p * 0.85 / 100) * 100)} – ${kc(Math.round(h.p * 0.9 / 100) * 100)} (sleva 10–15 %)</p>
       <h2 class="pd__lbl">Fukar (dmychadlo)</h2>${h.fi ? "" : `<p class="fan-note">Fukar není v ceně hradu, doplácí se: 950 W za ${kc(7000)}, 1500 W za ${kc(10000)}. Doporučený výkon je označený.</p>`}${fans}
-      <div class="pd__actions"><button class="btn" type="button" id="add">${inCart ? "Upravit v poptávce" : "Přidat do poptávky"} ${I.plus}</button>
-      <button class="btn btn--ghost" type="button" disabled title="Připravujeme">Koupit online – brzy</button></div>
+      <div class="pd__actions"><button class="btn" type="button" id="add">${inCart ? "Upravit v poptávce" : "Přidat do poptávky"} ${I.plus}</button></div>
       <table class="specs"><caption class="sr">Parametry</caption><tbody>
         <tr><th>Rozměr (d × š)</th><td>${size(h)}</td></tr>
         <tr><th>Výška</th><td>${num(h.h)} m${est}</td></tr>
