@@ -1400,3 +1400,19 @@ html:not(.touch) .st-poster,html:not(.touch) .st-tap{display:none}
 @media (max-width:480px){.foot__meta nav{gap:0}.foot__meta nav a{padding:10px 8px;font-size:.92rem}}
 .empty p:last-of-type{margin-bottom:0}
 .hero .cloud--fly{z-index:0}.hero__lede,.hero__cta,.hero__facts,.hero__brand{position:relative;z-index:1}
+
+/* ===== 16. 10.: nadpisy sekcí na střed + mráček bez deformace ===== */
+.sec__head,.themes-sec .sec__head{margin-inline:auto;text-align:center}
+.sec__head p,.page-head>p,.studio__head>p{margin-inline:auto}
+.page-head,.studio__head{text-align:center}
+.story__grid>div:first-child,.deal>div:first-child,.cta.ask>div:first-child{text-align:center}
+.story__steps,.story__steps li{text-align:left}
+.deal .certs{justify-content:center}
+.eyebrow{display:inline-block;margin-top:clamp(30px,3vw,40px)}
+.eyebrow>.cl{left:50%;translate:-50% 0}
+/* uppercase: letter-spacing přidává mezeru za posledním písmenem → kompenzace, text sedí přesně na středu mráčku */
+#faq .eyebrow,.story .eyebrow{padding-right:calc(20px - .1em)}
+/* header nesmí překrýt modré pozadí při scroll animaci zamčených sekcí */
+html.spin .nav::before,html.rpin .nav::before,html.cpin .nav::before{opacity:0}
+.custom>div:not(.custom__art){text-align:center}
+.eyebrow,#faq .eyebrow,.story .eyebrow{font:800 clamp(1rem,1.2vw,1.18rem)/1 var(--f-d);letter-spacing:.1em;text-transform:uppercase;padding:12px calc(24px - .1em) 11px 24px}

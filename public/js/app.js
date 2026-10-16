@@ -329,7 +329,7 @@
         const card = $(".story__card"), secS = $(".story");
         const qsx = g.quickTo(card, "scaleX", { duration: 0.9, ease: "power3" }), qsy = g.quickTo(card, "scaleY", { duration: 0.9, ease: "power3" }), qs = (v) => { qsx(v); qsy(v); }, qy = g.quickTo(card, "yPercent", { duration: 0.9, ease: "power3" }), qk = g.quickTo(secS, "--k", { duration: 0.9, ease: "power3" });
         const depth = (p) => { const k = p < 0.12 ? p / 0.12 : p > 0.86 ? (1 - p) / 0.14 : 1, e = k * k * (3 - 2 * k); qs(1 - 0.12 * e); qk(e); };
-        ST.create({ trigger: ".story__pin", start: "top top", end: "+=320%", pin: true, scrub: 0.6, animation: tl,
+        ST.create({ trigger: ".story__pin", start: "top top", end: "+=320%", pin: true, scrub: 0.6, animation: tl, onToggle: (t) => document.documentElement.classList.toggle("spin", t.isActive),
           onUpdate: (s) => { depth(s.progress); secS.style.setProperty("--sfeed", (s.progress * 1800).toFixed(0) + "px"); dispatchEvent(new CustomEvent("story", { detail: s.progress })); const i = Math.min(steps.length - 1, Math.floor(s.progress * steps.length)); steps.forEach((li, k) => li.classList.toggle("on", k <= i)); if (gauge) gauge.textContent = Math.round(s.progress * 100) + " %"; } });
       });
       mm.add("(max-width: 860px)", () => {
@@ -339,7 +339,7 @@
         const depth = (p) => { const k = p < 0.1 ? p / 0.1 : p > 0.9 ? (1 - p) / 0.1 : 1, e = k * k * (3 - 2 * k); qsx(1 - 0.08 * e); qsy(1 - 0.08 * e); qk(e); };
         const dist = () => Math.max(0, ol.scrollWidth - $(".story__card").clientWidth + 40);
         const qx = g.quickTo(ol, "x", { duration: 0.5, ease: "power3" });
-        const st = ST.create({ trigger: ".story__pin", start: "top top", end: "+=260%", pin: true, scrub: 0.6, animation: tl, invalidateOnRefresh: true,
+        const st = ST.create({ trigger: ".story__pin", start: "top top", end: "+=260%", pin: true, scrub: 0.6, animation: tl, invalidateOnRefresh: true, onToggle: (t) => document.documentElement.classList.toggle("spin", t.isActive),
           onUpdate: (s) => { const p = s.progress; depth(p); secS.style.setProperty("--sfeed", (p * 1400).toFixed(0) + "px"); dispatchEvent(new CustomEvent("story", { detail: p }));
             const t = g.utils.clamp(0, 1, (p - 0.08) / 0.82), i = Math.min(steps.length - 1, Math.floor(t * steps.length * 0.999)); steps.forEach((li, k) => li.classList.toggle("on", k <= i)); qx(-dist() * t); if (gauge) gauge.textContent = Math.round(p * 100) + " %"; } });
         return () => { st.kill(); $(".story").classList.remove("story--m"); g.set(ol, { clearProps: "x" }); };
@@ -661,19 +661,26 @@
     const NS = "http://www.w3.org/2000/svg";
     const draw = (el) => {
       el.querySelector(":scope > .cl")?.remove();
-      const tw = el.offsetWidth, th = el.offsetHeight, pad = 4;
-      /* přesně mráček z oblohy (4 laloky): mírně roztažený do šířky (max 1,55×) a zvětšený, kruhy → jemné elipsy */
-      /* text sedí v plné části mráčku (x 30–95 z 109), mráček ho těsně obejme */
-      const big = true, s0 = Math.max(0.85, th / 28), MX = 1.75, ratio = (tw + 6) / (76 * s0), sx = Math.min(MX, Math.max(1, ratio)), s = s0 * Math.max(1, ratio / MX);
-      const C = [[21, 36, 14], [41, 24, 21], [66, 28, 16], [86, 26, 18], [104, 37, 12]].map(([x, y, r]) => [x * s * sx, y * s, r * s * sx, r * s]);
-      const L = C.length - 1, minX = C[0][0] - C[0][2], maxX = C[L][0] + C[L][2], base = 50 * s, top = Math.min(...C.map(([, y, , ry]) => y - ry)), cyMin = Math.min(...C.map((c) => c[1]));
-      const W = maxX - minX + pad * 2, Hh = base - top + pad * 2;
-      const sh = (k) => C.map(([x, y, rx, ry]) => `<ellipse cx="${(x - minX + pad).toFixed(1)}" cy="${(y - top + pad).toFixed(1)}" rx="${(rx + k).toFixed(1)}" ry="${(ry + k).toFixed(1)}"/>`).join("") + `<rect x="${(C[0][0] - minX + pad).toFixed(1)}" y="${(cyMin - top + pad - k).toFixed(1)}" width="${(C[L][0] - C[0][0]).toFixed(1)}" height="${(base - cyMin + 2 * k).toFixed(1)}"/>`;
+      /* mráček roste počtem obláčků, ne roztahováním → kruhy zůstanou kulaté; text sedí přesně v těle mráčku */
+      const W = el.offsetWidth, H = el.offsetHeight, p = 7, R = H / 2;
+      const n = Math.max(2, Math.min(6, Math.round((W - H) / (H * 1.25)) + 1));
+      const top = H * 0.86, bodyY = p + top, svgW = W + p * 2, svgH = bodyY + H + p;
+      const bumps = [];
+      for (let i = 0; i < n; i++) {
+        const t = n === 1 ? 0.5 : i / (n - 1), mid = Math.sin(Math.PI * (0.15 + 0.7 * t));
+        const r = H * (0.5 + 0.3 * mid) * (i % 2 ? 0.86 : 1);
+        bumps.push([p + R * 0.85 + t * (W - R * 1.7), bodyY + H * 0.16, r]);
+      }
+      const sh = (k) => bumps.map(([x, y, r]) => `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(r + k).toFixed(1)}"/>`).join("") +
+        `<rect x="${(p - k).toFixed(1)}" y="${(bodyY - k).toFixed(1)}" width="${(W + 2 * k).toFixed(1)}" height="${(H + 2 * k).toFixed(1)}" rx="${(R + k).toFixed(1)}"/>`;
       const svg = document.createElementNS(NS, "svg");
-      svg.setAttribute("class", "cl"); svg.setAttribute("aria-hidden", "true"); svg.setAttribute("width", W.toFixed(0)); svg.setAttribute("height", Hh.toFixed(0)); svg.setAttribute("viewBox", `0 0 ${W.toFixed(1)} ${Hh.toFixed(1)}`);
-      const gid = "cg" + Math.random().toString(36).slice(2, 7), hl = C[1];
-      svg.innerHTML = `<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".62" stop-color="#FFFDF5"/><stop offset="1" stop-color="#DDF1FA"/></linearGradient></defs><g fill="var(--ink)">${sh(3)}</g><g fill="url(#${gid})">${sh(0)}</g><ellipse cx="${(hl[0] - minX + pad - hl[2] * 0.35).toFixed(1)}" cy="${(hl[1] - top + pad - hl[3] * 0.45).toFixed(1)}" rx="${(hl[2] * 0.32).toFixed(1)}" ry="${(hl[3] * 0.16).toFixed(1)}" fill="#fff" opacity=".9" transform="rotate(-18 ${(hl[0] - minX + pad - hl[2] * 0.35).toFixed(1)} ${(hl[1] - top + pad - hl[3] * 0.45).toFixed(1)})"/>`;
-      svg.style.bottom = "-6px";
+      svg.setAttribute("class", "cl"); svg.setAttribute("aria-hidden", "true");
+      svg.setAttribute("width", svgW.toFixed(0)); svg.setAttribute("height", svgH.toFixed(0)); svg.setAttribute("viewBox", `0 0 ${svgW.toFixed(1)} ${svgH.toFixed(1)}`);
+      const gid = "cg" + Math.random().toString(36).slice(2, 7), hb = bumps[Math.floor((n - 1) / 2)];
+      svg.innerHTML = `<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".6" stop-color="#FFFDF5"/><stop offset="1" stop-color="#DDF1FA"/></linearGradient></defs>` +
+        `<g fill="var(--ink)">${sh(3)}</g><g fill="url(#${gid})">${sh(0)}</g>` +
+        `<ellipse cx="${(hb[0] - hb[2] * 0.3).toFixed(1)}" cy="${(hb[1] - hb[2] * 0.45).toFixed(1)}" rx="${(hb[2] * 0.32).toFixed(1)}" ry="${(hb[2] * 0.16).toFixed(1)}" fill="#fff" opacity=".9"/>`;
+      svg.style.bottom = -p + "px";
       el.prepend(svg);
     };
     const all = () => $$(".eyebrow").forEach(draw);
