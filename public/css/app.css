@@ -1433,3 +1433,13 @@ body[data-page="studio"] .st-bot{padding-bottom:calc(var(--sec-y) * .3)}
 .kbar:not(.is-stuck)::before{opacity:0}
 /* kotvy: cíl nezajede pod header (i bez plynulého scrollu) */
 main>section[id]{scroll-margin-top:var(--nav-h)}
+
+/* ===== 20. 10.: mobil/tablet (jen ≤860 px, desktop beze změny) ===== */
+@media (max-width:860px){
+  /* dělicí čára Témata → Na rovinu (na desktopu .rl--t), stejně jako čáry u Na míru */
+  .receipt .rl--t{display:block;top:10px;width:79vw}
+  /* čára nad Otázkami se nedotýká mráčku */
+  main>section#faq.sec{padding-top:calc(var(--sec-y) * .5)!important}
+  /* Na míru: karta 3D návrhu na střed (na tabletu ji max-height zúží) */
+  .custom__art{justify-self:center;width:min(100%, calc(46svh / .82))}
+}
