@@ -1416,3 +1416,20 @@ html:not(.touch) .st-poster,html:not(.touch) .st-tap{display:none}
 html.spin .nav::before,html.rpin .nav::before,html.cpin .nav::before{opacity:0}
 .custom>div:not(.custom__art){text-align:center}
 .eyebrow,#faq .eyebrow,.story .eyebrow{font:800 clamp(1rem,1.2vw,1.18rem)/1 var(--f-d);letter-spacing:.1em;text-transform:uppercase;padding:12px calc(24px - .1em) 11px 24px}
+
+/* ===== 20. 10.: header bez pruhu, Nejžádanější nižší, mezery Otázky/Poptávka a nad footerem ===== */
+/* header: při scrollu jen bublina menu + logo; pruh s blurem zůstává jen v katalogu a 3D studiu */
+body:not([data-page="katalog"]):not([data-page="studio"]) .nav::before{display:none}
+/* Nejžádanější: žluté pozadí o 40 % nižší, rovnoměrně shora i zespodu */
+main>section#nejzadanejsi.sec{padding-block:calc(var(--sec-y) * .6)!important}
+/* Otázky → Poptávka: jedna mezera mezi sekcemi (--sec-y), čára nad Otázkami blíž */
+main>section#faq.sec{padding-top:calc(var(--sec-y) * .3)!important;padding-bottom:calc(var(--sec-y) * .5)!important}
+main>section#poptavka.sec{padding-top:calc(var(--sec-y) * .5)!important;padding-bottom:calc(var(--sec-y) * .3)!important}
+/* poslední blok → footer: stejná mezera na úvodu, v katalogu i ve studiu */
+body[data-page="katalog"] .kat-grid{padding-bottom:calc(var(--sec-y) * .3)!important}
+body[data-page="studio"] .st-bot{padding-bottom:calc(var(--sec-y) * .3)}
+/* katalog: blur pod lištou jen v přilepeném stavu → panel filtrů je celý (pozadí, border i stín) */
+.kbar::before{transition:opacity .2s var(--ease)}
+.kbar:not(.is-stuck)::before{opacity:0}
+/* kotvy: cíl nezajede pod header (i bez plynulého scrollu) */
+main>section[id]{scroll-margin-top:var(--nav-h)}

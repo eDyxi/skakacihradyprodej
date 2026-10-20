@@ -286,8 +286,11 @@
       const l = (window.__lenis = new Lenis({ lerp: 0.085, wheelMultiplier: 0.9, smoothWheel: true }));
       document.documentElement.classList.add("lenis", "lenis-smooth");
       l.on("scroll", ST.update); g.ticker.add((t) => l.raf(t * 1000)); g.ticker.lagSmoothing(0);
-      document.addEventListener("click", (e) => { const a = e.target.closest('a[href^="#"], a[href^="/#"]'); if (!a) return; const id = a.getAttribute("href").split("#")[1]; const t = id && document.getElementById(id); if (t) { e.preventDefault(); window.__skipLock = true; l.scrollTo(t, { offset: -70, duration: 1.4, onComplete: () => setTimeout(() => (window.__skipLock = false), 120) }); } });
-      if (location.hash) { const t = document.getElementById(location.hash.slice(1)); if (t) addEventListener("pins-ready", () => setTimeout(() => { window.__skipLock = true; ST.refresh(); l.scrollTo(t, { offset: -70, immediate: true, force: true }); setTimeout(() => (window.__skipLock = false), 400); }, 120), { once: true }); }
+      /* kotvy: zrušit případný zámek scény, přepočítat výšku (piny ji mění) a teprve pak skočit */
+      const jumpTo = (t, o) => { window.__skipLock = true; dispatchEvent(new Event("anchor-jump")); l.start(); l.resize(); l.scrollTo(t, { offset: -70, force: true, ...o }); };
+      const unskip = () => { clearTimeout(unskip.t); unskip.t = setTimeout(() => (window.__skipLock = false), 400); };
+      document.addEventListener("click", (e) => { const a = e.target.closest('a[href^="#"], a[href^="/#"]'); if (!a) return; const id = a.getAttribute("href").split("#")[1]; const t = id && document.getElementById(id); if (t) { e.preventDefault(); jumpTo(t, { duration: 1.4, onComplete: unskip }); } });
+      if (location.hash) { const t = document.getElementById(location.hash.slice(1)); if (t) addEventListener("pins-ready", () => setTimeout(() => { ST.refresh(); jumpTo(t, { immediate: true }); unskip(); if (document.readyState !== "complete") addEventListener("load", () => setTimeout(() => { jumpTo(t, { immediate: true }); unskip(); }, 60), { once: true }); }, 120), { once: true }); }
     }
 
     /* hero intro: slova vyskočí, hrad dopadne */
@@ -400,8 +403,9 @@
       addEventListener("scroll", onScroll, { passive: true });
       const s2 = ST.create({ trigger: sec, start: () => lockY(), end: () => lockY() + innerHeight * 0.55, onUpdate: (s) => { pOut = s.progress; apply(); }, onRefreshInit: setCY });
       const onOpen = () => { open = true; if (locked) unlock(); }, onClose = () => { open = false; apply(); };
+      const onJump = () => { if (locked) unlock(); }; addEventListener("anchor-jump", onJump);
       addEventListener("burst-open", onOpen); addEventListener("burst-close", onClose);
-      return () => { if (locked) unlock(); s2.kill(); M.kill(); removeEventListener("wheel", onWheel); removeEventListener("keydown", onKey); removeEventListener("scroll", onScroll); sec.classList.remove("themes-anim"); sec.style.removeProperty("--cy"); removeEventListener("burst-open", onOpen); removeEventListener("burst-close", onClose); g.set([core, hint, pill, ...txt], { clearProps: "all" }); };
+      return () => { if (locked) unlock(); removeEventListener("anchor-jump", onJump); s2.kill(); M.kill(); removeEventListener("wheel", onWheel); removeEventListener("keydown", onKey); removeEventListener("scroll", onScroll); sec.classList.remove("themes-anim"); sec.style.removeProperty("--cy"); removeEventListener("burst-open", onOpen); removeEventListener("burst-close", onClose); g.set([core, hint, pill, ...txt], { clearProps: "all" }); };
     });
 
     mm.add("(max-width: 860px)", () => {
@@ -515,6 +519,8 @@
       if (S.max && S.max < maxP) U.set("max", S.max); if (S.q) U.set("q", S.q); if (S.sort !== "doporucene") U.set("sort", S.sort);
       history.replaceState(null, "", location.pathname + (U.toString() ? "?" + U : ""));
     }
+    /* blur pod lištou jen když je přilepená nahoře, jinak by usekl spodek panelu filtrů */
+    { const k = $("#kbar"), f = () => k.classList.toggle("is-stuck", k.getBoundingClientRect().top <= 1); f(); addEventListener("scroll", f, { passive: true }); }
     const jump = () => { const k = $("#kbar"); if (k.getBoundingClientRect().top > innerHeight * 0.6) (window.__lenis ? window.__lenis.scrollTo(k, { offset: -10 }) : k.scrollIntoView({ behavior: "smooth" })); };
     $("#chooser").addEventListener("click", (e) => { const b = e.target.closest("[data-f]"); if (!b) return; const set = S[b.dataset.f]; set.has(b.dataset.v) ? set.delete(b.dataset.v) : set.add(b.dataset.v); run(); });
     rng.addEventListener("input", () => { S.max = +rng.value >= maxP ? 0 : +rng.value; run(); });
@@ -661,26 +667,17 @@
     const NS = "http://www.w3.org/2000/svg";
     const draw = (el) => {
       el.querySelector(":scope > .cl")?.remove();
-      /* mráček roste počtem obláčků, ne roztahováním → kruhy zůstanou kulaté; text sedí přesně v těle mráčku */
-      const W = el.offsetWidth, H = el.offsetHeight, p = 7, R = H / 2;
-      const n = Math.max(2, Math.min(6, Math.round((W - H) / (H * 1.25)) + 1));
-      const top = H * 0.86, bodyY = p + top, svgW = W + p * 2, svgH = bodyY + H + p;
-      const bumps = [];
-      for (let i = 0; i < n; i++) {
-        const t = n === 1 ? 0.5 : i / (n - 1), mid = Math.sin(Math.PI * (0.15 + 0.7 * t));
-        const r = H * (0.5 + 0.3 * mid) * (i % 2 ? 0.86 : 1);
-        bumps.push([p + R * 0.85 + t * (W - R * 1.7), bodyY + H * 0.16, r]);
-      }
-      const sh = (k) => bumps.map(([x, y, r]) => `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(r + k).toFixed(1)}"/>`).join("") +
-        `<rect x="${(p - k).toFixed(1)}" y="${(bodyY - k).toFixed(1)}" width="${(W + 2 * k).toFixed(1)}" height="${(H + 2 * k).toFixed(1)}" rx="${(R + k).toFixed(1)}"/>`;
+      /* mráček = stejný tvar jako mraky v pozadí (path z clouds()), velikost podle štítku; text sedí v těle mráčku */
+      const W = el.offsetWidth, H = el.offsetHeight, p = 7;
+      const svgW = W + p * 2, svgH = p + H * 0.86 + H;
       const svg = document.createElementNS(NS, "svg");
       svg.setAttribute("class", "cl"); svg.setAttribute("aria-hidden", "true");
-      svg.setAttribute("width", svgW.toFixed(0)); svg.setAttribute("height", svgH.toFixed(0)); svg.setAttribute("viewBox", `0 0 ${svgW.toFixed(1)} ${svgH.toFixed(1)}`);
-      const gid = "cg" + Math.random().toString(36).slice(2, 7), hb = bumps[Math.floor((n - 1) / 2)];
+      svg.setAttribute("width", svgW.toFixed(0)); svg.setAttribute("height", svgH.toFixed(0));
+      svg.setAttribute("viewBox", "7 1.6 104 48.4"); svg.setAttribute("preserveAspectRatio", "none");
+      const gid = "cg" + Math.random().toString(36).slice(2, 7);
       svg.innerHTML = `<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".6" stop-color="#FFFDF5"/><stop offset="1" stop-color="#DDF1FA"/></linearGradient></defs>` +
-        `<g fill="var(--ink)">${sh(3)}</g><g fill="url(#${gid})">${sh(0)}</g>` +
-        `<ellipse cx="${(hb[0] - hb[2] * 0.3).toFixed(1)}" cy="${(hb[1] - hb[2] * 0.45).toFixed(1)}" rx="${(hb[2] * 0.32).toFixed(1)}" ry="${(hb[2] * 0.16).toFixed(1)}" fill="#fff" opacity=".9"/>`;
-      svg.style.bottom = -p + "px";
+        `<path d="M22 50a16 16 0 0 1 2-32 22 22 0 0 1 40-6 18 18 0 0 1 32 10 14 14 0 0 1 2 28z" fill="url(#${gid})" stroke="var(--ink)" stroke-width="3" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>`;
+      svg.style.bottom = "0px";
       el.prepend(svg);
     };
     const all = () => $$(".eyebrow").forEach(draw);
