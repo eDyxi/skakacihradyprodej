@@ -243,7 +243,7 @@
   function spacers() {
     const pairs = [
     ];
-    const tape = () => { const el = $(".tape"), A = $(".hero__facts") || $(".hero__grid"), B = $(".story .eyebrow .cl") || $(".story .eyebrow"); if (!el || el.hidden || !A || !B) return; el.style.translate = "0 0"; const t = el.getBoundingClientRect(), up = t.top - A.getBoundingClientRect().bottom, dn = B.getBoundingClientRect().top - t.bottom; el.style.translate = `0 ${Math.round((dn - up) / 2)}px`; };
+    const tape = () => { const el = $(".tape"), A = $(".hero__facts") || $(".hero__grid"), B = $(".story .eyebrow .cl") || $(".story .eyebrow"); if (!el || el.hidden || !A || !B) return; if (document.documentElement.classList.contains("spin")) return; /* při zámku Jak to probíhá neměřit → páska neujede */ el.style.translate = "0 0"; const t = el.getBoundingClientRect(), up = t.top - A.getBoundingClientRect().bottom, dn = B.getBoundingClientRect().top - t.bottom; el.style.translate = `0 ${Math.round((dn - up) / 2)}px`; };
     const run = () => { tape(); pairs.forEach((p, k) => {
       const A = $(p.a), B = $(p.b), Ab = $(p.abox), Bb = $(p.bbox), X = $(p.x); if (!A || !B || !Ab || !Bb || !X) return;
       let dv = X.querySelector(`:scope > .dv[data-k="${k}"]`); if (!dv) { dv = document.createElement("span"); dv.className = "dv"; dv.dataset.k = k; dv.setAttribute("aria-hidden", "true"); X.append(dv); }
@@ -668,13 +668,12 @@
     const draw = (el) => {
       el.querySelector(":scope > .cl")?.remove();
       /* mráček = stejný tvar jako mraky v pozadí (path z clouds()), velikost podle štítku; text sedí v těle mráčku */
-      /* dlouhý text (např. Katalog · 116 modelů): mráček nesmí být placka → pilulka dostane víc výšky, poměr max 5.2 : 1 */
-      el.style.paddingTop = el.style.paddingBottom = "";
-      let W = el.offsetWidth, H = el.offsetHeight; const p = 7;
-      if (H && W / H > 6.4 && !el.closest("#temata")) { const cs = getComputedStyle(el), add = (W / 6.4 - H) / 2;
-        el.style.paddingTop = (parseFloat(cs.paddingTop) + add).toFixed(1) + "px"; el.style.paddingBottom = (parseFloat(cs.paddingBottom) + add).toFixed(1) + "px"; H = el.offsetHeight; }
-      const bump = el.closest("#temata") ? 0.86 : 0.72; /* nižší „hrbolky“ nad textem → méně prázdna nad nápisem */
-      const svgW = W + p * 2, svgH = p + H * bump + H;
+      el.style.removeProperty("margin-bottom");
+      const W = el.offsetWidth, H = el.offsetHeight, p = 7;
+      const bump = 0.72; /* nižší „hrbolky“ nad textem → méně prázdna nad nápisem */
+      const svgW = W + p * 2, svgH0 = p + H * bump + H, R = el.closest(".kat-hero") ? 3 : 2.45, svgH = Math.max(svgH0, svgW / R);
+      /* dlouhé štítky: mráček drží tvar (poměr jako spodní mráčky), text sedí ve středu těla mráčku */
+      const shift = svgH > svgH0 ? Math.max(0, Math.round(svgH * 0.33 - H / 2)) : 0;
       const svg = document.createElementNS(NS, "svg");
       svg.setAttribute("class", "cl"); svg.setAttribute("aria-hidden", "true");
       svg.setAttribute("width", svgW.toFixed(0)); svg.setAttribute("height", svgH.toFixed(0));
@@ -682,7 +681,7 @@
       const gid = "cg" + Math.random().toString(36).slice(2, 7);
       svg.innerHTML = `<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".6" stop-color="#FFFDF5"/><stop offset="1" stop-color="#DDF1FA"/></linearGradient></defs>` +
         `<path d="M22 50a16 16 0 0 1 2-32 22 22 0 0 1 40-6 18 18 0 0 1 32 10 14 14 0 0 1 2 28z" fill="url(#${gid})" stroke="var(--ink)" stroke-width="3" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>`;
-      svg.style.bottom = "0px";
+      svg.style.bottom = -shift + "px"; if (shift) el.style.setProperty("margin-bottom", "calc(var(--s-eyebrow) + " + shift + "px)", "important");
       el.prepend(svg);
     };
     const all = () => $$(".eyebrow").forEach(draw);
