@@ -1443,3 +1443,23 @@ main>section[id]{scroll-margin-top:var(--nav-h)}
   /* Na míru: karta 3D návrhu na střed (na tabletu ji max-height zúží) */
   .custom__art{justify-self:center;width:min(100%, calc(46svh / .82))}
 }
+
+/* ===== 26. 10.: mráčky větší text + víc místa nad mráčkem (Podle témat beze změny), katalog, kurzor Detail, detail hradu ===== */
+.eyebrow,#faq .eyebrow,.story .eyebrow{font-size:clamp(1.08rem,1.32vw,1.3rem)}
+.eyebrow{margin-top:calc(clamp(30px,3vw,40px) + clamp(14px,1.9vw,26px))}
+#temata .eyebrow{font-size:clamp(1rem,1.2vw,1.18rem);margin-top:clamp(30px,3vw,40px)}
+/* katalog: o kus níž od headeru */
+.kat-hero .eyebrow{margin-top:calc(clamp(30px,3vw,40px) + clamp(26px,3vw,42px))}
+/* kurzor nad produktem: zlatá kulička zůstane malá, vedle vyskočí komiksová cedulka „DETAIL →“ */
+.cur.big>i{transform:scale(1.15)}
+.cur>b{position:absolute;left:16px;top:-15px;padding:8px 13px 7px;border-radius:999px;background:var(--card);border:2.5px solid var(--ink);box-shadow:3px 3px 0 var(--ink);
+  font:800 .74rem/1 var(--f-d);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);transform:scale(.4) rotate(-10deg);transform-origin:0 50%;transition:opacity .15s,transform .32s var(--bounce)}
+.cur>b::after{content:"→";display:inline-block;margin-left:6px;color:var(--gold);-webkit-text-stroke:.6px var(--ink);letter-spacing:0}
+.cur.big>b{transform:scale(1) rotate(-4deg)}
+/* detail hradu: fotka vlevo se při scrollu zamkne (jako úvod a 3D studio); tabulka s jemným černým rámem */
+@media (min-width:861px){.pd>div:first-child{position:sticky;top:calc(var(--nav-h) + 16px)}}
+.specs{border-collapse:separate;border-spacing:0;border:2px solid var(--ink)!important;box-shadow:3px 3px 0 var(--ink)}
+.sec-rel .rel-head{text-align:center;margin-bottom:var(--s-block)}
+/* Otázky: mráček dál od čáry nad sekcí; Jak to probíhá: víc místa pod žlutou páskou (páska se centruje mezi fakta hera a mráček) */
+#faq .eyebrow{margin-top:calc(16px + clamp(14px,1.9vw,26px))}
+#jak-to-probiha{margin-top:clamp(20px,3vw,40px)}

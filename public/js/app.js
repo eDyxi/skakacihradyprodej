@@ -243,7 +243,7 @@
   function spacers() {
     const pairs = [
     ];
-    const tape = () => { const el = $(".tape"), A = $(".hero__grid"), B = $(".story .eyebrow"); if (!el || el.hidden || !A || !B) return; el.style.translate = "0 0"; const t = el.getBoundingClientRect(), up = t.top - A.getBoundingClientRect().bottom, dn = B.getBoundingClientRect().top - t.bottom; el.style.translate = `0 ${Math.round((dn - up) / 2)}px`; };
+    const tape = () => { const el = $(".tape"), A = $(".hero__facts") || $(".hero__grid"), B = $(".story .eyebrow .cl") || $(".story .eyebrow"); if (!el || el.hidden || !A || !B) return; el.style.translate = "0 0"; const t = el.getBoundingClientRect(), up = t.top - A.getBoundingClientRect().bottom, dn = B.getBoundingClientRect().top - t.bottom; el.style.translate = `0 ${Math.round((dn - up) / 2)}px`; };
     const run = () => { tape(); pairs.forEach((p, k) => {
       const A = $(p.a), B = $(p.b), Ab = $(p.abox), Bb = $(p.bbox), X = $(p.x); if (!A || !B || !Ab || !Bb || !X) return;
       let dv = X.querySelector(`:scope > .dv[data-k="${k}"]`); if (!dv) { dv = document.createElement("span"); dv.className = "dv"; dv.dataset.k = k; dv.setAttribute("aria-hidden", "true"); X.append(dv); }
@@ -668,7 +668,11 @@
     const draw = (el) => {
       el.querySelector(":scope > .cl")?.remove();
       /* mráček = stejný tvar jako mraky v pozadí (path z clouds()), velikost podle štítku; text sedí v těle mráčku */
-      const W = el.offsetWidth, H = el.offsetHeight, p = 7;
+      /* dlouhý text (např. Katalog · 116 modelů): mráček nesmí být placka → pilulka dostane víc výšky, poměr max 5.2 : 1 */
+      el.style.paddingTop = el.style.paddingBottom = "";
+      let W = el.offsetWidth, H = el.offsetHeight; const p = 7;
+      if (H && W / H > 5.2 && !el.closest("#temata")) { const cs = getComputedStyle(el), add = (W / 5.2 - H) / 2;
+        el.style.paddingTop = (parseFloat(cs.paddingTop) + add).toFixed(1) + "px"; el.style.paddingBottom = (parseFloat(cs.paddingBottom) + add).toFixed(1) + "px"; H = el.offsetHeight; }
       const svgW = W + p * 2, svgH = p + H * 0.86 + H;
       const svg = document.createElementNS(NS, "svg");
       svg.setAttribute("class", "cl"); svg.setAttribute("aria-hidden", "true");
