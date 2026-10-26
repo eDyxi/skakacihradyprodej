@@ -671,9 +671,10 @@
       /* dlouhý text (např. Katalog · 116 modelů): mráček nesmí být placka → pilulka dostane víc výšky, poměr max 5.2 : 1 */
       el.style.paddingTop = el.style.paddingBottom = "";
       let W = el.offsetWidth, H = el.offsetHeight; const p = 7;
-      if (H && W / H > 5.2 && !el.closest("#temata")) { const cs = getComputedStyle(el), add = (W / 5.2 - H) / 2;
+      if (H && W / H > 6.4 && !el.closest("#temata")) { const cs = getComputedStyle(el), add = (W / 6.4 - H) / 2;
         el.style.paddingTop = (parseFloat(cs.paddingTop) + add).toFixed(1) + "px"; el.style.paddingBottom = (parseFloat(cs.paddingBottom) + add).toFixed(1) + "px"; H = el.offsetHeight; }
-      const svgW = W + p * 2, svgH = p + H * 0.86 + H;
+      const bump = el.closest("#temata") ? 0.86 : 0.72; /* nižší „hrbolky“ nad textem → méně prázdna nad nápisem */
+      const svgW = W + p * 2, svgH = p + H * bump + H;
       const svg = document.createElementNS(NS, "svg");
       svg.setAttribute("class", "cl"); svg.setAttribute("aria-hidden", "true");
       svg.setAttribute("width", svgW.toFixed(0)); svg.setAttribute("height", svgH.toFixed(0));

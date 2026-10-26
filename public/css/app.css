@@ -1463,3 +1463,7 @@ main>section[id]{scroll-margin-top:var(--nav-h)}
 /* Otázky: mráček dál od čáry nad sekcí; Jak to probíhá: víc místa pod žlutou páskou (páska se centruje mezi fakta hera a mráček) */
 #faq .eyebrow{margin-top:calc(16px + clamp(14px,1.9vw,26px))}
 #jak-to-probiha{margin-top:clamp(20px,3vw,40px)}
+/* ===== 26. 10. B: text v mráčcích výrazně větší, blíž okrajům, méně místa pod textem; Podle témat beze změny; katalog o dost větší ===== */
+.eyebrow,#faq .eyebrow,.story .eyebrow{font-size:clamp(1.25rem,1.62vw,1.56rem);padding:11px calc(20px - .1em) 6px 20px}
+#temata .eyebrow{font-size:clamp(1rem,1.2vw,1.18rem);padding:12px calc(24px - .1em) 11px 24px}
+.kat-hero .eyebrow{font-size:clamp(1.5rem,2.1vw,1.9rem)}
