@@ -243,7 +243,11 @@
   function spacers() {
     const pairs = [
     ];
-    const tape = () => { const el = $(".tape"), A = $(".hero__facts") || $(".hero__grid"), B = $(".story .eyebrow .cl") || $(".story .eyebrow"); if (!el || el.hidden || !A || !B) return; if (document.documentElement.classList.contains("spin")) return; /* při zámku Jak to probíhá neměřit → páska neujede */ el.style.translate = "0 0"; const t = el.getBoundingClientRect(), up = t.top - A.getBoundingClientRect().bottom, dn = B.getBoundingClientRect().top - t.bottom; el.style.translate = `0 ${Math.round((dn - up) / 2)}px`; };
+    const tape = () => { const el = $(".tape"), A = $(".hero__facts") || $(".hero__grid"), B = $(".story .eyebrow .cl") || $(".story .eyebrow"); if (!el || el.hidden || !A || !B) return; /* mráček měříme přes pin-spacer (je v toku) + vnitřní posun ve story → správně i při zámku nebo po jeho konci (dřív páska ujížděla dolů) */
+      const bTop = () => { const sp = B.closest(".pin-spacer"), pe = sp && sp.firstElementChild;
+        return sp && pe ? sp.getBoundingClientRect().top + (B.getBoundingClientRect().top - pe.getBoundingClientRect().top) : B.getBoundingClientRect().top; };
+      if (document.documentElement.classList.contains("spin")) return; /* během zámku (story se zmenšuje) neměřit */
+      el.style.translate = "0 0"; const t = el.getBoundingClientRect(), up = t.top - A.getBoundingClientRect().bottom, dn = bTop() - t.bottom; el.style.translate = `0 ${Math.round((dn - up) / 2)}px`; };
     const run = () => { tape(); pairs.forEach((p, k) => {
       const A = $(p.a), B = $(p.b), Ab = $(p.abox), Bb = $(p.bbox), X = $(p.x); if (!A || !B || !Ab || !Bb || !X) return;
       let dv = X.querySelector(`:scope > .dv[data-k="${k}"]`); if (!dv) { dv = document.createElement("span"); dv.className = "dv"; dv.dataset.k = k; dv.setAttribute("aria-hidden", "true"); X.append(dv); }
